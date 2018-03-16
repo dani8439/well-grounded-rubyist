@@ -18,13 +18,11 @@
 | `-h`              |  Show information about all command-line |    `ruby -h`                       |
 |                 |     switches for the interpreter         |                                  |
 
-## Examples:
+## Examples: ##
 
-<<<<<<< HEAD
-### **Check Syntax** ###
-=======
+
 ### **Check Syntax(-C)** ###
->>>>>>> 6d86f872ac5b52ef14a81e2ed809c8a99a858c12
+
 The `c` switch tells Ruby to check the code in one or more files for syntactical accuracy without executing the code. It's usually used in conjunction with the `-w` flag.
 
 ### **Turn On Warnings(-W)** ###
