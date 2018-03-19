@@ -2,7 +2,7 @@
 
 ### Examples of Ruby Expressions and the values to which they evaluate ###
 |      Expression     |         Value          |                     Comments                       |
-|---------------------------------------------------------------------------------------------------|  
+|---------------------|------------------------|----------------------------------------------------|  
 |`2+2`                | `4`                    | Arithmetic expression evaluate to their results.   |
 |`"Hello"`            | `"Hello"`              | A simple, literal string (in quotation marks)      |
 |                     |                        | evaluates to itself                                |
