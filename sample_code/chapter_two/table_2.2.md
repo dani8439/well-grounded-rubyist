@@ -35,6 +35,5 @@ it's a syntax error, because there's no way it could be correct. Once you've giv
 |                    |                       |`m(1,3,5)`          |`a = 1, b = 3, c =[], d = 5`    |
 |                    |                       | `m(1,3,5,7)`       |`a = 1, b = 3, c = [5], d = 7`  |
 |                    |                       |`m(1,3,5,7,9)`      |`a = 1, b = 3, c = [5,7], d = 9`|
-|--------------------|-----------------------|--------------------|--------------------------------|
 
 The arguments you send to methods are assigned to variables - specifically, local variables, visible and usable for the duration of the method. Assignment of local variables through method argument binding is just one case of the general process of local variable assigment.
