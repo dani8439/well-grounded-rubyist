@@ -1,0 +1,3 @@
+# Organizing Objects with classes #
+
+*Note* Methods that you define for one particular object - as in `def ticket.price` - are called *singleton methods*. You've already seen examples, and we'll look more in depth at how singleton methods work in chapter 13. An object that has a `price` method doesn't care whether it's calling a singleton method or an instance method of its class. But the distinction is important from the programmer's perspective
