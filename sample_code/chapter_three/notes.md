@@ -11,7 +11,7 @@ called `price=`("price" plus an equal sign):
 
 `def price=(amount)`
 
-  `@price = amount`
+` @price = amount`
 
 `end`
 
@@ -46,12 +46,17 @@ The ability to write your own =-terminated methods and the fact that Ruby provid
 something involving assignment but don't:
 
 `class Silly`
-  `def price=(x)`
-    `puts "The current time is #{Time.now}"`
-  `end`
+
+` def price=(x)`
+
+`   puts "The current time is #{Time.now}"`
+
+` end`
+
 `end`
 
 `s = Silly.new`
+
 `s.price = 111.22`
 
 This example discards the argument it receives (`111.22`) and prints out an unrelated message:
@@ -60,4 +65,4 @@ This example discards the argument it receives (`111.22`) and prints out an unre
 
 This example is a deliberate caricature. But the point is important: Ruby checks your syntax but doesn't police your semantics. You're allowed to write methods with names that end with =, and you'll always get the assignment-syntax sugar. Whether the method's name makes any sense in relation to what the method does is in your hands.
   Equal sign methods can also serve as filters or gatekeepers. Let's say we want to set the price of a
-ticket only if the price makes sense as a dollar-and-cents amount. We can add intelligence to the `price=` method to ensure the correctness of the data. Here, we'll multiply the number by 100, lop off any remaining decimal-place number with the `to_i` (convert to integer) operation, and compare the result with the original number multiplied by 100. This sshould expose any extra decimal digits beyond the hundreths column: 
+ticket only if the price makes sense as a dollar-and-cents amount. We can add intelligence to the `price=` method to ensure the correctness of the data. Here, we'll multiply the number by 100, lop off any remaining decimal-place number with the `to_i` (convert to integer) operation, and compare the result with the original number multiplied by 100. This should expose any extra decimal digits beyond the hundreths column:
