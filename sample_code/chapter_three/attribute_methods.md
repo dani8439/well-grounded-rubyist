@@ -5,6 +5,6 @@
 |    Method Name     |   Effect      |        Example        |            Equivalent Code          |
 |--------------------|-----------------------|--------------------|--------------------------------|
 |`attr_reader`   | Creates a reader method | `attr_reader :venue` | `def venue`
-                                                                  |  ` @venue`   |
-                                                                  | `end`    |
-|                 |                         |                     |                 | 
+|                 |                         |                        |  ` @venue`   |
+|                 |                          |                      | `end`    |
+|                 |                         |                     |                 |
