@@ -65,4 +65,21 @@ This example discards the argument it receives (`111.22`) and prints out an unre
 
 This example is a deliberate caricature. But the point is important: Ruby checks your syntax but doesn't police your semantics. You're allowed to write methods with names that end with =, and you'll always get the assignment-syntax sugar. Whether the method's name makes any sense in relation to what the method does is in your hands.
   Equal sign methods can also serve as filters or gatekeepers. Let's say we want to set the price of a
-ticket only if the price makes sense as a dollar-and-cents amount. We can add intelligence to the `price=` method to ensure the correctness of the data. Here, we'll multiply the number by 100, lop off any remaining decimal-place number with the `to_i` (convert to integer) operation, and compare the result with the original number multiplied by 100. This should expose any extra decimal digits beyond the hundreths column:
+ticket only if the price makes sense as a dollar-and-cents amount. We can add intelligence to the `price=` method to ensure the correctness of the data. Here, we'll multiply the number by 100, lop off any remaining decimal-place number with the `to_i` (convert to integer) operation, and compare the result with the original number multiplied by 100. This should expose any extra decimal digits beyond the hundreths column: (see ticket_class.rb for example)
+
+You can also use this kind of filtering technique to *normalise* data - that is, to make sure certain data always takes a certain form. For example, ket's say you have a travel agent website where the user needs to type in the desired date of departure. You want to allow both mm/dd/yyyy.
+  If you have, say, a Ruby CGI script that's processing the incoming data, you might normalize the year by
+writing a setter method like this(see travelagentsession.rb)
+
+Assuming you have a variable called `date` in which you've stored the date field from the form (using Ruby's CGI library), you can get at the components of the date like this:
+
+`month, day, year = date.split('/')`
+
+`self.year = year`
+
+The idea is to split the date string into three strings using the slash character (/) as a divider, courtesy of the built-in `split` method, and then to store the year value in the `TravelAgentSession` object using that object's `year=` method.
+
+## WARNING ##
+  Setter methods don't return what you might think. When you use the syntactic sugar that lets you make calls to = methods that look like assignments, Ruby takes the assignment semantics seriously. Assignments (like `x=1`) evaluate to whatever's on their right-hand side. Methods usually return the value of the last expression evaluated during execution. But = method calls behave like assignments: the value of the expression `ticket.price = 63.00` is `63.00` even if the `ticket=` method returns the string `"Ha ha!"`. The idea is to keep the semantics consistent. Under the hood, it's a method call; but it looks like an assignment and behaves like an assignment with respect to its value as an expression.
+
+You'll write complex getter and setter methods sometimes, but the simple get and set operations, wrapped around instance variables, are the most common-so common, in fact, that Ruby gives you some shortcuts for writing them. 

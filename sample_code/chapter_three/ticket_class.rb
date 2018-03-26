@@ -3,6 +3,18 @@ class Ticket
   #   puts "Creating a new ticket!"
   # end
 
+  def price=(amount)
+    if (amount * 100).to_i == amount * 100
+      @price = amount
+    else
+      puts "The price seems to be malformed"
+    end
+  end
+
+  def price
+    @price
+  end
+
   def initialize(venue, date)
     @venue = venue
     @date = date
