@@ -2,15 +2,15 @@
 
 ### Table 3.1 Summary of the `attr_*` family of getter/setter creation methods ###
 
-|    Method Name     |   Effect      |        Example        |            Equivalent Code          |
+|    Method Name     |   Effect              |        Example     |            Equivalent Code     |
 |--------------------|-----------------------|--------------------|--------------------------------|
-|`attr_reader`   | Creates a reader method | `attr_reader :venue` | `def venue`
-|                 |                         |                        |  ` @venue`   |
-|                 |                          |                      | `end`    |
-| `attr_writer`  | Creates a writer method | `attr_writer :price` | `def price=(price)`|
-|                 |                     |                         | ` @price = price` |
-|                 |                       |                       | `end` |
-| `attr_accessor` | Creates reader and writer methods | `attr_accessor :price` | `def price=(price)`|
+|`attr_reader`       |Creates a reader method|`attr_reader :venue`| `def venue`                    |
+|                    |                       |                    |  ` @venue`                     |
+|                    |                       |                    | `end`                          |
+| `attr_writer`      |Creates a writer method|`attr_writer :price`| `def price=(price)`            |
+|                    |                       |                    | ` @price = price`              |
+|                    |                       |                    | `end`                          |
+| `attr_accessor`    |Creates reader and writer methods | `attr_accessor :price` | `def price=(price)`|
 |                 |                                   |                         | ` @price = price` |
 |                 |                                   |                         | `end`            |
 |                   |                     |                           |  `def price` |

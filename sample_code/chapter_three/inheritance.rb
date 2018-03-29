@@ -37,6 +37,10 @@ puts david.species
 # classes (and from one or two places haven't looked at ---> an Object is an Object, a Class is a class, but an object
 # is also a class, and a class is also an object)
 
+#Single Inheritance - One to a customer. In some object-oriented languages, it's possible for a given class to inherit from more than one class
+#Ruby doesn't allow mulitple inheritance; every Ruby class can have only one superclass, in keeping with the principle of single inheritance.
+
+
 class C
 end
 
@@ -45,3 +49,8 @@ end
 
 puts D.superclass
 puts D.superclass.superclass
+
+#The output is C, and Object, because C is D's superclass,and Object is C's superclass. If you go up the
+#chain far enough from any class, you hit Object. Any method available to a bare instance of Object is available
+#to every object, that is, if you can do obj = Object.new, obj.some_method then you can call .some_method on any objeect.
+#THere's that "almost" though, there is another generation at the top
