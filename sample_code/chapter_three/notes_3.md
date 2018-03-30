@@ -41,12 +41,32 @@ When you send a message to a class object, it looks like this:
 Or, if you're inside a class-definition body and the class is playing the role of the default object `self`, it looks like this:
 
 `class Ticket`
+
   `some_message`   <--- Such as `attr_accessor`
 
 That's how the class object gets messages. But where do the methods come from to which the messages correspond?
-  To understand where classes get their methods, think about where your objeects in general get their
+  To understand where classes get their methods, think about where your objects in general get their
 methods (minus modules, which haven't been explored yet):
 
-..* From their class
-..* From the superclass and earlier ancestors of their class
-..* From their own store of singleton methods (the "talk" in `def obj.talk`)
+⋅⋅* From their class
+⋅⋅* From the superclass and earlier ancestors of their class
+⋅⋅* From their own store of singleton methods (the "talk" in `def obj.talk`)
+
+The situation is basically the same for classes. There are some, but very few, special cases or bells and whistles for class objects. Mostly they behave like other objects.
+
+###Three scenarios for method calling###
+  Instances of `Class` can call methods that are defined as instance methods in their class. `Ticket` for
+example, is an instance of `Class`, and `Class` defines an instance method called `new`. That's why we can write:
+
+`Ticket.new`
+
+  The superclass of `Class` is `Module`. Instances of `Class` therefore have access to the instance
+methods defined in `Module`; among these are the `attr_accessor` family of methods. That's why we can write:
+
+`class Ticket`
+
+`attr_reader :venue, :date`
+
+`attr_accessor :price`
+
+Those method calls go directly to the class object `Ticket`, which is in the role of the default object `self` at the point when calls are made. That just leaves the final scenario; calling a singleton method of a class object. (see singleton method notes)
