@@ -32,3 +32,21 @@ can there be a class `Object` (or any other class) until there is a class `Class
 chicken-or-egg stuff to get the class and object system up and running-and then the circularity and paradoxes don't matter. In the course of programming, you just need to know that classes are objects, instances of the class called `Class`. (If you want to know in brief how it works, it's like this: every object has an internal record of what class it's an instance of, and the internal record inside the object `Class` points back to `Class` itself).
   Classes are objects, and objects receive messages and execute methods. How exactly does the
 method-calling process play out in the case of class objects?
+
+## *How class objects call methods* ##
+When you send a message to a class object, it looks like this:
+
+`Ticket.some_message`
+
+Or, if you're inside a class-definition body and the class is playing the role of the default object `self`, it looks like this:
+
+`class Ticket`
+  `some_message`   <--- Such as `attr_accessor`
+
+That's how the class object gets messages. But where do the methods come from to which the messages correspond?
+  To understand where classes get their methods, think about where your objeects in general get their
+methods (minus modules, which haven't been explored yet):
+
+..* From their class
+..* From the superclass and earlier ancestors of their class
+..* From their own store of singleton methods (the "talk" in `def obj.talk`)
