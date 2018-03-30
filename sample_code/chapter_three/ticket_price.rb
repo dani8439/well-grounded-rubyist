@@ -38,3 +38,6 @@ cc.price = 10.00
 fg.price = 18.00
 highest = Ticket.most_expensive(th, cc, fg)
 puts "The highest-priced ticket is the one for #{highest.venue}."
+
+puts "Testing the response of a ticket instance...."
+wrong = fg.most_expensive

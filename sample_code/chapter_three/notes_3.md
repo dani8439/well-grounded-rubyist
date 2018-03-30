@@ -89,4 +89,49 @@ method that belongs logically to the class. Finding the most expensive ticket in
   It's not unheard of to create a class only for the purpose of giving it class methods. Our earlier
 temperature-conversion exercises offer an opportunity for using this approach.
 
-### CONVERTING THE CONVERTER ###
+### Converting the Converter ###
+Let's convert the converter class to a converter class, adding class methods for conversion in both directions:
+
+`class Temperature`
+
+`def Temperature.c2f(celsius)`
+
+  `celsius * 9.0/ 5 + 32`
+
+`end`
+
+`def Temperature.f2c(fahrenheit)`
+
+` (fahrenheit - 32) * 5 / 9.0`
+
+`end`
+
+`end`
+
+The idea is that we have temperature-related utility methods-methods pertaining to temperature as a concept but not to a specific temperature. The `Temperature` class is a good choice of object to own those methods. We could get fancier and have `Temperature` instances that knew either they were Celsius of Fahrenheit and could convert themselves; but practically speaking, having a `Temperature` class with class methods to perform the conversions is adequate and is an acceptable design. (Even better, because we don't need instances of `Temperature` at all, would be to use a module - a kid of "instanceless" class, which we'll learn more about later on).
+  Class methods and instance methods aren't radically different from each other; they're all methods, and
+their execution is always triggered by sending a message to an object. It's just that the object getting the message may be a class object. Still, there are differences and important points to keep in mind as you start writing methods at various levels.
+
+## *Class methods vs. Instance methods* ##
+By defining `Ticket.most_expensive`, we've defined a method that we can access through the class object `Ticket` but not through its instances. Individual ticket objects (instances of the class `Ticket`) don't have this method. Can test this easily -- add code to ticket class from previous section, where the variable `fg` referred to a `Ticket` object (for an event at the fairgrounds):
+
+`puts "Testing the response of a ticket instance...."`
+
+`wrong = fg.most_expensive`
+
+Will get an error message, because `fg` has no method called `most_expensive`. The class of `fg`, namely `Ticket` has such a method. But `fg`, which is an instance of `Ticket` doesn't.
+    Remember:
+    1. Classes are objects.
+    2. Instances of classes are objects, too.
+    3. A class object (like `Ticket`) has its own methods, its own state, and its own identity. *It doesn't share these things with instances of itself.* Sending a message to `Ticket` isn't the same thing as sending a message to `fg` or `cc` or any other instance of `Ticket`.
+If you ever get tangled up over what's a class method and what's an instance method, you can usually sort out the confusion by going back to these three principles.
+
+## A note on method notation ##
+In writing about and referring to Ruby methods (outside of code, that is) it's customary to refer to instance methods by naming the class (or module, as the case may be) in which they're defined, followed by a hash mark (#) and the name of the method; and to refer to class methods with a similar construct but using a period instead of the hash mark. Sometimes you'll see a double colon (::) instead of a period in the class-method case.
+
+Here are some examples of this notation and what they refer to:
+1. `Ticket#price` refers to the instance method `price` in the class `Ticket`.
+2. `Ticket.most_expensive` refers to the class method `most_expensive` in the class `Ticket`.
+3. `Ticket::most_expensive` also refers to the class method `most_expensive` in the class `Ticket`.
+
+From now on, when you see this notation (in this book or elsewhere), you'll know what it means. (The second example - class-method reference using a dot-looks the same as a call to the method, but you'll know from the context whether it's a method call or a reference to the method it a discussion).
