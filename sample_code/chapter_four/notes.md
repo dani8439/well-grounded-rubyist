@@ -26,4 +26,6 @@ We now have a module that implements stacklike behavior: maintining a list of it
 
 ### *Mixing a module into a class* ###
 
-`s = Stacklike.new` <-- Wrong! No such method. 
+`s = Stacklike.new` <-- Wrong! No such method.
+
+To create instances (objects), you need a class, and to make those objects stacklike, you'll need to mix the `Stacklike` module into that class. But what class? The most objeciously stacklike thing is probably a `Stack`
