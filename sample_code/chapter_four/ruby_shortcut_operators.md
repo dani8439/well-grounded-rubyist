@@ -1,0 +1,5 @@
+## Ruby's shortcut operators ##
+
+In addition to or-equals, Ruby has another family of shortcut operators, similar in appearance to `||=` but engineered a little differently. These operators expand to calls to an underlying method. A common one is the `+=` operator; the expression `a += 1 ` is equivalent to `a = a + 1`. Other members of this shortcut family include `-=`, `*=`, `/=`, `**=` (raises to a power), `&=` (bitwise AND), `|=` (bitwise OR), `^=` (bitwise EXCLUSIVE OR), `%=` (modulo), and a (rarely used) and-equals operator (&&=) that works similarly to or-equals. Thus `a -= 1`, means `a = a - 1`, `a *= 10` means `a = a*10`, and so forth.
+
+Each of these method-wrapping operators works with any object that has the relevant underlying method, including instances of your own classes. If you define a `+` method, for example, you can use the `x + y` syntax on the instance of your class (`x`), and the expression will be automatically expanded to `x = x + y`. And that, in turn, is just syntactic sugar for `x = x. + (y)`, a call to the `+` method. 
