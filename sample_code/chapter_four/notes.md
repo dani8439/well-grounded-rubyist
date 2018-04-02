@@ -20,7 +20,7 @@ A *stack* is a data structure that operates on the last in, first out (LIFO) pri
 
 (see notes in stacklike.rb)
 
-The module `Stacklike` thus implements stacklikeness by selectively deploying behaviors that already exist for `Array` objects: add an element to the end of the array, take an element off the end. Arrays are more versatile than stacks: a stack can't do everything an array can. For example, you can remove elements from an array in any order; whereas by definition the only element you can remove from a stack is the one that was added most recently. But an array can do everything a stack can. As long as we don't ask it to do anything unstacklike, using an array asa a kind of agent or proxy for the specifically stacklike add/remove actions makes sense.
+The module `Stacklike` thus implements stacklikeness by selectively deploying behaviors that already exist for `Array` objects: add an element to the end of the array, take an element off the end. Arrays are more versatile than stacks: a stack can't do everything an array can. For example, you can remove elements from an array in any order; whereas by definition the only element you can remove from a stack is the one that was added most recently. But an array can do everything a stack can. As long as we don't ask it to do anything unstacklike, using an array as a a kind of agent or proxy for the specifically stacklike add/remove actions makes sense.
 
 We now have a module that implements stacklike behavior: maintining a list of items, such that new ones can be added to the end and the most recently added one can be removed. Next question is, what can we do with this module?
 
@@ -28,4 +28,4 @@ We now have a module that implements stacklike behavior: maintining a list of it
 
 `s = Stacklike.new` <-- Wrong! No such method.
 
-To create instances (objects), you need a class, and to make those objects stacklike, you'll need to mix the `Stacklike` module into that class. But what class? The most objeciously stacklike thing is probably a `Stack`
+To create instances (objects), you need a class, and to make those objects stacklike, you'll need to mix the `Stacklike` module into that class. But what class? The most obviously stacklike thing is probably a `Stack`

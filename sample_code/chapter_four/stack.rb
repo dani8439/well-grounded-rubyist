@@ -11,13 +11,15 @@ class Stack
   include Stacklike
 end
 
-s = Stack.new
-s.add_to_stack("item one")
-s.add_to_stack("item two")
-s.add_to_stack("item three")
+s = Stack.new #instantiation of a new Stack object, which is assigned to variable s. That Stack object is born with the
+# knowledge of what to do when we ask it to perform stack-related actions, thanks to the fact that its class mixed in the
+# Stacklike module.
+s.add_to_stack("item one") # asking the object to add items (strings)
+s.add_to_stack("item two") # asking the object to add items (strings)
+s.add_to_stack("item three") # asking the object to add items (strings)
 puts "Objects currently on the stack:"
-puts s.stack
-taken = s.take_from_stack
+puts s.stack # asking the object to report on it's state
+taken = s.take_from_stack #asking the object to remove the last object.
 puts "Removed this object"
 puts taken
 puts "Now on stack:"
