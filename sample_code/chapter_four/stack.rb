@@ -24,3 +24,21 @@ puts "Removed this object"
 puts taken
 puts "Now on stack:"
 puts s.stack
+
+# Could very well have put all the functionality of Stacklike module directly into the Stack class. ex:
+
+#class Stack
+  #attr_reader :stack
+  #def initialize
+    #@stack = []
+  #end
+  #def add_to_stack(obj)
+    #@stack.push(obj)
+  #end
+  #def take_from_stack
+    #@stack.pop
+  #end
+#end
+
+# But modules are not pointless. The modularization buys you: it lets you apply a general concept like stacklikeness to
+# several cases, not just one. So hat else is stacklike?
