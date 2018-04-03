@@ -34,4 +34,6 @@ first_unloaded = ch.unload
 print "The first suitcase off the plane is...."
 puts first_unloaded.object_id
 
-# this example shows how you can use an existing module for a new class. 
+# this example shows how you can use an existing module for a new class. Sometimes it pays to wrap the methods in new
+# methods with better names for the new domain (like unload instead of take_from_stack), although if you find yourself
+# changing it too much, it may be a sign that the module isn't a good fit.
