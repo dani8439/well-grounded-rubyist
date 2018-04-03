@@ -13,3 +13,7 @@ end
 
 account = BankAccount.new
 account.calculate_interest
+
+# => Placeholder! We're in class BankAccount.
+# => And we're overriding the calculate_interest method...
+# => which was defined in the InterestBearing module

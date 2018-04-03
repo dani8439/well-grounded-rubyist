@@ -25,6 +25,16 @@ puts taken
 puts "Now on stack:"
 puts s.stack
 
+# => Objects currently on the stack:
+# => item one
+# => item two 
+# => item three
+# => Removed this object:
+# => item three 
+# => Now on stack:
+# => item one 
+# => item two
+
 # Could very well have put all the functionality of Stacklike module directly into the Stack class. ex:
 
 #class Stack

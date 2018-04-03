@@ -16,3 +16,5 @@ end
 
 c = C.new
 c.report
+
+# => 'report' method in module N

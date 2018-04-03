@@ -5,7 +5,7 @@
 ### AN OBJECT'S-EYE VIEW OF METHOD LOOKUP ###
 You're the object, and someone sends you a message. You have to figure out how to respond to it-or whether you even *can* respond to it. Here's a bit of object stream-of-consciousness:
 
-I'm a Ruby object, and I've been sent the message 'report'. I have to try to find a method calle`report` in my method lookup path. `report`, if it exists, resides in a class or module.
+I'm a Ruby object, and I've been sent the message 'report'. I have to try to find a method called `report` in my method lookup path. `report`, if it exists, resides in a class or module.
 
 I'm an instance of a class called `D`. Does class `D` define an instance method `report`?
 
@@ -36,7 +36,7 @@ Ultimately, every object in Ruby is an instance of some class descended from the
   If you want to understand the common behavior and functionality of all Ruby objects, you have to descend
 from the clouds and look at `Object` rather than `BasicObject`. More precisely, you have to look at `Kernel`, a module that `Object` mixes in. It's in `Kernel` (as its name suggests) that most of Ruby's fundamental methods objects are defined. And because `Object` mixes in `Kernel`, all instances of `Object` and all descendants of `Object` have access to the instance methods in `Kernel`.
 
-`Object` is a subclass of `BasicObject`. Every class that doesn't have an explicit superclas is a subclass of `Object`. Can see evidence of this default in irb:
+`Object` is a subclass of `BasicObject`. Every class that doesn't have an explicit superclass is a subclass of `Object`. Can see evidence of this default in irb:
 
  `=> class C`
 
@@ -72,4 +72,4 @@ In this example, when you sent the "report" message to an instance of this class
 But what happens when we include a module more than once? It has no effect!
 Re-including a module doesn't do anything. Because `M` already lies on the search path, the second `include M` instruction has no effect. `N` is still considered the most recently included module.
 
-In short, you can manipulate the method-lookup paths of your objects, but only up the a point 
+In short, you can manipulate the method-lookup paths of your objects, but only up the a point.
