@@ -95,15 +95,16 @@ Let's convert the converter class to a converter class, adding class methods for
 
 ```ruby
 class Temperature
-      def Temperature.c2f(celsius)
-        celsius * 9.0/ 5 + 32
-      end
+  def Temperature.c2f(celsius)
+    celsius * 9.0 / 5 + 32
+  end
+  def Temperature.f2c(fahrenheit)
+    (fahrenheit - 32) * 5 / 9.0
+  end
+end
+```
 
-      def Temperature.f2c(fahrenheit)
-        (fahrenheit - 32) * 5 / 9.0
-      end
-    end
-    ```
+
 
 The idea is that we have temperature-related utility methods-methods pertaining to temperature as a concept but not to a specific temperature. The `Temperature` class is a good choice of object to own those methods. We could get fancier and have `Temperature` instances that knew either they were Celsius of Fahrenheit and could convert themselves; but practically speaking, having a `Temperature` class with class methods to perform the conversions is adequate and is an acceptable design. (Even better, because we don't need instances of `Temperature` at all, would be to use a module - a kid of "instanceless" class, which we'll learn more about later on).
   Class methods and instance methods aren't radically different from each other; they're all methods, and

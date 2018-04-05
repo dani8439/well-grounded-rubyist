@@ -73,4 +73,5 @@ We'd like the output of this code to be:
 
 
 The overall idea is that a person can have friends and/or hobbies. Furthermore, the `Person` class lets us look up all the people who have a given friend, or all people who have a given hobby. The searches area accomplished with the `all_with_friends` and `all_with_hobbies` class methods.
-  The `all_with_*` method-name formula looks like a good candidate for handling
+  The `all_with_*` method-name formula looks like a good candidate for handling via `method_missing`.
+Although we're using only two variants of it (friends and hobbies) it's the kind of pattern that we could extend to any number of method names. Let's incercept `method_missing` in the `Person` class.
