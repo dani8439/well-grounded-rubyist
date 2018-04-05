@@ -9,11 +9,9 @@
 Ruby allows you to define methods that end with an equal sign (=). Let's replace set_price with a method
 called `price=`("price" plus an equal sign):
 
-`def price=(amount)`
-
-` @price = amount`
-
-`end`
+```def price=(amount)
+      @price = amount
+   end ```
 
 `price=` does exactly what `set_price` did, and in spit of the slightly odd method name, you can call it just like any other method:
 
@@ -45,15 +43,13 @@ The ability to write your own =-terminated methods and the fact that Ruby provid
   One possibility is abuse. It's possible to write =-terminated methods that look like they're going to do
 something involving assignment but don't:
 
-`class Silly`
-
-` def price=(x)`
-
-`   puts "The current time is #{Time.now}"`
-
-` end`
-
-`end`
+```
+class Silly
+  def price=(x)
+    puts "The current time is #{Time.now}"
+  end
+end
+  ```
 
 `s = Silly.new`
 
@@ -82,4 +78,4 @@ The idea is to split the date string into three strings using the slash characte
 ## WARNING ##
   Setter methods don't return what you might think. When you use the syntactic sugar that lets you make calls to = methods that look like assignments, Ruby takes the assignment semantics seriously. Assignments (like `x=1`) evaluate to whatever's on their right-hand side. Methods usually return the value of the last expression evaluated during execution. But = method calls behave like assignments: the value of the expression `ticket.price = 63.00` is `63.00` even if the `ticket=` method returns the string `"Ha ha!"`. The idea is to keep the semantics consistent. Under the hood, it's a method call; but it looks like an assignment and behaves like an assignment with respect to its value as an expression.
 
-You'll write complex getter and setter methods sometimes, but the simple get and set operations, wrapped around instance variables, are the most common-so common, in fact, that Ruby gives you some shortcuts for writing them. 
+You'll write complex getter and setter methods sometimes, but the simple get and set operations, wrapped around instance variables, are the most common-so common, in fact, that Ruby gives you some shortcuts for writing them.

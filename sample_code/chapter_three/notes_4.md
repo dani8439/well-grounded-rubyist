@@ -27,11 +27,10 @@ can make a magazine sprout wings:
 
 `mag = Magazine.new`
 
-`def mag.wings`
-
-  `     puts "Look! I can fly!"`
-
-`end`
+```def mag.wings
+      puts "Look! I can fly!"
+    end
+```
 
 `mag.wings`    <--Output: Look! I can fly!
 
@@ -46,4 +45,4 @@ objects than you might expect. The most common use case for adding methods direc
 example, you might add accessor methods to objects to match the names of database columns that you don't know until the program is running and you've queried the database. Or you might have a library of special methods that you've written for string objects, and that you want only certain strings to have access to.
 Ruby frees you to do these things, because an object's class is only part of the story-its nature, as you might say, as opposed to its nurture.
   And there's another piece to the puzzle: modules, a Ruby construct you've seen mentioned here several
-times in passing, which you'll meet up close and in depth in the next chapter. 
+times in passing, which you'll meet up close and in depth in the next chapter.

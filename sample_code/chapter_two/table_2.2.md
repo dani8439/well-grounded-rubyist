@@ -8,9 +8,10 @@ And you can have required arguments on the left only, or on the right only - or 
 
 What you can't do is put the argument sponge to the left of any default-valued arguments. If you do this,
 
-`def broken_args(x,*y,z=1)`
-
-`end`
+```
+  def broken_args(x,*y,z=1)
+   end
+  ```
 
 it's a syntax error, because there's no way it could be correct. Once you've given x its argument and sponged up all the remaining arguments in the array y, nothing can ever be left for z. And if z gets the right-handed argument, leaving the rest for y, it makes no sense to describe z as "optional" or "default-valued." The situation gets even thornier if you try to do something like the equally illegal
 `(x, *y, z=1, a, b)`. Fortunately, Ruby doesn't allow for more than one sponge argument in a parameter list. Make-sure you order your arguments sensibly, and hwen possible, keep your argument lists reasonably simple.

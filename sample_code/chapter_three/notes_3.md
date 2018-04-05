@@ -6,9 +6,11 @@ Classes are special objects: they're the only kind of object that has the power 
 ### *Creating class objects* ###
 Every class -`Object, Person Ticket` - is an instance of a class called `Class`. As you've already seen, you can create a class object with the special `class` keyword formula:
 
-`class Ticket`
-`# your code here`
-`end`
+```
+class Ticket
+  # your code here
+end
+```
 
 That formula is a special provision by Ruby -- a way to make a nice-looking, easily accessible class-definition block. But you can also create a class the same way you create most other objects, by sending the message `new` to the class object `Class`.
 
@@ -41,7 +43,6 @@ When you send a message to a class object, it looks like this:
 Or, if you're inside a class-definition body and the class is playing the role of the default object `self`, it looks like this:
 
 `class Ticket`
-
   `some_message`   <--- Such as `attr_accessor`
 
 That's how the class object gets messages. But where do the methods come from to which the messages correspond?
@@ -63,11 +64,10 @@ example, is an instance of `Class`, and `Class` defines an instance method calle
   The superclass of `Class` is `Module`. Instances of `Class` therefore have access to the instance
 methods defined in `Module`; among these are the `attr_accessor` family of methods. That's why we can write:
 
-`class Ticket`
-
-`attr_reader :venue, :date`
-
-`attr_accessor :price`
+```class Ticket
+      attr_reader :venue, :date
+      attr_accessor :price
+  ```
 
 Those method calls go directly to the class object `Ticket`, which is in the role of the default object `self` at the point when calls are made. That just leaves the final scenario; calling a singleton method of a class object. (see singleton method notes)
 
@@ -92,21 +92,16 @@ temperature-conversion exercises offer an opportunity for using this approach.
 ### Converting the Converter ###
 Let's convert the converter class to a converter class, adding class methods for conversion in both directions:
 
-`class Temperature`
+```class Temperature
+      def Temperature.c2f(celsius)
+        celsius * 9.0/ 5 + 32
+      end
 
-`def Temperature.c2f(celsius)`
-
-  `celsius * 9.0/ 5 + 32`
-
-`end`
-
-`def Temperature.f2c(fahrenheit)`
-
-` (fahrenheit - 32) * 5 / 9.0`
-
-`end`
-
-`end`
+      def Temperature.f2c(fahrenheit)
+        (fahrenheit - 32) * 5 / 9.0
+      end
+    end
+    ```
 
 The idea is that we have temperature-related utility methods-methods pertaining to temperature as a concept but not to a specific temperature. The `Temperature` class is a good choice of object to own those methods. We could get fancier and have `Temperature` instances that knew either they were Celsius of Fahrenheit and could convert themselves; but practically speaking, having a `Temperature` class with class methods to perform the conversions is adequate and is an acceptable design. (Even better, because we don't need instances of `Temperature` at all, would be to use a module - a kid of "instanceless" class, which we'll learn more about later on).
   Class methods and instance methods aren't radically different from each other; they're all methods, and
