@@ -58,8 +58,11 @@ not quite what you want. With `super`, you can have the best of both worlds by h
 Yet when the original `initialize` method in `Bicycle` is called, any arguments provided to the `Tandem` version are visible. This is a special behavior of `super`. The way `super` handles arguments is as follows:
 
   • Called with no argument list (empty or otherwise), `super` automatically forwards the arguments that were passed to the method from which it's called.
+
   • Called with an empty argument list-`super()`-`super`, sends no arguments to the higher-up method, even if arguments were passed to the current method.
+
   • Called with specific arguments -`super(a,b,c)`-`super` sends exactly those arguments.
 
 This unusual treatment of arguments exists because the most common case is the first one, where you want to bump up to the next-higher method with the same arguments as those received by the method from which `super` is being called. That case is given the simplest syntax-you just type `super`. (And because `super` is a keyword rather than a method, it can be engineered to provide this special behavior).
-  Now that we've seen how method lookup works, let's consider what happens when method lookup fails. 
+  Now that we've seen how method lookup works, let's consider what happens when method lookup fails.
+(notes 4.md)
