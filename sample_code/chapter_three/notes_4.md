@@ -27,7 +27,8 @@ can make a magazine sprout wings:
 
 `mag = Magazine.new`
 
-```def mag.wings
+```ruby
+    def mag.wings
       puts "Look! I can fly!"
     end
 ```

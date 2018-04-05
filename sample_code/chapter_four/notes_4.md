@@ -46,7 +46,7 @@ Given this code, a call to, say `grade_for_english` on an instance of `student` 
   Let's look at a more extensive example of these techniques. We'll write a `Person` class. Let's start at
 the top with some code that exemplifies how we want the class to be used. We'll then implement the class in such a way that the code works.
 
-```
+```ruby
 j = Person.new("John")
 p = Person.new("Paul")
 g = Person.new("George")
@@ -62,13 +62,15 @@ Person.all_with_hobbies("rings").each do |person|
   puts "#{person.name} is into rings"
 end
 ```
+
 We'd like the output of this code to be:
 
-```
-John is friends with Paul
-George is friends with Paul
-Ringo is into rings
-```
+`John is friends with Paul`
+
+`George is friends with Paul`
+
+`Ringo is into rings`
+
 
 The overall idea is that a person can have friends and/or hobbies. Furthermore, the `Person` class lets us look up all the people who have a given friend, or all people who have a given hobby. The searches area accomplished with the `all_with_friends` and `all_with_hobbies` class methods.
   The `all_with_*` method-name formula looks like a good candidate for handling

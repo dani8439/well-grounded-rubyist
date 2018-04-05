@@ -54,17 +54,15 @@ The `-l` switch produces the effect that every string output by the program is p
 
 We made use of the `print` vs `puts` distinction to ensure that the temperature converter programs didn't insert extra newlines in the middle of their output. You can use the `-l` switch to reverse the effect; it causes even `printed` lines to appear on a line of their own. Here's the difference:
 
-`$ ruby c2f-2.rb`
+```
+$ ruby c2f-2.rb
+The result is 212
 
-`The result is 212`
-
-`$ ruby -l c2f-2.rb`
-
-`The result is`
-
-`212`
-
-`.`
+$ ruby -l c2f-2.rb
+The result is
+212
+.
+```
 
 The result with `-l` is, in this case, exactly what you don't want. But the example illustrates the effect of the switch.
 *If a line ends with a newline character already running it through `-l` adds another newline.* In general, the `-l` switch isn't commonly used or seen, largely because of the availability of `puts` to achieve the "add a newline only if needed" behavior, but it's good to know `-l` is there and be able to recognize it.
@@ -81,8 +79,10 @@ The `-r` switch calls `require` on its argument; `ruby -rscanf` will require `sc
 ### **Run in Verbose Mode (-V, --VERBOSE)** ###
 Running with `-v` does two things: it prints out information about the version of Ruby you're using, and then it turns on the same warning mechanism as the `-w` flag. The most common use of the `-v` is to find out the Ruby version number:
 
-`$ ruby -v`
-`ruby 2.1.0p0 (2013-12-25 revision 444422) [x86_64-darwin12.0]`
+```
+$ ruby -v
+ruby 2.1.0p0 (2013-12-25 revision 444422) [x86_64-darwin12.0]
+```
 
 In this case, we're using Ruby 2.1.0 (patchlevel 0), released on December 25, 2013, and compiled for an i686-based machine running Mac OS X. Because there's no program or code to run, Ruby exits as soon as it has printed the version information.
 
@@ -101,17 +101,14 @@ You've already seen the `-cw` combination, which checks the syntax of the file w
 
 Another combination of switches you'll often see is `-v` and `-e`, which shows you the version of Ruby you're running and then runs the code provided in quotation marks. You'll see this combination a lot in discussions of Ruby, on mailing lists, and elsewhere; people use it to demonstrate how the same code might work differently in different versions of Ruby. For example, if you want to show clearly that a string method called `start_with?` wasn't present in Ruby 1.8.6 but is present in Ruby 2.1.0, you can run a sample program using first one version of Ruby and then the other:
 
-`$ ruby-1.8.6-p399 -ve "puts 'abc'.start_with?('a')"`
-
-`ruby 1.8.6 (2010-02-05 patchlevel 399) [x86_64-linux]`
-
-`-e:1: undefined method 'start_with?' for "abc":String (NoMethodError)`
-
-`$ ruby-2.1.0p0 -ve "puts 'abc'.start_with?('a')"`
-
-`ruby 2.1.0p0 (2013-12-25 revision 44422) [x86_64-linux]`
-
-`true`
+```
+$ ruby-1.8.6-p399 -ve "puts 'abc'.start_with?('a')"
+ruby 1.8.6 (2010-02-05 patchlevel 399) [x86_64-linux]
+-e:1: undefined method 'start_with?' for "abc":String (NoMethodError)
+$ ruby-2.1.0p0 -ve "puts 'abc'.start_with?('a')"
+ruby 2.1.0p0 (2013-12-25 revision 44422) [x86_64-linux]
+true
+```
 
 The `undefined method 'start_with?'` message on the first run means that you've tried to perform a nonesitent named operation. But when you run the same Ruby snipped using Ruby 2.1.0 it works. Ruby prints `true`. This is a convenient way to share information and formulate questions about changes in Ruby's behavior from one release to another.
 

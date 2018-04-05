@@ -6,7 +6,7 @@ Classes are special objects: they're the only kind of object that has the power 
 ### *Creating class objects* ###
 Every class -`Object, Person Ticket` - is an instance of a class called `Class`. As you've already seen, you can create a class object with the special `class` keyword formula:
 
-```
+```ruby
 class Ticket
   # your code here
 end
@@ -64,7 +64,8 @@ example, is an instance of `Class`, and `Class` defines an instance method calle
   The superclass of `Class` is `Module`. Instances of `Class` therefore have access to the instance
 methods defined in `Module`; among these are the `attr_accessor` family of methods. That's why we can write:
 
-```class Ticket
+```ruby
+  class Ticket
       attr_reader :venue, :date
       attr_accessor :price
   ```
@@ -92,7 +93,8 @@ temperature-conversion exercises offer an opportunity for using this approach.
 ### Converting the Converter ###
 Let's convert the converter class to a converter class, adding class methods for conversion in both directions:
 
-```class Temperature
+```ruby
+class Temperature
       def Temperature.c2f(celsius)
         celsius * 9.0/ 5 + 32
       end

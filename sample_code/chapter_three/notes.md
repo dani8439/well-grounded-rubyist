@@ -9,9 +9,11 @@
 Ruby allows you to define methods that end with an equal sign (=). Let's replace set_price with a method
 called `price=`("price" plus an equal sign):
 
-```def price=(amount)
+```ruby
+  def price=(amount)
       @price = amount
-   end ```
+   end
+   ```
 
 `price=` does exactly what `set_price` did, and in spit of the slightly odd method name, you can call it just like any other method:
 
@@ -43,7 +45,7 @@ The ability to write your own =-terminated methods and the fact that Ruby provid
   One possibility is abuse. It's possible to write =-terminated methods that look like they're going to do
 something involving assignment but don't:
 
-```
+```ruby
 class Silly
   def price=(x)
     puts "The current time is #{Time.now}"
