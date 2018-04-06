@@ -123,18 +123,49 @@ these requirements.
 
 ```ruby
 class Person
-  PEOPLE = []
-  attr_reader :name, :hobbies, :friends
+  PEOPLE = [] #1
+  attr_reader :name, :hobbies, :friends #2
   def initialize(name)
-    @name = name
-    @hobbies = []
-    @friends = []
-    PEOPLE << self
+    @name = name #3
+    @hobbies = [] #3
+    @friends = [] #3
+    PEOPLE << self #4
   end
   def has_hobby(hobby)
-    @hobbies << hobby
+    @hobbies << hobby #5
   end
   def has_friend(friend)
-    @friends << friend
-  end 
+    @friends << friend #5
+  end
 ```
+
+We stash all existing people in an array, held in the constant `PEOPLE`(#1). When a new person is instantiated, that person is added to the people array, courtesy of the array append method `<<` (#4). Meanwhile, we need some reader attributes: `name`, `hobbies`, and `friends`. (#2). Providing these attributes lets the outside world see important aspects of the `Person` objects: `hobbies` and `friends` will also come in handy in the full implementation of `method_missing`.
+  The `initialize` method takes a name as its sole argument and saves it to `@name`. It also initializes
+the `hobbies` and `friends` arrays (#3). These arrays come back into play in the `has_hobby` and `has_friend` methods (#5), which are really just user-friendly wrappers around those arrays.
+  Now that we have enough code to finish the implementation of `Person.method_missing`. This is what it
+should look like (including the final `end` delimiter for the whole class). We use a convenient built-in query method, `public_method_defined?`, which tells us whether `Person` (represented in the method by the keyword `self`) has a method with the same name as the one at the end of the `all_with_`string.
+
+```ruby
+  def self.method_missing(m, *args)
+    method = m.to_s
+    if method.start_with?("all_with_") #1
+      attr = method[9..-1] #2
+      if self.public_method_defined?(attr) #3
+        PEOPLE.find_all do |person| #4
+          person.send(attr).include?(args[0]) #4
+        end
+      else
+        raise ArgumentError, "Can't find #{attr}" #5
+      end
+    else
+      super
+    end
+  end
+end
+```
+
+If we have an `all_with_` message(#1), we want to ignore that part and capture the rest of the string, which we can do by taking the substring that lies in the ninth through last character positions; that's what indexing the string with `9..-1` achieves(#2). (This means starting at the tenth character, because string indexing starts at zero). Now we want to know whether the resulting substring corresponds to one of `Person`'s instance methods-specifically `hobbies` or `friends`. Rather than hard-code those two names, we keep things flexible and scalable by checking whether the `Person` class defines a method with our substring as its name(#3).
+  What happens next depends on whether the search for the symbol succeeds. To start with the second
+branch first, if the requested attribute doesn't exist, we raise an error with an appropriate message(#5). If it does success-which it will if the message is `friends` or `hobbies` or any other attribute we added later-we get to the heart of the matter.
+  In addition to the `all_with*` method name, the method call includes an argument containing the thing
+we're looking for (the name of a friend or hobby, for example). That argument is found in `args[0]`, the first element of the argument "sponge" array designated as `*args` in the argument list; the business end of the whole `method_missing` method is to find all people whose `attr` includes `args[0]`(#4). That formula translates into, say, all people whose hobbies include music, or all people whose friends include some particular friend. 
