@@ -28,10 +28,13 @@ And yes, there's a paradox here...
 
 ### THE CLASS/OBJECT CHICKEN-OR-EGG PARADOX ###
 The class `Class` is an instance of itself - that is, it's a `Class` object. And there's more. Remember the class `Object`? Well, `Object` is a class - but classes are objects. `Object` is an object. And `Class` is a class. And `Object` is a class, and `Class` is an object.
+
   Which came first? How can the class `Class` be created unless the class `Object` already exists? But how
 can there be a class `Object` (or any other class) until there is a class `Class` of which there can be instances?
+
   The best way to deal with this paradox, at least for now, is to ignore it. Ruby has to do some of this
 chicken-or-egg stuff to get the class and object system up and running-and then the circularity and paradoxes don't matter. In the course of programming, you just need to know that classes are objects, instances of the class called `Class`. (If you want to know in brief how it works, it's like this: every object has an internal record of what class it's an instance of, and the internal record inside the object `Class` points back to `Class` itself).
+
   Classes are objects, and objects receive messages and execute methods. How exactly does the
 method-calling process play out in the case of class objects?
 
@@ -46,6 +49,7 @@ Or, if you're inside a class-definition body and the class is playing the role o
   `some_message`   <--- Such as `attr_accessor`
 
 That's how the class object gets messages. But where do the methods come from to which the messages correspond?
+
   To understand where classes get their methods, think about where your objects in general get their
 methods (minus modules, which haven't been explored yet):
 
@@ -83,10 +87,13 @@ So *class method* has a fuzzy meaning and a sharp meaning. Fuzzily, any method t
 
 ### *When, and why, to write a class method* ###
 Class methods serve a purpose. Some operations pertaining to a class can't be performed by individual instances of that class. The `new` method is an excellent example.We call `Ticket.new` because, until we've created an individual ticket, we can't send it any messages! Besides, the job of spawning a new object logically belongs to the class. It doesn't make sense for instances of `Ticket` to spawn each other. But it does makes sense for the instance-creation process to be centralized as an activity of the class `Ticket`
+
   Another similar case is the built-in Ruby method `File.open`- a method that, as seen in Chapter 1, opens
 a file for reading and/or writing. The `open` operation is a bit like `new`; it initiates file input and/or output and returns a `File` object. It makes sense for `open` to be a class method of `File`: you're requesting the creation of an individual object from the class. The class is acting as a point of departure for the object it creates.
+
   `Ticket.most_expensive` is a different case, in that it doesn't create a new object- but it's still a
 method that belongs logically to the class. Finding the most expensive ticket in a list of tickets can be viewed as an operation from above, something that's done collectively with respect to tickets, rather than something that's done by an individual ticket object. Writing `most_expensive` expensive as a class method of `Ticket` lets us keep the method in the ticket family, so to speak, while assigning it to the abstract, supervisory level represented by the class.
+
   It's not unheard of to create a class only for the purpose of giving it class methods. Our earlier
 temperature-conversion exercises offer an opportunity for using this approach.
 
@@ -107,6 +114,7 @@ end
 
 
 The idea is that we have temperature-related utility methods-methods pertaining to temperature as a concept but not to a specific temperature. The `Temperature` class is a good choice of object to own those methods. We could get fancier and have `Temperature` instances that knew either they were Celsius of Fahrenheit and could convert themselves; but practically speaking, having a `Temperature` class with class methods to perform the conversions is adequate and is an acceptable design. (Even better, because we don't need instances of `Temperature` at all, would be to use a module - a kid of "instanceless" class, which we'll learn more about later on).
+
   Class methods and instance methods aren't radically different from each other; they're all methods, and
 their execution is always triggered by sending a message to an object. It's just that the object getting the message may be a class object. Still, there are differences and important points to keep in mind as you start writing methods at various levels.
 

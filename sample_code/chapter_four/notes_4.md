@@ -24,6 +24,7 @@ It's easy to intercept calls to missing methods. You override `method_missing`, 
 `You can't call blah on this object; please try again.`
 
 When you override `method_missing` (in def), you need to imitate the method signature of the original. The first argument is the name of the missing method-the message that you sent the object and that it didn't understand. The `*args` parameter sponges up any remaining arguments. (You can also add a special argument to bind to a code block, but let's not worry about that until we've looked at code blocks in more detail). The first argument comes to you in the form of a symbol object. If you want to examine or parse it, you need to convert it to a string.
+
   Even if you override `method_missing`, the previous definition is still available to you via `super`.
 
 
@@ -43,6 +44,7 @@ Here's an example of the typical pattern:
 ```
 
 Given this code, a call to, say `grade_for_english` on an instance of `student` leads to the true branch of the `if` test. If the missing method name doesn't start with `grade_for_`, the `false` branch is taken, resulting in a call to `super`. That call will take you to whatever the next `method_missing` implementation is along the object's method-lookup path. If you haven't overridden `method_missing` anywhere else along the line, super will find `Kernel`'s `method_missing` and execute that.
+
   Let's look at a more extensive example of these techniques. We'll write a `Person` class. Let's start at
 the top with some code that exemplifies how we want the class to be used. We'll then implement the class in such a way that the code works.
 
@@ -73,8 +75,10 @@ We'd like the output of this code to be:
 
 
 The overall idea is that a person can have friends and/or hobbies. Furthermore, the `Person` class lets us look up all the people who have a given friend, or all people who have a given hobby. The searches area accomplished with the `all_with_friends` and `all_with_hobbies` class methods.
+
   The `all_with_*` method-name formula looks like a good candidate for handling via `method_missing`.
 Although we're using only two variants of it (friends and hobbies) it's the kind of pattern that we could extend to any number of method names. Let's intercept `method_missing` in the `Person` class.
+
   In this case, the `method_missing` we're dealing with is the class method: we need to intercept missing
 methods called on `Person`. Somewhere along the line, therefore, we need a definition like this:
 
@@ -105,8 +109,10 @@ The method name, `m`, may or may not start with the substring `all_with_`. If it
   ```
 
 The reason for the call to `to_s`(#1), is that the method name (the message) gets handed off to `method_missing` in the form of a symbol. Symbols don't have a `start_with?` method, so we have to convert the symbol to a string before testing its contents.
+
   The conditional logic(#2) branches on whether we're handling an `all_with_*` message. If we are, we
 handle it. If not, we punt with super(#3).
+
   With at least a blueprint of `method_missing` in place, let's develop the rest of the `Person` class. A
 few requirements are clear from the top-level calling code listed earlier:
 
@@ -118,6 +124,7 @@ few requirements are clear from the top-level calling code listed earlier:
 
 The second point is implied by the fact that we've already been asking the `Person` class for lists of
 people who have certain hobbies and/or certain friends.
+
   The following listing contains an implementation of the parts of the `Person` class that pertain to
 these requirements.
 
@@ -140,8 +147,10 @@ class Person
 ```
 
 We stash all existing people in an array, held in the constant `PEOPLE`(#1). When a new person is instantiated, that person is added to the people array, courtesy of the array append method `<<` (#4). Meanwhile, we need some reader attributes: `name`, `hobbies`, and `friends`. (#2). Providing these attributes lets the outside world see important aspects of the `Person` objects: `hobbies` and `friends` will also come in handy in the full implementation of `method_missing`.
+
   The `initialize` method takes a name as its sole argument and saves it to `@name`. It also initializes
 the `hobbies` and `friends` arrays (#3). These arrays come back into play in the `has_hobby` and `has_friend` methods (#5), which are really just user-friendly wrappers around those arrays.
+
   Now that we have enough code to finish the implementation of `Person.method_missing`. This is what it
 should look like (including the final `end` delimiter for the whole class). We use a convenient built-in query method, `public_method_defined?`, which tells us whether `Person` (represented in the method by the keyword `self`) has a method with the same name as the one at the end of the `all_with_`string.
 

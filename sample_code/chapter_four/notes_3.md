@@ -4,6 +4,7 @@ Every time you `include` a module into a class, you're affecting what happens wh
 Look at prepend_example.rb for example.
 
 The output is `Hello from module!` Why? Because we have prepended the `MeFirst` module to the class. That means that the instance of the class will look to the module first when it's trying to find a method called `report`. If we'd used `include`, the class would be searched before the module and the class's version of `report` would "win."
+
   You can see the difference between `include` and `prepend` reflected in the list of a class's ancestors -
 which means all the classes and modules where an instance of the class will search for methods, listed in order. Here are the ancestors of the `Person` class from the last example, in irb:
 
@@ -51,6 +52,7 @@ aspect).
 See module_m.rb for code example
 
 Note that `M#report` would have been the first match in a search for a report method if `C#report` didn't exist. The `super` keyword gives you a way to call what would have been the applicable version of a method in cases where the method has been overridden later in the lookup path. Why would you want to do this?
+
   Sometimes, particularly when you're writing a subclass, a method in an existing class does almost but
 not quite what you want. With `super`, you can have the best of both worlds by hooking into or wrapping the original method, as the next listing illustrates. (Bicycle.rb)
 
