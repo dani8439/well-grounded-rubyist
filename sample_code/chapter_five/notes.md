@@ -10,3 +10,22 @@ a role typically assigned to many objects in sequence (though only one at a time
 
   Between them, self and scope are the master keys to orienting yourself in a Ruby program. If you know
 what scope you're in and know what object is self, you'll be able to tell what's going on, and you'll be able to analyze errors quickly.
+
+  The third main topic is *method access*. Ruby provides mechanisms for making distinctions among access
+levels of methods. Basically, this means rules limiting the calling of methods depending on what self is. Method access is therefore a meta-topic, grounded in the study of self and scope.
+
+  *Top-level methods* will pull several of these threads together, they are written outside of any class
+or module definition.
+
+## *Understanding self, the current/default object* ##
+One of the cornerstones of Ruby programming-the backbone, in some respects-is the default object or current object, accessible to you in your program through the keyword `self`. At every point when your program is running, there's one and only one self. Being self has certain privileges, as you'll see. In this section, will look at how Ruby determines which object is self at a given point and what privileges are granted to the object that is self.
+
+### *Who gets to be self, and where* ###
+There's always one (and only one) current object or self. You can tell which object it is by following small set of rules below:
+
+#### How the current object(self) is determined ####
+|      Context        |         Example        |        Which object is self?                       |
+|---------------------|------------------------|----------------------------------------------------|  
+|Top level of program | Any code outside of other blocks|`main`(built-in top-level default object)|
+|Class definition    | ```class C               | The class object `C`                             |
+|                    |      self ```            |                                                  |
