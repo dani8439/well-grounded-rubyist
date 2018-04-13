@@ -73,3 +73,71 @@ class C
   end
 end
 ```
+
+## *The top-level self object* ##
+The term *top-level* refers to program code written outside of any class- or module - definition block. If you open a brand-new file and type
+
+`x = 1`
+
+you've created a top level local variable `x`. If you type
+
+```ruby
+def m
+end
+```
+
+you've created a top-level method. The way self shifts in class, module, and method definitions is uniform: the keyword (`class, module,` or `def`) marks a switch to a new self. But what's self when you haven't yet entered any definition block?
+
+The answer is that Ruby provides you with a start-up self at the top level. If you ask it to identify itself with
+`ruby -e 'puts self'`
+
+it will tell you that it's called `main`.
+
+`main` is a special term that the default self object uses to refer to itself. You can't refer to it as `main`; Ruby will interpret your use of `main` as a regular variable or method name. If you want to grab `main` for any reason, you need to assign it to a variable at the top level:
+
+`m = self`
+
+It's not likely that you'd need to do this, but that's how it's done. More commonly, you'll feel the need for a fairly fine-grained sense of what self is in your class, module, and method definitions where most of your programming will take place.
+
+## *Self inside class, module, and method definitions* ##
+It pays to keep a close eye on self as you write classes, modules, and methods. There aren't that many rules to learn, and they're applied consistently. But they're worth learning well up front, so you're clear on why the various techniques you use that depend on the value of self play out the way they do.
+
+It's all about self switching from one object to another, which it does when you enter a class or module definition, an instance-method definition, or a singleton-method (including class-method) definition.
+
+### SELF IN A CLASS AND MODULE DEFINITIONS ###
+In a class or module definition, `self` is the class or module object. This innocent sounding rule is important. If you master it, you'll save yourself from several of the most common mistakes that people make when they're learning Ruby.
+
+You can see what self is at various levels of class and/or module definition by using `puts` explicitly, as shown below:
+
+```ruby
+class C
+  puts "Just started class C:"
+  puts self    #<-- Output: C
+  module M
+    puts "Nested module C::M"
+    puts self   #<-- Output: C::M
+  end
+  puts "Back in the outer level of C:"
+  puts self    #<-- Output: C
+end
+```
+
+As soon as you cross a class or module keyword boundary, the class or module whose definition block you've entered-the `Class` or `Module` object-becomes self. Above shoes two cases: entering `C`, and then entering `C::M`. When you leave `C::M` but are still in `C`, self is once again `C`.
+
+Of course, class and module definition blocks do more than just begin and end. They also contain method definitions, which, for both instance methods and class methods, have rules determining self.
+
+### SELF IN INSTANCE-METHOD DEFINITIONS##
+The notion of self inside an instance method definition is subtle, for the following reason: when the interpreter encounters a `def/end` block, it defines the method immediately. But the code inside the method definition isn't executed until later, when an object capable of triggering its execution receives the appropriate message.
+
+When you're looking at a method definition on paper or on the screen, you can only know in principle that, when the method is called, self will be the object that called it (the receiver of the message). At the time the method gets defined, the most you can say is that self inside this method will be some future object that calls the method.
+
+You can rig a method to show you self as it runs. See class_c.rb
+
+The weird-looking item in the output (#<C:0x000000026e8f78>) is Ruby's way of saying "an instance of `C`". (The hexadecimal number after the colon is a memory-location reference. When you run the code on your system, you'll probably get a different number:) As you can see, the receiver of the "x" message, namely `c`, takes on the role of self during execution of `x`.
+
+### SELF IN SINGLETON-METHOD AND CLASS-METHOD DEFINITIONS ###
+As you might expect, when a singleton method is executed, self is the object that owns the method, as an object will readily tell you.
+
+See Object.rb
+
+It makes sense that if a method is written to be called by only one object, that object gets to be self. Moreover, this is a good time to remember class methods-
