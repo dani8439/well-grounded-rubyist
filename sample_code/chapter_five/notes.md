@@ -140,4 +140,4 @@ As you might expect, when a singleton method is executed, self is the object tha
 
 See Object.rb
 
-It makes sense that if a method is written to be called by only one object, that object gets to be self. Moreover, this is a good time to remember class methods-
+It makes sense that if a method is written to be called by only one object, that object gets to be self. Moreover, this is a good time to remember class methods- vv
