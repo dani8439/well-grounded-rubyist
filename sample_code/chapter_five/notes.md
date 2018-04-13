@@ -31,4 +31,45 @@ There's always one (and only one) current object or self. You can tell which obj
 |                     |      `self`            |                                                    |
 |Module Definition    | `module M`             | The module object `M`                              |
 |                     | `self`                 |                                                    |
-|Method Definitions   | 1. Top level (outside any definition block): | Whatever object is self when the method is called; top-level methods are available as private methods to all objects.                |
+|Method Definitions   | 1 Top level (outside any definition block):| Whatever object is self when the |
+|                     |   `def method_name`    | method is called; top-level methods are available  |
+|                     |   `self `              | as private methods to all objects                  |
+|                     | 2 Instance-method definition in a class: | An instance of `C` responding to |
+|                     |`class C`               |    `method_name`                                   |
+|                     |`def method_name`       |                                                    |
+|                     | `self`                 |                                                    |
+|                     | 3 Instance-method definition | • Individual object extended by `M`          |
+|                     | in a module:                 | • Instance of class that mixes in `M`        |
+|                     | `module M`                   |                                              |
+|                     | `def method_name`            |                                              |
+|                     | `self`                       |                                              |
+|                     | 4 Singleton method on a specific object: |        `Obj`                     |
+|                     | `def obj.method_name`        |                                              |
+|                     | `self`                       |                                              |
+
+To know which object is self, you need to know what context you're in. In practice, there aren't many contexts to worry about. There's the top level (before you've entered any other context, such as class definition). There are class-definition blocks, module-definition blocks, and method-definition blacks. Aside from a few subtleties in the way these contexts interact, thats about it. As shown in table above, self is determined by which of these contexts you're in (class and module definitions are similar and closely related).
+
+The most basic program context, and in some respects a unique one, is the top level: the context of the program before any class or module definition has been opened, or after they've all been closed.
+
+### Figure 5.1 The determination of self in different contexts ###
+
+```ruby
+puts "Top Level"
+puts "self is #{self}"  #<-- Self at top level is the "default default object," main.
+
+class C
+  puts "Class definition block:"
+  puts "self is #{self}" #<-- Self inside a class definition is the class object itself.
+
+  def self.x
+  # Self inside any method is the object to which the message (the method call) was sent.
+    puts "Class method C.x:"
+    puts "self is #{self}" #<-- For a class method that means the class object.
+  end
+
+  def m
+    puts "Instance method C#m:"
+    puts "self is #{self}" #<-- For an instance method, that means an instance of the class whose instance method it is.
+  end
+end
+```
