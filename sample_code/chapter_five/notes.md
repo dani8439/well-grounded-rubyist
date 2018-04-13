@@ -126,7 +126,7 @@ As soon as you cross a class or module keyword boundary, the class or module who
 
 Of course, class and module definition blocks do more than just begin and end. They also contain method definitions, which, for both instance methods and class methods, have rules determining self.
 
-### SELF IN INSTANCE-METHOD DEFINITIONS##
+### SELF IN INSTANCE-METHOD DEFINITIONS ###
 The notion of self inside an instance method definition is subtle, for the following reason: when the interpreter encounters a `def/end` block, it defines the method immediately. But the code inside the method definition isn't executed until later, when an object capable of triggering its execution receives the appropriate message.
 
 When you're looking at a method definition on paper or on the screen, you can only know in principle that, when the method is called, self will be the object that called it (the receiver of the message). At the time the method gets defined, the most you can say is that self inside this method will be some future object that calls the method.
@@ -140,4 +140,57 @@ As you might expect, when a singleton method is executed, self is the object tha
 
 See Object.rb
 
-It makes sense that if a method is written to be called by only one object, that object gets to be self. Moreover, this is a good time to remember class methods- vv
+It makes sense that if a method is written to be called by only one object, that object gets to be self. Moreover, this is a good time to remember class methods- which are, essentially, singleton methods attached to class objects. The following example reports on self from inside a class method of `C`.
+
+see class_c.rb
+
+Sure enough, self inside a singleton method (a class method, in this case) is the object whose singleton method it is.
+
+### **Using self instead of hard-coded class names** ###
+By way of a little programming tip, here's a variation on the last example:
+
+```ruby
+class C
+  def self.x
+    puts "Class method of class C"
+    puts "self: #{self}"
+  end
+end
+```
+
+Note the use of `self.x` rather than `C.x`. This way of writing a class method takes advantage of the fact that in the class definition, self is `C`. So `def self.x` is the same as `def C.x`.
+
+The `self.x` version offers a slight advantage: if you ever decide to rename the class, `self.x` will adjust automatically to the new name. If you hard-code `C.x`, you'll have to change `C` to your class's new name. But you do have to be careful. Remember that self inside a method is always the object on which the method was called. You can get into a situation where it feels like self should be one class object, but is actually another:
+
+```ruby
+class D < C
+end
+D.x
+```
+
+`D` gets to call `x`, because subclasses get to call the class methods of their superclasses. As you'll see if you run the code, the method `C.x` reports self-correctly-as being `D`, because it's `D` on which the method is called.
+
+---
+
+Being self at a given point in the program comes with some privileges. The chief privilege enjoyed by self is that of serving as the default receiver of messages, as we'll see next.
+
+## *Self as the default receiver of messages* ##
+
+Calling methods (that is sending messages to objects) usually involves the dot notation:
+
+```ruby
+obj.talk
+ticket.venue
+"abc".capitalize
+```
+That's the normal, full form of the method-calling syntax in Ruby. But a special rule governs method calls: if the receiver of the message is self, you can omit the receiver and the dot. Ruby will use `self` as the default receiver, meaning the message you send will be sent to self, as the following equivalencies show:
+
+```ruby
+talk   # <-- same as self.talk
+venue  # <-- same as self.venue
+capitalize # <-- same as self.capitalize
+```
+
+  ### **WARNING** ### You can give a method and a local variable the same name, but it's rarely if ever a good idea. If both a method and a variable of a given name exist, and you use the bare identifier (like `talk`), the variable takes precedence. To force Ruby to see the identifier as a method name, you'd have to use `self.talk` or call the method with an empty argument list: `talk()`. Because variables don't take arguments, the parentheses establish that you mean the method rather than the variable. Again, it's best to avoid these name clashes if you can.
+
+Let's see this concept in action by inducing a situation where we know what self is and then testing the dotless form of method calling. In top level of a class-definition block, self is the class object. And we know how to add methods directly to class objects. So we have the ingredients to do a default receiver demo (see class_c.rb def C.no_dot)
