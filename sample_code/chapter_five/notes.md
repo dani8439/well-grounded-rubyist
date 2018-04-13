@@ -26,6 +26,9 @@ There's always one (and only one) current object or self. You can tell which obj
 #### How the current object(self) is determined ####
 |      Context        |         Example        |        Which object is self?                       |
 |---------------------|------------------------|----------------------------------------------------|  
-|Top level of program | Any code outside of other blocks|`main`(built-in top-level default object)|
-|Class definition    | ```class C               | The class object `C`                             |
-|                    |      self ```            |                                                  |
+|Top level of program | Any code outside of other blocks|`main`(built-in top-level default object)  |
+|Class definition     | `class C`              | The class object `C`                               |
+|                     |      `self`            |                                                    |
+|Module Definition    | `module M`             | The module object `M`                              |
+|                     | `self`                 |                                                    |
+|Method Definitions   | 1. Top level (outside any definition block): | Whatever object is self when the method is called; top-level methods are available as private methods to all objects.                |
