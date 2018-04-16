@@ -199,4 +199,12 @@ Let's see this concept in action by inducing a situation where we know what self
 
 The most common use of the dotless method call occurs when you're calling one instance method from another. Here's an example (see notes)
 
-Upon calling `c.y`, the method `y` is executed, with self set to `c` (which is an instance of `C`)
+Upon calling `c.y`, the method `y` is executed, with self set to `c` (which is an instance of `C`). Inside `y` the bareword reference to `x` is interpreted as a message to be sent to self. That, in turn, means the method `x` is executed.
+
+There's one situation where you can't omit the object-plus-dot part of a method call: when the method name ends with an equal sign-a *setter* method, in other words. You have to do `self.venue = "Town Hall"` rather than `venue = "Town Hall"` if you want to call the method `venue=` on self. The reason is that Ruby always interprets the sequence *identifier = value* as an assignment to a local variable. To call the method `venue=` on the current object, you need to include the explicit self. Otherwise, you end up with a variable called `venue` and no call to the setter method.
+
+The default to self as receiver for dotless method invocations allows you to streamline your code nicely in cases where one method makes use of another. A common case is composing a whole name from its components: first, optional middle, an last. The following listing shows a technique for doing this, using attributes for the three name values and conditional logic to include the middle name, plus a trailing space, if and only if there's a middle name. (see person.rb)
+
+The definition of `whole_name` depends on the bareword method calls to `first_name`, `middle_name`, and `last_name` being sent to self-self being the `Person` instance (`david` in the example). The variable `n` serves as a string accumulator, with the components of the name added to it one by one. The return value of the entire method is `n`, because the expression `n << last_name` (#1) has the effect of appending `last_name` to `n` and returning the result of that operation.
+
+In addition to serving automatically as the receiver for bareword messages, self also enjoys the privilege of being the owner of instance variables. 
