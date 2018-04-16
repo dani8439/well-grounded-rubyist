@@ -195,4 +195,8 @@ capitalize # <-- same as self.capitalize
   You can give a method and a local variable the same name, but it's rarely if ever a good idea. If both a method and a variable of a given name exist, and you use the bare identifier (like `talk`), the variable takes precedence. To force Ruby to see the identifier as a method name, you'd have to use `self.talk` or call the method with an empty argument list: `talk()`. Because variables don't take arguments, the parentheses establish that you mean the method rather than the variable. Again, it's best to avoid these name clashes if you can.
 
 ---
-Let's see this concept in action by inducing a situation where we know what self is and then testing the dotless form of method calling. In top level of a class-definition block, self is the class object. And we know how to add methods directly to class objects. So we have the ingredients to do a default receiver demo (see class_c.rb def C.no_dot)
+Let's see this concept in action by inducing a situation where we know what self is and then testing the dotless form of method calling. In top level of a class-definition block, self is the class object. And we know how to add methods directly to class objects. So we have the ingredients to do a default receiver demo (see class_c.rb def C.no_dot, and notes below explaining what is happening in the method call, when we are referencing self, and when not).
+
+The most common use of the dotless method call occurs when you're calling one instance method from another. Here's an example (see notes)
+
+Upon calling `c.y`, the method `y` is executed, with self set to `c` (which is an instance of `C`)
