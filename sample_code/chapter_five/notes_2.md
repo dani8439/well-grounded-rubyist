@@ -43,3 +43,31 @@ Creating your own global variables can be tempting, especially for beginning pro
 Globals appear to solve lots of design problems: you don't have to worry about scope, and multiple classes can share information by stashing it in globals rather than designing objects that have to be queried with method calls. Without doubt, global variables have a certain allure.
 
 But they're used very little by experienced programmers. The reasons for avoiding them are similar to the reasons they're tempting. Using global variables tends to end up being a substitute for solid, flexible program design, rather than contributing to it. One of the main points of object-oriented programming is that data and actions are encapsulated in objects. You're *supposed* to have to query objects for information and to request that they perform actions.
+
+And objects are supposed to have a certain privacy. When you ask an object to do something, you're not supposed to care what the object does internally to get the job done. Even if you yourself wrote the code for the object's methods, when you send the object a message, you treat the object as a black box that works behind the scenes and provides a response.
+
+Global variables distort the landscape by providing a layer of information shared by every object in every context. The result is that objects stop talking to each other and, instead, share information by setting global variables.
+
+Here's a small example-a rewrite of our earlier `Person` class (the one with the first, optional middle, and last names). This time, instead of attributes on the object, we'll generate the whole name from globals:
+
+```ruby
+class Person
+  def whole_name
+    n = $first_name + " "
+    n << "#{$middle_name} " if $middle_name
+    n << $last_name
+  end
+end
+```
+
+To use this class and to get a whole name from an instance of it, you'd have to do this:
+
+```ruby
+david = Person.new
+$first_name = "David"
+$middle_name = "Alan"
+$last_name = "Black"
+puts david.whole_name
+
+# Output: David Alan Black 
+```
