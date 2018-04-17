@@ -95,3 +95,18 @@ c.show_var
 ##<C:0x000000021dbd50>
 # And here's the instance variable @v, belonging to #<C:0x000000021dbd50>:
 # nil
+
+class C
+  a = 1  #1
+  def local_a
+    a = 2  #2
+    puts a
+  end
+  puts a #3
+end
+
+c = C.new
+c.local_a  #4
+
+#Ouput: 1
+# 2

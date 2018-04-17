@@ -90,3 +90,55 @@ You can tell by looking at a Ruby program where the local scopes begin and end, 
 • Every method definition (`def`) has its own local scope; more precisely, every call to a method generates a new local scope, with all local variables reset to an undefined state.
 
 Exceptions and additions to these rules exist, but they're fairly few and don't concern us right now.
+
+(see local_scope.rb for chart)
+
+Every time you cross into a class-, module-, or method-definition block-every time you step over a `class`, `module`, or `def` keyword-you start a new local scope. Local variables that lie very close to each other physically may in fact have nothing whatsoever to do with each other, as this example shows:
+
+```ruby
+class C
+  a = 1  #1
+  def local_a
+    a = 2  #2
+    puts a
+  end
+  puts a #3
+end
+
+c = C.new
+c.local_a  #4
+
+# => 1
+# => 2
+```
+The variable `a` that gets initialized in the local scope of the class definition(1) is in a different scope than the variable `a` inside the method-definition(2). When you get to the `puts a` statement after the method definition(3), you're back in the class-definition local scope; the `a` that gets printed is the `a` you initialized back at the top(1), not the `a` that's in scope in the method definition(2). Meanwhile, the second `a` isn't printed until later, when you've created the instance `c` and sent the message `local_a` to it(4).
+
+When you nest classes and modules, every crossing into a new definition black creates a new local scope. The following shoes some deep nesting of classes and modules, with a number of variables called `a` being initialized and printed out along the way (see nested.rb to manipulate):
+
+```ruby
+class C
+  a = 5
+  module M
+    a = 4
+    module N
+      a = 3
+      class D
+        a = 2
+        def show_a
+          a = 1
+          puts a
+        end
+        puts a  # Output 2
+      end
+      puts a  # Output 3
+    end
+    puts a  # Output 4
+  end
+  puts a  # Output 5
+end
+
+d = C::M::N::D.new
+d.show_a    # Output 1
+```
+
+Every definition-block-whether for a class, a module, or a method-starts a new local scope-a new local-variable scratchpad-and gets is own variable `a`.
