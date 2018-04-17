@@ -31,3 +31,12 @@ Did you mean?  local_variables
         from class_c_2.rb:8:in `<main>'
 ```
 ### BUILT-IN GLOBAL VARIABLES ###
+
+The Ruby interpreter starts up with a fairly large number of global variables already initialized. These variables store information that's of potential use anywhere and everywhere in your program. For example, the global variable `$0` contains the name of the startup file for the currently running program. The global `$:` (dollar sign followed by a colon) contains the directories that make up the path Ruby searches when you load an external file. `$$` contains the process ID of the Ruby process. And there are more.
+
+**TIP**
+To see descriptions of all the built-in global variables you're likely to need - can look them up in the file English.rb in your Ruby installation.
+
+Creating your own global variables can be tempting, especially for beginning programmers and people learning a new language (not just Ruby either). But that's rarely a good or appropriate choice.
+
+### PROS AND CONS OF GLOBAL VARIABLES ### 
