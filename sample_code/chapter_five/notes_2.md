@@ -69,5 +69,24 @@ $middle_name = "Alan"
 $last_name = "Black"
 puts david.whole_name
 
-# Output: David Alan Black 
+# Output: David Alan Black
 ```
+
+This version still derives the whole name, from outside, by querying the object. But the components of the name are handed around over the heads of the object, so to speak, in a separate network of global variables. It's concise and easy, but it's also drastically limited. What would happen if you had lots of `Person` objects, or if you wanted to save a `Person` object, including its various names, to a database? Your code would quickly become tangles to say the least.
+
+Globally scoped date is fundamentally in conflict with the object-oriented philosophy of endowing objects with abilities and then getting things done by sending requests to those objects. Some Ruby programmers work for years and never use a single global variable (except perhaps a few of the built-in ones). That may or may not end up being your experience, but it's not a bad target to aim for.
+
+Now that we've finished with the "try not to do this" part, let's move on to a detailed consideration of local scope.
+
+## *Local Scope* ##
+*Local Scope* is a basic layer of the fabric of every Ruby program. At any given moment, your program is in a particular local scope. The main thing that changes from one local scope to another is your supply of local variables. When you leave a local scope-by returning from a method call, or by doing something that triggers a new local scope-you get a new supply. Even if you've assigned to a local variable `x` in one scope, you can assign to a new `x` in a new scope, and the two `x`'s won't interfere with each other.
+
+You can tell by looking at a Ruby program where the local scopes begin and end, based on a few rules:
+
+• The top level (outside all definition blocks) has its own local scope.
+
+• Every class or module-definition block (`class`, `module`) has its own local scope, even nested class-/module-definition blocks.
+
+• Every method definition (`def`) has its own local scope; more precisely, every call to a method generates a new local scope, with all local variables reset to an undefined state.
+
+Exceptions and additions to these rules exist, but they're fairly few and don't concern us right now.
