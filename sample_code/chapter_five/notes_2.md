@@ -141,4 +141,31 @@ d = C::M::N::D.new
 d.show_a    # Output 1
 ```
 
-Every definition-block-whether for a class, a module, or a method-starts a new local scope-a new local-variable scratchpad-and gets is own variable `a`.
+Every definition-block-whether for a class, a module, or a method-starts a new local scope-a new local-variable scratchpad-and gets is own variable `a`. This example also illustrates the fact that all the code in class- and module-definition blocks gets executed when it's first encountered, whereas methods aren't executed until an object is sent the appropriate message. That's why the value of `a` that's set inside the `show_a` method is displayed last along the five values that the program prints; the other four are executed as they're encountered in the class or module definitions, but the last one isn't executed until `show_a` is executed by the object `d`.
+
+Local scope changes often, as you can see. So does the identity of self. Sometimes, but only sometimes, they vary together. Let's look a little closer at the relationship between scope and self.
+
+### *The interaction between local scope and self* ###
+When you start a definition block (method, class, module), you start a new local scope, and you also create a block of code with a particular self. But logical scope and self don't operate entirely in parallel, not only because they're not the same thing, but also because they're not the same *kind* of thing.
+
+Consider the following listing. This program uses *recursion:* the instance method `x` calls itself. The point is to demonstrate that every time a method is called-even if a previous call to the method is still in the process of running-a new local scope is generated.
+
+```ruby
+class C
+  def x(value_for_a, recurse=false)  #1.
+    a = value_for_a  #2.
+    print "Here's the inspect-string for 'self'"  #3.
+    p self
+    puts "And here's a:"
+    puts a
+    if recurse  #4.
+      puts "Calling myself (recursion)..."
+      x("Second value for a")  #5.
+      puts "Back after recursion; here's a:"   #6.
+      puts a
+    end
+  end
+end
+c = C.new
+c.x("First value for a", true)   #7.
+```
