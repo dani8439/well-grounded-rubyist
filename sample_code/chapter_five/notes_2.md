@@ -159,8 +159,9 @@ class C
     puts "And here's a:"
     puts a
     if recurse  #4.
-      puts "Calling myself (recursion)..."
-      x("Second value for a")  #5.
+      puts "Calling myself (recursion)..."  
+      x("Second value for a")
+      #5.^
       puts "Back after recursion; here's a:"   #6.
       puts a
     end
@@ -168,4 +169,23 @@ class C
 end
 c = C.new
 c.x("First value for a", true)   #7.
+```
+The instance method `C#x` takes two arguments: a value to sign to the variable `a` and a flag telling the method whether to call itself(#1). (The use of the flag provides a way to prevent infinite recursion.) The first line of the method initializes `a` (#2), and the next several lines of the method print out the string representation of self and the value of `a`.
+
+Now comes the decision: to recurse, or not to recurse. It depends on the value of the `recurse` variable (#4.). If the recursion happens, it calls `x` without specifying a value for the `recurse` parameter (#5); that parameter will default to `false`, and recursion won't happen the second time through.
+
+The recursive call uses a different value for the `value_for_a` argument; therefore, different information will be printed out during that call. But upon returning from the recursive call, we find that the value of `a` in this run of `x` hasn't changed (#6). In short, every call to `x` generates a new local scope, even though self doesn't change.
+
+The output from calling `x` on an instance of `C` and setting the `recurse` flag to true (#7), looks like this:
+
+```irb 
+Here's the inspect-string for 'self'#<C:0x00000001ed2208>
+And here's a:
+First value for a
+Calling myself (recursion)...
+Here's the inspect-string for 'self'#<C:0x00000001ed2208>
+And here's a:
+Second value for a
+Back after recursion; here's a:
+First value for a
 ```

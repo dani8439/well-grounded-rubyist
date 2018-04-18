@@ -46,3 +46,14 @@ class C
 end
 c = C.new
 c.x("First value for a", true)   #7.
+
+
+# Here's the inspect-string for 'self'#<C:0x00000001ed2208>
+# And here's a:
+# First value for a
+# Calling myself (recursion)...
+# Here's the inspect-string for 'self'#<C:0x00000001ed2208>
+# And here's a:
+# Second value for a
+# Back after recursion; here's a:
+# First value for a
