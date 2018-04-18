@@ -237,3 +237,54 @@ puts M::C::X #2.
 ```
 
 As per the nesting, the first `puts` (#1); the second (#2) gives you 2. A particular constant identifier (like `X`) doesn't have an absolute meaning the way a global variable (like `$x`) does.
+
+*Constant lookup*- the process of resolving a constant identifier, or finding the right match for it-bears a close resemblance to searching a file system for a file in a particular directory. For one thing, constants are identified relative to the point of execution. Another variant of our example illustrates this:
+
+```ruby
+module M
+  class C
+    class D
+      module N
+        X = 1
+      end
+    end
+    puts D::N::X #<-- Output 1
+  end
+end
+```
+
+Here the identifier `D::N::X` is interpreted relative to where it occurs; inside the definition block of the class `M::C`. From `M::C`'s perspective, `D` is just one level away. There's no need to do `M::C::D::N::X`, when just `D::N::X` points the way down the path to the right constant. Sure enough, we get what we want: a printout of the number 1.
+
+#### FORCING AN ABSOLUTE CONSTANT PATH ####
+Sometimes you don't want a relative path. Sometimes you really want to start the constant-lookup process at the top level-just as you sometimes need to use an absolute path for a file.
+
+This may happen if you create a class or module with a name that's similar to the name of a Ruby built-in class or module. For example, Ruby comes with a `String` class. But if you create a `Violin` class, you may also have `Strings`:
+
+```ruby
+class Violin
+  class String
+    attr_accessor :pitch
+    def initialize(pitch)
+      @pitch = pitch
+    end
+  end
+  def initialize
+    @e = String.new("E")   #1.
+    @a = String.new("A")
+    @d = String.new("D")
+    @g = String.new("G")
+  end
+end
+```
+
+The constant `String` in this context(#1) resolves to `Violin::String`, as defined. Now let's say that elsewhere in the overall `Violin` class definition, you need to refer to Ruby's built-in `String` class. If you have a plain reference to `String`, it resolves to `Violin::String`. To make sure you're referring to the built-in original `String` class, you need to put the constant path separator `::` (double colon) at the beginning of the class name:
+
+```ruby
+def history
+  ::String.new(maker + ", " + date)
+end
+```
+
+This way, you get a Ruby `String` object instead of a `Violin::String` object. Like the slash at the beginning of a pathname, the `::` in front of a constant means "start the search for this at the top level." (Yes, you could just piece the string together inside the double quotes, using interpolation, and bypass `String.new`. But then we wouldn't have such a vivid name-clash example!)
+
+In addition to constants and local, instance, and global variables, Ruby also features *class variables*, a category of identifier with some idiosyncratic scoping rules.
