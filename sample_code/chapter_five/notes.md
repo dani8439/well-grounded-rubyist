@@ -263,7 +263,7 @@ c.show_var
 
 The output from this version is as follows:
 
-```ruby
+```irb
 Just inside class definition block. Here's self:
 C
 And here's the instance variable @v, belonging to C:

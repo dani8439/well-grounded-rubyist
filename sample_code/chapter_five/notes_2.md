@@ -178,7 +178,7 @@ The recursive call uses a different value for the `value_for_a` argument; theref
 
 The output from calling `x` on an instance of `C` and setting the `recurse` flag to true (#7), looks like this:
 
-```irb 
+```irb
 Here's the inspect-string for 'self'#<C:0x00000001ed2208>
 And here's a:
 First value for a
@@ -189,3 +189,51 @@ Second value for a
 Back after recursion; here's a:
 First value for a
 ```
+
+There's no change to self, but the local variables are reset.
+
+### **TIP** ###
+Instead of printing out the default string representation of an object, you can also use the `object_id` method to identify the object uniquely. Try changing `p self` to `puts self.object_id` and `puts a` to `puts a.object_id` in the previous example.
+
+If this listing seems like the long way around to making the point that every method call has its own local scope, think of it as a template or model for the kinds of demonstrations you might try yourself as you develop an increasingly fine-grained sense of how scope and self work, separately and together.
+
+### **NOTE** ###
+It's also possible to do the opposite of what's listed in above example demonstrates- namely, to change self without entering a new local scope. This is accomplished with the `instance_eval` and `instance_exec` methods, which we'll look at later.
+
+Like variables, constants are governed by rules of scope. We'll look next at how those rules work.
+
+### *Scope and resolution of constants* ###
+As you've seen, constants can be defined inside class- and method-definition blocks. If you know the chain of nested definitions, you can access a constant from anywhere. Consider this nest:
+
+```ruby
+module M
+  class C
+    class D
+      module N
+        X = 1
+      end
+    end
+  end
+end
+```
+
+You can refer to the module `M`, the class `M::C`, and so forth, down to the simple constant `M::C::D::N::X` (which is equal to 1).
+
+Constants have a kind of global visibility or reachability: as long as you know the path to a constant through the classes and/or modules in which it's nested, you can get to that constant. Stripped of their nesting, however, constants definitely aren't globals. The constant `X` in one scope isn't the constant `X` in another:
+
+```ruby
+module M
+  class C
+    X = 2
+    class D
+      module N
+        X = 1
+      end
+    end
+  end
+end
+puts M::C::D::N::X    #1.
+puts M::C::X #2.
+```
+
+As per the nesting, the first `puts` (#1); the second (#2) gives you 2. A particular constant identifier (like `X`) doesn't have an absolute meaning the way a global variable (like `$x`) does.
