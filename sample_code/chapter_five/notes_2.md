@@ -295,6 +295,95 @@ Class variables begin with two at signs-for example, `@@var`. Despite their name
 ### CLASS VARIABLES ACROSS CLASSES AND INSTANCES ###
 At its simplest, the idea behind a class variable is that it provides a storage mechanism that's shared between a class and instances of that class, and that's not visible to any other objects. No other entity can fill this role. Local variables don't survive the scope change between class definitions and their inner method definitions. Globals do, but they're also visible and mutable everywhere else in the program, not just in one class. Constants likewise: instance methods can see the constants defined in the class in which they're defined, but the rest of the program can see those constants, too. Instance variables, of course, are visible strictly per object. A class isn't the same object as any of its instances, and no two of its instances are the same as each other. Therefore, it's impossible, by definition, for a class to share instance variables with its instances.
 
-So class variables have a niche to fill" visibility to a class and its instances, and to no one else. Typically, this means being visible in class-method definitions and instance-method definitions, and sometimes at the top level of the class definition.
+So class variables have a niche to fill visibility to a class and its instances, and to no one else. Typically, this means being visible in class-method definitions and instance-method definitions, and sometimes at the top level of the class definition.
 
-Here's an example: a little tracker for cars. Let's start with the trial run and the output; then, we'll look at how the program works. Let's say we want to register the makes (manufacturer names) of cars, which we'll do using the class method `Car.add_make(make)`. Once a make has been registered, we can create cars of that make, using `Car.new(make)`. We'll register Honda and Ford, and create two Hondas and one Ford: 
+Here's an example: a little tracker for cars. Let's start with the trial run and the output; then, we'll look at how the program works. Let's say we want to register the makes (manufacturer names) of cars, which we'll do using the class method `Car.add_make(make)`. Once a make has been registered, we can create cars of that make, using `Car.new(make)`. We'll register Honda and Ford, and create two Hondas and one Ford:
+
+```ruby
+Car.add_make("Honda")
+Car.add_make("Ford")
+h = Car.new("Honda")
+f = Car.new("Ford")
+h2 = Car.new("Honda")
+```
+The program tells us which cars are being created:
+
+```irb
+Creating a new Honda!
+Creating a new Ford!
+Creating a new Honda!
+```
+
+At this point, we can get back some information. How many cars are there of the same make as `h2`? We'll use the instance method `make_makes` to find out, interpolating the result into a string:
+
+```ruby
+puts "Counting cars of same make as h2..."
+puts "There are #{h2.make_mates}."
+```
+
+As expected, there are two cars of the same make as `h2` (namely, Honda).
+How many cars are there altogether? Knowledge of this kind resides in the class, not in the individual cars, so we ask the class:
+
+```ruby
+puts "Counting total cars..."
+puts "There are #{Cars.total_count}."
+```
+
+The output is:
+
+```irb
+Counting total cars...
+There are 3.
+```
+
+Finally, we try to create a car of nonexistent make:
+
+```ruby
+x = Car.new("Brand X")
+```
+
+The program doesn't like it, and we get a fatal error:
+
+```irb
+car.rb:21:in `initialize'L No such make: Brand X. (RuntimeError)`
+(car.rb:39:in `<main>': uninitialized constant Cars (NameError)
+Did you mean?  Car)
+```
+
+The main action here is in the creation of cars and the ability of both individual cars and the `Car` class to store and return statistics about the cars that have been created. The next listing shows the program. If you save this listing and then add the previous sample code to the end of the file, you can run the whole file and see the output of the code. (Duh)
+
+```ruby
+class Car
+  @@makes = []                                    #1.
+  @@cars = {}                                     #1.
+  @@total_count = 0                               #1.
+  attr_reader :make                               #2.
+  def self.total_count                            #3.
+    @@total_count
+  end
+  def self.add_make(make)                         #4.
+    unless @@makes.include?(make)
+      @@makes << make
+      @@cars[make] = 0
+    end
+  end
+  def initialize(make)
+    if @@makes.include?(make)
+      puts "Creating a new #{make}!"
+      @make = make                                #5.
+      @@cars[make] += 1                           #6.
+      @@total_count += 1                  
+    else      raise "No such make: #{make}."      #7.
+    end
+  end
+  def make_mates                                  #8.
+    @@cars[self.make]
+  end
+end
+```
+
+The key to the program is the presence of the three class variables defined at the top of the class definition(#1). `@@makes` is an array and stores the names of makes. `@@cars` is a *hash:* a keyed structure whose keys are makes of cars and whose corresponding values are counts of how many of each make there are. Finally, `@@total_count` is a running tally of how many cars have been created overall.
+
+The `Car` class also has a `make` reader attribute(#2), which enables us to ask every car what its make is. The value of the `make` attribute must be set when the car is created. There's no writer attributes for makes of cars, because we don't want code outside the class changing the makes of cars that already exist.
+
+To provide access to the `@@total_count` class variable, the `Car` class defines a `total_count` method(#3)
