@@ -92,4 +92,132 @@ The biggest obstacle to understanding these examples is understanding the fact t
 We've reached the limit of our identifier scope journey. We've seen much of what variables and constants can do (and what they can't do) and how these abilities are pegged to the rules governing scope and self. In the interest of fulfilling the chapter's goal of showing us how to orient ourselves regarding who gets to do what, and where, in Ruby code, we'll look at one more major subtopic: Ruby's system of method-access rules.
 
 ## *Deploying method-access rules* ##
-As we've seen, the main business of a Ruby program is to send messages to objects. And 
+As we've seen, the main business of a Ruby program is to send messages to objects. And the main business of an object is to respond to messages. Sometimes an object wants to be able to send itself messages that it doesn't want anyone else to be able to send it. For this scenario, Ruby provides the ability to make a method private.
+
+There are two access levels other than private: protected, which is a slight variation on private, and public. Public is the default access level; if you don't specify that a method is protected or private, it's public. Public instance methods are the common currency of Ruby programming. Most of the messages you send to objects are calling public methods.
+
+We'll focus here on methods that aren't public, starting with private methods.
+
+### *Private methods* ###
+Think of an object as someone you ask to perform a task for you. Let's say you ask someone to bake you a cake. In the course of baking you a cake, the baker will presumably perform a lot of small tasks: measure sugar, crack an egg, stir batter, and so forth.
+
+The baker does all these things, but not all of them have equal status when it comes to what the baker is willing to do in response to requests from other people. It would be weird if you called a baker and said, "Please stir some batter" or "Please crack an egg." What you say is "Please bake me a cake", and you let the baker deal with the details.
+
+Let's model the baking scenario. We'll use minimal, placeholder classes for some of the objects in our domain, but we'll develop the `Baker` class in more detail.
+
+```ruby
+class Cake
+  def initialize(batter)
+    @batter = batter
+    @baked = true
+  end
+end
+class Egg
+end
+class Flour
+end
+class Baker
+  def bake_cake
+    @batter = []   #<---- Implements @batter as array of objects (ingredients)
+    pour_flour
+    add_egg
+    stir_batter
+    return Cake.new(@batter)      #<---- Returns new Cake object
+  end
+  def pour_flour
+    @batter.push(Flour.new)       #<---- Adds element (ingredient) to @batter
+  end
+  def add_egg
+    @batter.push(Egg.new)
+  end
+  def stir_batter
+  end
+  private :pour_flour, :add_egg, :stir_batter     #1.
+end
+```
+
+There's something new in this code: the `private` method(#1), which takes as arguments a list of the methods you want to make private. (If you don't supply any arguments, the call to `private` acts like an on switch: all the instance methods you define below it, until you reverse the effect by calling `public` or `protected`, will be private.)
+
+Private means that the method can't be called with an explicit receiver,. You can't say
+
+```ruby
+b = Baker.new
+b.add_egg
+```
+
+As you'll see if you try it, calling `add_egg` this way results in a fatal error:
+
+`baker.rb:31:in `<main>': private method `add_egg' called for #<Baker:0x00000000867360> (NoMethodError)`
+
+`add_egg` is a private method, but you've specified the receiving object, `b`, explicitly. That's not allowed.
+
+Okay; let's go along with the rules. We won't specify a receiver. We'll just say
+
+`add_egg`
+
+But wait. Can we call `add_egg` in isolation? Where will the message go? How can a method be called if there's no object handling the message?
+
+A little detective work will answer this question.
+
+If you don't use an explicit receiver for a method call, Ruby assumes that you want to send the message to the current object, self. Thinking logically, you can conclude that the message `add_egg` has an object to go to only if self is an object that responds to `add_egg`, In other words, you can only call the `add_egg` instance method of `Baker` when self is an instance of `Baker`.
+
+And when is self an instance of `Baker`?
+
+When any instance method of `Baker` is being executed. Inside the definition of `bake_cake`, for example, you can call `add_egg`, and Ruby will know what to do. Whenever Ruby hits that call to `add_egg` inside that method definition, it sends the message `add_egg` to self, and self is a `Baker` object.
+
+### **Private and singleton are different** ###
+It's important to note the difference between a private method and a singleton method. A singleton method is "private" in the loose, informal sense that it belongs to only one objet, but it isn't private in the technical sense. (You can make a singleton method private, but by default it isn't.) A private, non-singleton instance method, on the other hand, may be shared by any number of objects but can only be called under the right circumstances. What determines whether you can call a private method isn't the object you're sending the message to, but which object is self at the time you send the message.
+
+---
+
+It comes down to this: by tagging `add_egg` as private, you're saying the `Baker` object gets to send this message to itself (the baker can tell himself or herself to add an egg to the batter), but no one else can send the message to the baker (you, as an outsider, can't tell the baker to add an egg to the batter). Ruby enforces this privacy through the mechanism of forbidding an explicit receiver. And the only circumstances under which you can omit the receiver are precisely the circumstances in which it's okay to call a private method.
+
+It's all elegantly engineered. There's one small fly in the ointment, though.
+
+#### PRIVATE SETTER(=) METHODS ####
+The implementation of private access through the "no explicit receiver" rule runs into a hitch when it comes to methods that end with equal signs. As you'll recall, when you call a setter method, you have to specify the receiver. You can't do this
+
+`dog_years = age * 7`
+
+because Ruby will think that `dog_years` is a local variable. You have to do this:
+
+`self.dog_years = age * 7`
+
+But the need for an explicit receiver makes it hard to declare the method `dog_years=` private, at least by the logic of the "no explicit receiver" requirements for calling private methods.
+
+The way out of this conundrum is that Ruby doesn't apply the rule to setter methods. If you declare `dog_years=` private, you can call it with a receiver-as long as the receiver is `self`. It can't be another reference to self; it has to be the keyword `self`.
+
+Here's an implementation of a dog-years-aware `Dog`:
+
+```ruby
+class Dog
+  attr_reader :age, :dog_years
+  def dog_years=(years)
+    @dog_years = years
+  end
+  def age=(years)
+    @age = years
+    self.dog_years = years * 7
+  end
+  private :dog_years=
+end
+```
+
+You indicate how old a dog is, and the dog automatically knows its age in dog years:
+
+```ruby
+rover = Dog.new
+rover.age = 10
+puts "Rover is #{rover.dog_years} in dog years."   #<--- Output: Rover is 70 in dog years.
+```
+
+The setter method `age=` performs the service of setting the dog years, which it does by calling the private method `dog_years=`. In doing so, it uses the explicit receiver `self`. If you do it any other way, it won't work. With no receiver, you'd be setting a local variable. And if you use the same object, but under a different name, like this
+
+```ruby
+def age=(years)
+  @age = years
+  dog = self
+  dog.dog_years = years * 7
+end
+```
+execution is ahlter by a fatal error: 
