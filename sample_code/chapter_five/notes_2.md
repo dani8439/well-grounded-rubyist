@@ -386,4 +386,34 @@ The key to the program is the presence of the three class variables defined at t
 
 The `Car` class also has a `make` reader attribute(#2), which enables us to ask every car what its make is. The value of the `make` attribute must be set when the car is created. There's no writer attributes for makes of cars, because we don't want code outside the class changing the makes of cars that already exist.
 
-To provide access to the `@@total_count` class variable, the `Car` class defines a `total_count` method(#3)
+To provide access to the `@@total_count` class variable, the `Car` class defines a `total_count` method(#3), which returns the current value of the class variable. There's also a class method called `add_make`(#4); this method takes a single argument and adds it to the array of known makes of cars, using the << array-append operator. It first takes the precaution of making sure the array of makes doesn't already include that particular make. Assuming all is well, it adds the make and also sets the counter for this make's car tally to zero. Thus when we register the make Honda, we also establish the fact that zero Hondas exist.
+
+Now we get to the `initialize` method, where new cars are created. Each new car needs a make. If the make doesn't exist (that is, if it isn't in the `@@makes` array), then we raise a fatal error(#7). If the make does exist, then we set this car's `make` attribute to the appropriate value(#5), increment by one the number of cars this make that are recorded in the `@@cars` hash(#6), and also increment by one the total number of existing cars stored in `@@total_count`. (You may have surmised that `@@total_count` represents the total of all the values in `@@cars`. Storing the total separately saves us the trouble of adding up all the values every time we want to see the total.) There's also an implementation of the instance method `make_mates`(#8), which returns a list of all cars of a given car's make.
+
+The `initialize` method makes heavy use of the class variables defined at the top, outer level of the class-definition- a totally different local scope from the inside of `initialize`, but not different for purposes of class-variable visibility. Those class variables were also used in the class methods `Car.total_count` and `Car.add-make`-each of which also has its own local scope. You can see the class variables follow their own rules: their visibility and scope don't line up with those of local variables, and they cut across multiple values of self. (Remember that at the outer level of a class definition and inside the class methods, self is the class object-`Car`-whereas in the instance methods, self is the instance of `Car` that's calling the method).
+
+So far, we've seen the simplest aspects of class variables. Even at this level, opinions differ as to whether, or at least how often, it's a good idea to create variables that cut this path across multiple self objects. Does the fact that a car is an instance of `Car` really mean that the `car` object and the `Car` class object need to share data? Or should they be treated throughout like the two separate objects they are?
+
+There's no single (or simple) answer. But there's a little more to how class variables work; and at the very least, you'll probably conclude that they should be handled with car.
+
+
+### CLASS VARIABLES AND THE CLASS HIERARCHY ###
+As noted earlier, class variables aren't class-scoped variables. They're class-hierarchy-scoped variables.
+
+Here's an example. What would you expect the following code to print?
+
+```ruby
+class Parent
+  @@value = 100        #<--- Sets class variable in class Parent.
+end
+class Child < Parent
+  @@value = 200        #<--- Sets class variable in class Child, a subclass of Parent.
+end
+class Parent
+  puts @@value        #<--- Back in Parent class: what's the output?
+end
+```
+
+What gets printed is 200. The `Child` class is a subclass of `Parent`, and that means `Parent` and `Child` share the same class variables-not different class variables with the same names, but the same actual variables. When you assign to `@@value` in `Child`, you're setting the one and only `@@value` variable that's shared throughout the hierarchy-that is, by `Parent` and `Child` and any other descendant classes of either of them. The term *class variable* becomes a bit difficult to reconcile with the fact that two (and potentially a lot more) classes share exactly the same ones.
+
+As promised, we'll end this section with a consideration of the pros and cons of using class variables as a way to maintain state in a class.
