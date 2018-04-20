@@ -288,3 +288,13 @@ end
 This way, you get a Ruby `String` object instead of a `Violin::String` object. Like the slash at the beginning of a pathname, the `::` in front of a constant means "start the search for this at the top level." (Yes, you could just piece the string together inside the double quotes, using interpolation, and bypass `String.new`. But then we wouldn't have such a vivid name-clash example!)
 
 In addition to constants and local, instance, and global variables, Ruby also features *class variables*, a category of identifier with some idiosyncratic scoping rules.
+
+### *Class variable syntax, scope, and visibility* ###
+Class variables begin with two at signs-for example, `@@var`. Despite their name, class variables aren't class scoped. Rather, they're class-hierarchy scoped, except...sometimes. Don't worry; we'll go through the details. After a look at how class variables work, we'll evaluate how well they fill the role of maintaining state for a class.
+
+### CLASS VARIABLES ACROSS CLASSES AND INSTANCES ###
+At its simplest, the idea behind a class variable is that it provides a storage mechanism that's shared between a class and instances of that class, and that's not visible to any other objects. No other entity can fill this role. Local variables don't survive the scope change between class definitions and their inner method definitions. Globals do, but they're also visible and mutable everywhere else in the program, not just in one class. Constants likewise: instance methods can see the constants defined in the class in which they're defined, but the rest of the program can see those constants, too. Instance variables, of course, are visible strictly per object. A class isn't the same object as any of its instances, and no two of its instances are the same as each other. Therefore, it's impossible, by definition, for a class to share instance variables with its instances.
+
+So class variables have a niche to fill" visibility to a class and its instances, and to no one else. Typically, this means being visible in class-method definitions and instance-method definitions, and sometimes at the top level of the class definition.
+
+Here's an example: a little tracker for cars. Let's start with the trial run and the output; then, we'll look at how the program works. Let's say we want to register the makes (manufacturer names) of cars, which we'll do using the class method `Car.add_make(make)`. Once a make has been registered, we can create cars of that make, using `Car.new(make)`. We'll register Honda and Ford, and create two Hondas and one Ford: 
