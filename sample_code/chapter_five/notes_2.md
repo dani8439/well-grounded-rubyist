@@ -373,7 +373,8 @@ class Car
       @make = make                                #5.
       @@cars[make] += 1                           #6.
       @@total_count += 1                  
-    else      raise "No such make: #{make}."      #7.
+    else      
+      raise "No such make: #{make}."              #7.
     end
   end
   def make_mates                                  #8.
