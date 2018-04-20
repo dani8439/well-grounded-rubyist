@@ -83,6 +83,13 @@ puts "There are #{Hybrid.total_count} hybrids on the road!"   #<-- Output: There
 
 `self.class.total_count += 1`
 
-has a different meaning. The receiver of the "total_count=" message is `Hybrid`, not `Car`. That means when the `total_count=` class method is executed, the instance variable `@total_count` belongs to `Hybrid`. (Instance variables always belong to self.) Adding to `Hybrid`'s total count therefore won't affect `Car`'s total count. 
+has a different meaning. The receiver of the "total_count=" message is `Hybrid`, not `Car`. That means when the `total_count=` class method is executed, the instance variable `@total_count` belongs to `Hybrid`. (Instance variables always belong to self.) Adding to `Hybrid`'s total count therefore won't affect `Car`'s total count.
 
-We've made it so that a subclass of `Car`
+We've made it so that a subclass of `Car` can maintain its own state, because we've shifted from a class variable to an instance variable. Every time `total_count` or `total_count=` is called, the `@total_count` to which it refers is the one belonging to self at that point in execution. Once again, we're back in business using instance variables to maintain state per object (class objects, in this case).
+
+The biggest obstacle to understanding these examples is understanding the fact that classes are objects-and that every object, whether it's a car, a person, *or a class*, gets to have its own stash of instance variables. `Car` and `Hybrid` can keep track of manufacturing numbers separately, thanks to the way instance variables are quarantined per object.
+
+We've reached the limit of our identifier scope journey. We've seen much of what variables and constants can do (and what they can't do) and how these abilities are pegged to the rules governing scope and self. In the interest of fulfilling the chapter's goal of showing us how to orient ourselves regarding who gets to do what, and where, in Ruby code, we'll look at one more major subtopic: Ruby's system of method-access rules.
+
+## *Deploying method-access rules* ##
+As we've seen, the main business of a Ruby program is to send messages to objects. And 
