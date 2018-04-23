@@ -327,3 +327,15 @@ What's nice about the way top-level methods work is that they provide a useful f
 The rules concerning definition and use of top-level methods bring us all the way back to some of the bareword methods we've been using since as early as chapter 1. You're now in a position to understand how those methods work.
 
 ### *Predefined (built-in) top-level methods* ###
+
+From our earliest examples onward, we've been making bareword-style calls to `puts` and `prints`, like this one:
+
+`puts "Hello"`
+
+`puts` and `prints` are built-in private instance methods of `Kernel`-not, like the ones you write of `Object`, but of `Kernel`. The upshot is similar, though (because `Object` mixes in `Kernel`): you can call such methods at any time, and you must call them without a receiver. The `Kernel` module thus provides a substantial toolkit of imperative methods, like puts and print, that increases the power of Ruby as a scripting language. You can get a lot done with Ruby scripts that don't have any class, module, or method definitions, because you can do so much (read and write, run system commands, exit your program, and so on) with Ruby's top-level methods.
+
+If you want to see all of the private instance methods that `Kernel` provides, try this:
+
+`$ ruby -e 'p Kernel.private_instance_methods.sort'`
+
+The `private_instance_methods` method gives you an array of all the relevant methods, and `sort` sorts the array of method names for easier reading. As you can see, these methods, although often useful in imperative, script-style programming, aren't restricted in their usefulness to that style; they include commands like `require`, `load`, `raise` (raise an exception), and others, that are among the most common tecnhiques in all Ruby programs, whatever style of program design they exhibit.
