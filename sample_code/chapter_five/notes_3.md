@@ -299,3 +299,31 @@ end
 Defining private instance methods of `Object` has some interesting implications.
 
 First, these methods not only can but *must* be called in bareword style. Why? Because they're private. You can only call them on self, and only without an explicit receiver (with the usual exemption of private setter methods, which must be called with `self` as the receiver).
+
+Second, private instance methods of `Object` can be called from anywhere in your code, because `Object` lies in the method lookup path of every class (except `BasicObject`, but that's too special a case to worry about). So a top-level method is always available. No matter what self is, it will be able to recognize the message you send it if that message resolves to a private instance method of `Object`.
+
+To illustrate this, let's extend the `talk` example. Here it is again, with some code that exercises it:
+
+```ruby
+def talk
+  puts "Hello"
+end
+puts "Trying 'talk' with no receiver..."
+talk #<-- #1
+puts "Trying 'talk' with an explicit receiver..."
+obj = Object.new
+obj.talk #<-- #2
+```
+The first call to `talk` succeeds(#1); the second fails with a fatal error(#2), because it tries to call a private method with an explicit receiver:
+
+```irb
+Trying 'talk' with no receiver...
+Hello
+Trying 'talk' with an explicit receiver...
+talk.rb:8:in `<main>': private method `talk' called for #<Object:0x00000000f85138> (NoMethodError)
+```
+What's nice about the way top-level methods work is that they provide a useful functionality (simple, script-friendly, procedural-style bareword commands), but they do so in complete conformity with the rules of Ruby: private methods have to default to self as the receiver, and methods defined in `Object` are visible to all objects. No extra language-level constructs are involved, just an elegant and powerful combination of the ones that already exist.
+
+The rules concerning definition and use of top-level methods bring us all the way back to some of the bareword methods we've been using since as early as chapter 1. You're now in a position to understand how those methods work.
+
+### *Predefined (built-in) top-level methods* ###
