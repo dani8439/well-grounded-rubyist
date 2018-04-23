@@ -270,3 +270,32 @@ Subclasses inherit the method-access rules of their superclasses. Given a class 
 ---
 
 The last topic we'll cover in this chapter is top-level methods. As you'll see, top-level methods enjoy a special case status. But even this status meshes logically with the aspects of Ruby's design you've encountered in this chapter.
+
+## *Writing and using top-level methods* ##
+The most natural thing to do with Ruby is to design classes and modules and instantiate your classes. But sometimes you just want to write a quick script-a few commands stuffed in a file and executed. It's sometimes more convenient to write method definitions at the top level of your script and then call them on top-level objects than to wrap everything in class definitions. When you do this, you're coding in the context of the top-level default object, `main`, which is an instance of `Object` brought into being automatically for the sole reason that *something* has to be self, even at the top level.  
+
+But you're not inside a class or module definition, so what exactly happens when you define a method?
+
+### *Defining a top-level method* ###
+Suppose you define a method at the top level:
+
+```ruby
+def talk
+  puts "Hello"
+end
+```
+
+It's not inside a class- or module-definition block, so it doesn't appear to be an instance method of a class or module. So what is it? A method that you define at the top level is stored as a private instance method of the `Object` class. The previous code is equivalent to this:
+
+```ruby
+class Object
+  private
+  def talk
+    puts "Hello"
+  end
+end
+```
+
+Defining private instance methods of `Object` has some interesting implications.
+
+First, these methods not only can but *must* be called in bareword style. Why? Because they're private. You can only call them on self, and only without an explicit receiver (with the usual exemption of private setter methods, which must be called with `self` as the receiver).
