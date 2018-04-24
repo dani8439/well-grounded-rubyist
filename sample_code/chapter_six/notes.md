@@ -138,6 +138,8 @@ If you come across a case where negating the logic seems more awkward than pairi
 
 You can also put conditional tests in *modifier* position, directly after a statement.
 
+<<**BIG EXAMPLE IN TEXT OF LIFE WITHOUT THE DANGLING ELSE AMBIGUITY ON PAGE 156**>>
+
 ### CONDITIONAL MODIFIERS ###
 It's not uncommon to see a conditional modifier at the end of a statement in a case like this one:
 
@@ -160,3 +162,30 @@ Conditional modifiers have a conversational tone. There's no `end` to worry abou
 
 Like other statements in Ruby, every `if` statement evaluates to an object. Let's look at how that plays out.
 
+### THE VALUE OF IF STATEMENTS ### 
+If an `if` statement succeeds, the entire statement evaluates to whatever is represented by the code in the successful branch. Type this code into irb and you'll see the principle in action:
+
+```irb 
+x = 1 
+if x < 0
+  "negative"
+elsif x > 0 
+  "positive"
+else
+  "zero"
+```
+As irb will tell you, the value of that entire `if` statement is the string "`positive`".
+
+An `if` statement that doesn't succeed anywhere returns `nil`. Here's a full irb example of such a case:
+
+```irb
+>> x = 1
+=> 1
+>> if x == 2 
+>>    "it's 2!"
+>> elsif x == 3
+>>    "it's 3!"
+>> end
+=> nil    #<-- Entire if statement evaluates to nil because it fails
+```
+Conditional statements interact with other aspects of Ruby syntax in a couple of ways that you need to be aware of-in particular, with assignment syntax. It's worth looking in some detail at how conditionals behave in assignments, because it involves some interesting points about how Ruby parses code. 
