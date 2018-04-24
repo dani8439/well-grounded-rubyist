@@ -109,3 +109,54 @@ you're really in effect comparing the negation of `x` with the integer `1`:
 The best practice is to use parentheses most or even all of the time when writing constructs like this. Even if they're not strictly necessary, they can make it easier for you and others to understand your code and to modify it later if necessary. 
 
 A third way to express a negative condition is with `unless`.
+
+### THE UNLESS KEYWORD ### 
+The `unless` keyword provides a more natural-sounding way to express the same semantics as `if not` or `if !`:
+
+`unless x == 1`
+
+But take "natural-sounding" with a grain of salt. Ruby programs are written in Ruby, not English, and you should aim for good Ruby style without worrying unduly about how your code reads as English prose. Not that English can't occasionally guide you; for instance, the `unless/else` sequence, which does a flip back from a negative to a positive not normally associated with the use of the word *unless*, can be a bit hard to follow:
+
+```ruby
+unless x > 100
+  puts "Small number!"
+else 
+  puts "Big number!"
+end
+```
+
+In general, `if/else` reads better than `unless/else`- and by flipping the logic of the condition, you can always replace the latter with the former:
+
+```ruby 
+if x <= 100 
+  puts "Small number!:
+else 
+  puts "Big number!" 
+end
+```
+If you come across a case where negating the logic seems more awkward than pairing `unless` with `else`, then keep `unless`. Otherwise, if you have an `else` clause, `if` is generally a better choice than `unless`.
+
+You can also put conditional tests in *modifier* position, directly after a statement.
+
+### CONDITIONAL MODIFIERS ###
+It's not uncommon to see a conditional modifier at the end of a statement in a case like this one:
+
+`puts "Big number!" if x > 100`
+
+This is the same as:
+
+```ruby 
+if x > 100
+  puts "Big number!"
+end
+```
+You can also do this with `unless`:
+
+`puts "Big number!" unless x <= 100`
+
+Conditional modifiers have a conversational tone. There's no `end` to worry about. You can't do as much with them (no `else` or `elsif` branching, for example), but when you need a simple conditional, they're often a good fit. Try to avoid really long statements that end with conditional modifiers, though; they can be hard to read and hard to keep in your head while waiting for the modifier at the end:
+
+`puts "done" && return (x > y && a < b) unless c == 0` <-- Potentially confusing tacking on of an  unless to an already-long line.
+
+Like other statements in Ruby, every `if` statement evaluates to an object. Let's look at how that plays out.
+
