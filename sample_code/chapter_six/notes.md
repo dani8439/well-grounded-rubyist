@@ -44,3 +44,68 @@ You can also use semicolons to mimic the line breaks, and to set off the `end` k
 
 Conditional execution often involves more than one branch; you may want to do one thing if the condition succeeds and another if it doesn't. For example, *if the password is correct, let the user in; otherwise pring an error message.* Ruby makes full provisions for multiple conditional branches, using `else` and `elsif`.
 
+### THE ELSE AND ELSIF KEYWORDS ### 
+You can provide an `else` branch in your `if` statement as follows:
+
+```ruby 
+if condition
+  # code executed if condition is true 
+else 
+  # code executed if condition is false
+end
+```
+
+There's also an `elsif` keyword (spelled like that, with no second *e*). `elsif` lets you cascade your conditional logic to more levels than you can with just `if` and `else`:
+
+```ruby
+if condition1
+  # code executed if condition1 is true
+elsif condition1 
+  # code executed if condition1 is false
+  # and condition2 is true 
+elsif condition3
+  # code executed if neither condition1
+  # nor condition2 is true, but condition3 is
+end
+```
+You can have any number of `elsif` clauses in a given `if` statement. The code segment corresponding to the first successful `if` or `elsif` is executed, and the rest of the statement is ignored:
+
+```ruby 
+print "Enter an integer: "
+n = gets.to_i
+if n > 0
+  puts "Your number is positive."
+elsif n < 0 
+  puts "Your number is negative."
+else
+  puts "Your number is zero." 
+end
+```
+Note that you can use a final `else` even if you already have one or more `elsif`s. The `else` clause is executed if none of the previous tests for truth has succeeded. If none of the conditions is true and there's no `else` clause, the whole `if` statement terminates with no action.
+
+Sometimes you want an `if` condition to be negative: *if something isn't true, then execute a given segment of code.* You can do this in several ways.
+
+### NEGATING CONDITIONS WITH NOT AND ! ###
+One way to negate a condition is to use the `not` keyword:
+
+`if not (x == 1)`
+
+You can also use the negating `!` (exclamation point, or *bang*) operator:
+
+`if !(x == 1)`
+
+Both of these examples use parentheses to set apart the expression being tested. You don't need them in the first example; you can do this:
+
+`if not x == 1`
+
+But you *do* need the parentheses in the second example, because the negating `!` operator has higher precedence than the `==` operator. In other words, if you do this 
+
+`if !x == 1`
+
+you're really in effect comparing the negation of `x` with the integer `1`:
+
+`if (!x) == 1`
+
+The best practice is to use parentheses most or even all of the time when writing constructs like this. Even if they're not strictly necessary, they can make it easier for you and others to understand your code and to modify it later if necessary. 
+
+A third way to express a negative condition is with `unless`.
