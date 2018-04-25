@@ -139,7 +139,37 @@ If you come across a case where negating the logic seems more awkward than pairi
 
 You can also put conditional tests in *modifier* position, directly after a statement.
 
-<<**BIG EXAMPLE IN TEXT OF LIFE WITHOUT THE DANGLING ELSE AMBIGUITY ON PAGE 156**>>
+## **Life without the dangling `else` ambiguity** ##
+In some languages, you can't tell which `else` clause goes with which `if` clause without a special rule. In C, for example, an `if` statement might look like this:
+
+```ruby 
+if (x)
+  if (y) { execute this code }
+  else { execute this code };    #<--- x is true, but y isn't.
+end
+```
+But wait: Does the code behave the way the indentation indicates (the `else` belongs to the second `if`)? Or does it work like this?
+
+```ruby
+if (x)
+  if (y) { execute this code }
+else { execute this code };        #<--- x isn't true
+end
+```
+All that's changed is the indentation of the third line (which doesn't matter to the C compiler; the indentation just makes the ambiguity visually obvious). Which `if` does the `else` belong to? And how do you tell?
+
+You tell by knowing the rule in C: a dangling `else` goes with the last unmatched `if` (the first of the two behaviors in this example). But in Ruby, you have `end` to help you out:
+
+```ruby 
+if x > 50 
+  if x > 100 
+    puts "Big number"
+  else
+    puts "Medium number"
+  end
+end
+```
+The single `else` in this statement has to belong to the second `if`, because that `if` hasn't yet hit its `end`. The first `if` and the last `end` always belong together, the second `if` and the second-to-last `end` always belong together, and so forth. The `if/end` pairs encircle what belongs to them, including `else`. Of course, this means you have to place your `end` keywords correctly.
 
 ### CONDITIONAL MODIFIERS ###
 It's not uncommon to see a conditional modifier at the end of a statement in a case like this one:
@@ -190,3 +220,22 @@ An `if` statement that doesn't succeed anywhere returns `nil`. Here's a full irb
 => nil    <-- Entire if statement evaluates to nil because it fails
 ```
 Conditional statements interact with other aspects of Ruby syntax in a couple of ways that you need to be aware of-in particular, with assignment syntax. It's worth looking in some detail at how conditionals behave in assignments, because it involves some interesting points about how Ruby parses code.
+
+## *Assignment syntax in condition bodies and tests* ##
+Assignment syntax and conditional expressions cross paths at two points: in the bodies of conditional expressions, where the assigments may or may not happen at all, and in the conditional tests themselves:
+
+```ruby 
+if x = 1  #<--- Assignment in conditional test
+  y = 2  #<--- Assignment in conditional body
+end
+```
+What happens (or doesn't) when you use these idioms? We'll look at both, starting with variable assignment in the body of the conditional-specifically, local variable assignment, which displays some perhaps unexpected behavior in this context. 
+
+### LOCAL VARIABLE ASSIGNMENT IN A CONDITIONAL BODY ###
+Ruby doesn't draw as clear a line as compiled languages do between "compile time" and "runtime," but the interpreter does parse your code before running it, and certain decisions are made during the process. An important one is the recognition and allocation of local variables.
+
+When the Ruby parser sees the sequence *identifiers, equal-sign,* and *value*, as in this expression,
+
+`x = 1`
+
+it allocates space for a local variable called `x`. The creation of the variable-not the assignment of a value to it, but the internal creation of a variable-always takes place as a result of this kind of expression, even if the code isn't executed!
