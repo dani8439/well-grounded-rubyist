@@ -436,3 +436,46 @@ This kind of interflow between method definitions (`===`) and code that doesn't 
 The `case` statement also comes in a slightly abbreviated form, which lets you test directly for a truth value: `case` without a `case` expression.
 
 ### THE SIMPLE CASE TRUTH TEST ###
+If you start a `case` statement with the `case` keyword by itself-that is, with no test expression-followed by some `when` clauses the first `when` clause whose condition is true will be the winner. Assuming an object `user` with `first_name` and `last_name` methods, you could imaginably write a `case` statement like this:
+
+```ruby
+case
+when user.first_name == "David", user.last_name == "Black"
+  puts "You might be David Black."
+when Time.now.wday == 5   #<-- Ordinal number for day of week (Sunday is 0)
+  puts "You're not David Black, but at least it's Friday!"
+else
+  puts "You're not David Black, and it's not Friday."
+end
+```
+The simple `case` keyword in this manner is an alternate way of writing an `if` statement. In fact, any `case` statement can be written as an `if` statement. `case` statements with explicit arguments to `case` are often considerably shorter than their `if` counterparts, which have to resort to calling `===` or other comparison methods. Those without explicit test arugments are usually no shorter than the equivalent `if` statements; for instance, the previous example would be written like this using `if`:
+
+```ruby
+if user.first_name == "David" or user.last_name == "Black:
+  puts "You must be David Black."
+elsif Time.now.wday == 5
+  puts "You're not David Black, but at least it's Friday!"
+else
+  puts "You're not David Black, and it's not Friday."
+end
+```
+The advantage of the testless `case` statement is that it doesn't limit you to what you can test with `===` on a given object. When you have a choice between a testless `case` or an `if`, your choice will be based on your sense of what looks and reads best.
+
+### THE RETURN VALUE OF CASE STATEMENTS ###
+An important final point to keep in mind about `case` statements is that every `case` statement evaluates to a single object. If there's a successful `when` or `else` clause, the return value of the entire `case` statement is the value returned by the code in that clause. Otherwise, if the `case` statement fails to find a match, the entire statement evaluates to `nil`, similar to `if` statements that fail.
+Thus you could, for example, rewrite the conditionless example like this:
+
+```ruby 
+puts case
+  when user.first_name == "David", user.last_name == "Black"
+    "You might be David Black."
+  when Time.now.wday == 5
+    "You're not David Black, but at least it's Friday!"
+  else
+    "You're not David Black, and it's not Friday."
+  end
+ end 
+```
+In this version, the call to `puts` has been extracted out of the `when` clauses; the whole `case` statement is dedicated to finding an argument to the single `puts` call on the left. That argument will be whichever of the three strings the `case` statement returns.
+
+Conditionals like `if` and `case/when` let you control program flow by doing one thing instead of another. But sometimes you need to perform a single task again and again. This kind of repetition can be accomplished with loops, which we'll look at next.
