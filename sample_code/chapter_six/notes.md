@@ -286,3 +286,36 @@ if x
 #etc
 ```
 But sometimes it's handy to do the assigning and testing at the same time, particularly when you're using a method that returns `nil` on failure and some other value on success. A common example is pattern matching with the `match` method. This method, which you'll see a lot more of in chapter 11, tests a string against a regular expression, returning `nil` if there's no match and an instance of `MatchData` if there is one. The `MatchData` object can be queried for information about the specifics of the match. Note the use of a literal regular expression, `/la/`, in the course of testing for a match against the string `name`:
+
+```ruby 
+name = "David A. Black"
+if m = /la/.match(name)    #<--- (#1).
+  puts "Found a match!"
+  print "Here's the unmatched start of the string: "
+  puts m.pre_match 
+  print "Here's the unmatched end of the string: "
+  puts m.post_match 
+else 
+  puts "No match"
+end
+```
+The output from this snippet is
+
+```irb 
+Found a match!
+Here's the unmatched start of the string: David A. B
+Here's the unmatched end of the string: ck
+```
+The match method looks for the pattern `la` in the string `"David A. Black"`. The variable `m` is assigned in the conditional(#1) and will be `nil` if there's no match. The deck is stacked in the example, of course: there's a match, so `m` is a `MatchData` object and can be queried. In the example, we ask it about the parts of the string that occurred before and after the matched part of the string, and it gives us the relevant substrings.
+
+As always, you could rewrite the assignment and the conditional test like this:
+
+```ruby 
+m = /la/.match(name)
+if m 
+  # etc
+end
+```
+You don't have to combine them into one expression. But at least in this case there's some semantic weight to doing so: the expression may or may not pass the conditional test, so it's reasonable to test it.
+
+Althought `if` and friends are Ruby's bread-and-butter conditional keywords, they're not the only ones. We'll look next at `case` statements.
