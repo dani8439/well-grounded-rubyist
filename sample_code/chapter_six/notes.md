@@ -239,3 +239,50 @@ When the Ruby parser sees the sequence *identifiers, equal-sign,* and *value*, a
 `x = 1`
 
 it allocates space for a local variable called `x`. The creation of the variable-not the assignment of a value to it, but the internal creation of a variable-always takes place as a result of this kind of expression, even if the code isn't executed!
+Consider this example:
+
+```ruby 
+if false
+  x = 1
+end
+p x   #<--- Output: nil
+p y   #<--- Fatal error: y is unknown
+```
+The assignment to `x` isn't executed, because it's wrapped in a failing conditional test. But the Ruby parser sees the sequence `x = 1`, from which it deduces that the program involves a local variable `x`. The parser doesn't care whether `x` is ever assigned to a value. Its job is just to scour the code for local variables for which space needs to be allocated. 
+
+The result is that `x` inhabits a strange kind of variable limbo. It has been brought into being and initialized to `nil`. In that respect, it differs from a variable that has no existence at all; as you can see in the example, examining `x` gives you the value `nil`, whereas trying to inspect the nonexistent variable `y` results in a fatal error. But although `x` exists, it hasn't played any role in the program. It exists only as an artifact of the parsing process.
+
+None of this happens with class, instance, or global variables. All three of those variable types are recognizable by their appearance (`@@x, @x, $x`). But local variables look just like method calls. Ruby needs to apply some logic at parse time to figure out what's what, to as great an extent as it can.
+
+You also have to keep your wits about you when using assignment syntax in the test part of a conditional.
+
+### ASSIGNMENT IN A CONDITIONAL TEST ### 
+In this example, not that the conditional test is an assignment (`x = 1`) and not an equality test (which would be `x==1`):
+
+```ruby 
+if x = 1
+  puts "Hi!"
+end
+```
+The assignment works as assignments generally do: `x` gets set to `1`. The test, therefore, reduces to `if 1`, which is true. Therefore, the body of the conditional is executed, and the string `"Hi!"` is printed.
+
+But you also get a warning:
+
+`warning: found = in conditional, should be ==`
+
+Ruby's thinking in a case like this is as follows. The test expression `if x = 1` will always succeed, and the conditional body will always be executed. That means there's no conceivable reason for a programmer ever to type `if x = 1`. Therefore, Ruby concludes that you almost certainly meant to type something else and issues the warning to alert you to the probable mistake. Specifically, the warning suggests the `==` operator, which produces a real test (that is, a test that isn't necessarily always true).
+
+What's particularly nice about this warning mechanism is that Ruby is smart enough not to warn you in cases where it's not certain that the condition will be true. If the right-hand side of the assignment is itself a variable or method call, then you don't get the warning:
+
+`if x = y`  <--- **No warning**
+
+Unlike `x = 1`, the assignment expression `x = y` may or may not succeed as a conditional test. (It will be false if `y` is false.) Therefore, it's not implausible that you'd test that expression, so Ruby doesn't warn you.
+
+Why would you want to use an assigment in a conditional test? You certainly never have to; you can always do this:
+
+```ruby 
+x = y
+if x
+#etc
+```
+But sometimes it's handy to do the assigning and testing at the same time, particularly when you're using a method that returns `nil` on failure and some other value on success. A common example is pattern matching with the `match` method. This method, which you'll see a lot more of in chapter 11, tests a string against a regular expression, returning `nil` if there's no match and an instance of `MatchData` if there is one. The `MatchData` object can be queried for information about the specifics of the match. Note the use of a literal regular expression, `/la/`, in the course of testing for a match against the string `name`:
