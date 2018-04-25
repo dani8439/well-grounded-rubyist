@@ -319,3 +319,120 @@ end
 You don't have to combine them into one expression. But at least in this case there's some semantic weight to doing so: the expression may or may not pass the conditional test, so it's reasonable to test it.
 
 Althought `if` and friends are Ruby's bread-and-butter conditional keywords, they're not the only ones. We'll look next at `case` statements.
+
+### case statements ###
+A `case` statement starts with an expression-usually a single object or variable, but any expression can be used-and walks it through a list of possible matches. Each possible match is contained in a `when` statement consisting of one or more possible matching objects and a segment of code. When one of the terms in a given `when` clause matches, that `when` is considered to have "won," and its code segment is executed. Only one match, at most, can win.
+
+`case` statements are easier to grasp by example than description. The following listing shows a `case` statement that tests a line of keyboard input and branches based on its value. 
+
+```ruby
+print "Exit the program? (yes or no): "
+answer = gets.chomp #<--- Chomps off trailing newline character on input string
+case answer #1
+when "yes"   #2
+  puts "Good-bye!"
+  exit
+when "no"
+  puts "OK, we'll continue"
+else  #3
+  puts "That's an unknown answer -- assuming you meant 'no'"
+end  #4
+puts "Continuing with program...."
+```
+The `case` statement begins when the `case` keyword(#1), continues through all the `when` blocks (#2) and an (optional) `else` clause (#3), and ends with the `end` (#4) keyword. At most, one match will succeed and have its code executed. If it's the one belonging to `"yes"`, then the program exits. Any other input is either `"no"` or some other value, which this particular program interprets as equivalent to `"no"`, causing the program to continue running.
+
+You can put more than one possible match in a single `when`, as this snippet shows:
+```ruby
+case answer
+when "y", "yes"
+  puts "Good-bye!"
+  exit
+  #etc
+ end
+```
+The comma between multiple conditions in a `when` clause is a kind of "or" operator; this code will say "Good-bye!" and exit if `answer` is either `"y"` or `"yes"`.
+
+Let's look next at how `when` clauses work under the hood. You won't be surprised to learn that some message sending is involved.
+
+### HOW WHEN WORKS ###
+The basic idea of the `case/when` structure is that you take an object and cascade through a series of tests for a match, taking action based on the test that succeeds. But what does *match* mean in this context? What does it mean, in our example, to say that `answer` matches the word *yes*, or the word *no*, or neither?
+
+Ruby has a concrete definition of *match* when it comes to `when` statements.
+
+Every Ruby object has a *case equality* method called `===`(three equal signs, sometimes called the *threequal operator*). The outcome of calling the `===` method determines whether a `when` clause has matched.
+
+You can see this clearly if you look first at a `case` statement and then a translation of this statement into threequal terms. Look again at the `case` statement in the previous coding example. Here's the same thing rewritten to use the threequal operator explicitly:
+
+```ruby
+if "yes" === answer
+  puts "Good-bye!"
+  exit
+elsif "no" === answer 
+  puts "OK, we'll continue"
+else
+  puts "That's an unknown answer-assuming you meant 'no'"
+end
+```
+The `===` in infix operator position (that is, between a left-hand term and a right-hand term) is really syntactic sugar for a method call:
+
+`if "yes".===(answer)`
+
+A `when` statement wraps that method call in yet more sugar: you don't have to use `===` explicitly in either operator or method position. It's done for you. That's the logic of the syntax, but why does
+
+`"yes" === answer`
+
+return `true` when `answer` contains `"yes"`?
+
+The method call returns `true` because of how the threequal method is defined for strings. When you ask a string to threequal itself against another string (`string1 === string2`), you're asking it to compare its own contents character by character against the other string and report back `true` for a perfect match, or `false` otherwise.
+
+The most important point in this explanation is the phrase "for strings." Every class (and, in theory, every individual object, although it's usually handled at the class level) can define its own `===` method and thus its own case=equality logic. For strings, and indeed, for any object that doesn't override it, `===` works the same as `==` (the basic string-equals-some-other-string test method). But other classes can define the threequal test any way they want.
+
+`case/when` logic is thus really `object === other_object` logic in disguise; and `object === other_object` is really `object. === (other_object)` in disguise. By defining the threequal method however you wish for your own classes, you can exercise complete control over the way your objects behave inside a `case` statement.
+
+### PROGRAMMING OBJECTS' CASE STATEMENT BEHAVIOR ###
+Let's say we decide that a `Ticket` object should match a `when` clause in a `case` statement based on its venue. We can bring this about by writing the appropriate threequal method. The following listing shows such a method, bundled with enough ticket functionality to make a complete working example:
+
+```ruby
+class Ticket
+  attr_accessor :venue, :date
+  def initialize(venue, date)
+    self.venue = venue
+    self.date = date
+  end
+  def ===(other_ticket)   #<---1
+    self.venue == other_ticket.venue
+  end
+end
+ticket1 = Ticket.new("Town Hall", "07/08/13")
+ticket2 = Ticket.new("Conference Center", "07/08/13")
+ticket3 = Ticket.new("Town Hall", "08/09/13")
+puts "ticket1 is for an event at: #{ticket1.venue}."
+case ticket1
+when ticket2     #<--- #2
+  puts "Same location as ticket2!"
+when ticket3     #<--- #3
+  puts "Same location as ticket3!"
+else 
+  puts "No match"
+end
+  
+```
+The output from the listing is as follows:
+
+```irb
+ticket1 is for an event at: Town Hall.
+Same location as ticket3!
+```
+The match is found through the implicit use of the `===` instance method of the `Ticket` class (#1). Inside the `case` statement, the first `when` expression (#2) triggers a hidden call to `===`, equivalent to doing this:
+
+`if ticket2 === ticket1`
+
+Because the `===` method returns `true` or `false` based on a comparison of venues, and `ticket2`'s venue isn't the same as `ticket1`'s, the comparison between the two tickets returns `false`. Therefore, the body of the corresponding `when` clause isn't executed.
+
+The next test is then performed: another threequal comparison between `ticket1` and `ticket3` (#3). This test returns `true`; the `when` expression succeeds, and the code in its body is executed.
+
+This kind of interflow between method definitions (`===`) and code that doesn't look like it's calling methods (`case/when`) is typical of Ruby. The `case/when` structure provides an elegant way to perform cascaded conditional tests; and the fact that it's a bunch of `===` calls means you can make it do what you need by defining the `===` method in your classes.
+
+The `case` statement also comes in a slightly abbreviated form, which lets you test directly for a truth value: `case` without a `case` expression.
+
+### THE SIMPLE CASE TRUTH TEST ###
