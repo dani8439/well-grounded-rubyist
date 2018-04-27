@@ -148,3 +148,87 @@ end until true
 the body of the `begin/end` block does get executed once.
 
 In addition to looping unconditionally (`loop`) and conditionally (`while`,`until`) you can loop through a list of values, running the loop once for each value. Ruby offers several ways to do this, one of which is the keyword `for`.
+
+### *Looping based on a list of values* ###
+Let's say you want to print a chart of Fahrenheit equvalents of Celsius values. You can do this by putting the Celsius values in an array and then looping through the arrag using the `for/in` keyword pair. The loop runs once for each value in the array; each time through, that value is assigned to a variable when you specify:
+
+```ruby
+celsius = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100] 
+puts "Celsius\tFahrenheit" #<--- Header for chart (\t prints a tab)
+for c in celsius
+  puts "#{c}\t#{Temperature.c2f(c)}"
+end
+```
+The body of the loop (the `puts` statement) runs 11 times. The first time through, the value of `c` is `0`. The second time, `c`, is `10`; the third time, it's `20`; and so forth.
+
+`for` is a powerful tool. Oddly enough, though, on closer inspection it turns out that `for` is just an alternate way of doing something even more powerful.
+
+## *Iterators and code blocks* ##
+The control-flow techniques we've looked at so far involve controlling how many times or under what conditions, a segment of code gets executed. In this section, we'll examine a different kind of control-flow facility. The techniques we'll discuss here don't just perform an execute-or-skip operation on a segment of code; they bounce control of the program from one scope to another and back again, through *iteration*.
+
+### *The ingredients of iteration* ###
+In focusing on movement beween local scopes, it may sound like we've gone back to talking about method calls. After all, when you call a method on an object, control is passed to the body of the method (a different scope); and when the method has finished executing, control returns to the point right after the point where the method call took place.
+
+We are indeed back in method-call territory, but we're exploring new aspects of it, not just revisiting the old. We're talking about a new construct called a *code block* and a keyword by the name of `yield`.
+
+We saw earlier a code sample that looked like this:
+
+`loop { puts "Looping forever!" }`
+
+The word `loop`and the message in the string clue you in as to what you get if you run it: that message, printed forever. But what *exactly* is going on? Why does that `puts` statement get executed at all-and why does it get executed in a loop?
+
+The answer is that `loop` is an *iterator*. An iterator is a Ruby method that has an extra ingredient in its calling syntax: it expects you to provide it with a code block. The curly braces in the loop example delimit the block; the code in the block consists of the `puts` statement.
+
+The `loop` method has access to the code inside the block: the method can *call* (execute) the block. To do this from an iterator of your own, you use the keyword `yield`. Together, the code block (supplied by the calling code) and `yield` (involked from within the method) are the chief ingredients of iteration.
+
+`loop` itself is written in C (and uses a C function to achieve the same effect as `yield`). But the whole idea of looping suggests an interesting exercise: reimplementating the `loop` in pure Ruby. This exercise will give you a first glimpse at `yield` in action.
+
+### *Iteration, home-style* ###
+The job of `loop` is to yield control to the block, again and again. Here's how you might write your own version of `loop`:
+
+```ruby
+def my_loop
+  while tru
+    yield
+  end
+end
+```
+Or even shorter:
+
+```ruby
+def my_loop
+  yield while true
+end
+```
+Then you'd call it just like you call `loop`:
+
+`my_loop { puts "My-looping forever!" }`
+
+and the message would be printed over and over.
+
+By providing a code block, you're giving `my_loop` something-a chunk of code-to which it can yield control. When the method yields to the block, the code in the block runs, and then control returns to the method. Yielding isn't the same as returning from a method. Yielding takes place while the method is still running. After the code block executes, control returns to the method at the statement immediately following the call to `yield`.
+
+The code block is part of the method call-that is, part of its syntax. This is an important point: a code block isn't an argument. The arguments to methods are the arguments. The code block is the code block. They're two separate construts. You can see the logic behind the distinction if you look at the full picture of how method calls are put together.
+
+### *The anatomy of the method call* ###
+Every method call in Ruby has the following syntax:
+
+• A receiver object or variable (defaulting to `self` if absent)
+
+• A dot (required if there's an explicit receive; disallowed otherwise)
+
+• A method name (required)
+
+• An argument list (optional; defaults to ())
+
+• A code block (option; no default)
+
+Note in particular that the argument list and the code block are separate. Their existence varies independently. All of these are syntactically legitimate Ruby method calls:
+
+```ruby
+loop { puts "Hi" }
+loop() { puts "Hi" }
+string.scan(/[^,]+/)
+string.scan(/[^,]+/) { |word| puts word }
+```
+(The last example shows a block paramenter, `word`. We'll get back to block parameters presently.)
