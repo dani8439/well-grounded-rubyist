@@ -231,4 +231,56 @@ loop() { puts "Hi" }
 string.scan(/[^,]+/)
 string.scan(/[^,]+/) { |word| puts word }
 ```
-(The last example shows a block paramenter, `word`. We'll get back to block parameters presently.)
+(The last example shows a block paramenter, `word`. We'll get back to block parameters presently.) The difference between a method call with a block and a method call without a block comes down to whether or not the method can yield. If there's a block, then it can; if not, it can't, because there's nothing to yield to.
+
+Furthermore, some methods are written so they'll at least do *something*, whether you pass them a code block or not. `String#split` for example, splits its receiver (a string, of course), on the delimiter you pass in and returns an array of the split elements. If you pass it a block, `split` also yields the split elements to the block, one at a time. Your block can then do whatever it wants with each substring: print it out, stash it in a database column, and so forth.
+
+If you learn to think of the code block as a syntactic element of th method call, rather than as one of the arguments, you'll be able to keep things straight as you see more variations on the basic iteration theme.
+
+Earlier you saw, in brief, that code blocks can be delimited either by curly braces or by the `do/end` keyword pair. Let's look more closely now at how these two delimiter options differ from each other.
+
+### *Curly braces vs. do/end in code block syntax* ###
+The difference between the two way sof delimiting a code block is a difference in precendence. Look at this example, and you'll start to see how it plays out:
+
+```irb
+>> array = [1, 2, 3]
+=> [1, 2, 3]
+>> array.map {|n| n * 10 } #<--1.
+=> [10, 20, 30]
+>> array.map do |n| n * 10 end #<--2
+=> [10, 20, 30]
+>> puts array.map {|n| n * 10 }  #<--3
+10
+20
+30
+=> nil
+>> puts array.map do |n| n * 10 end #<--4
+  #<Enumberator:0x0000000101123048>
+=> nil
+```
+The `map` method works through an array one method at a time, calling the code block once for each item and creating a new array consisting of the results of all of those calls to the block. Mapping our `[1, 2, 3]` array through a block that multiplies each item by 10 results in the new array `[10, 20 ,30]`. Furthermore, for a simple map operation, it doesn't matter whether we use curly braces (#1) or `do/end` (#2). The results are the same.
+
+But look at what happens when we use the outcome of the map operation as an argument to `puts`. THe curly-brace version prints out the `[10, 20, 30]` array (one item per line, in keeping with how `puts` handles arrays) (#3). But the `do/end` version returns an enumerator-which is precisely what `map` does when it's called with *no* code block (#4). (You'll learn more about enumerators later on. The relevant point here is that the two block syntaxes produce different results.)
+
+The reason is that the precendence is different. The first `puts` statement is interpreted like this:
+
+`puts(array.map {|n| n * 10 })`
+
+The second is interpreted like this:
+
+`puts(array.map) do |n| n * 10 end`
+
+In the second case, the code block is interpreted as being part of the call to `puts`, not the call to `map`. And if you call `puts` with a block, it ignores the blcok. So the `do/end` version is really equivalent to
+
+`puts array.map`
+
+And that's why we get an enumerator.
+
+The call to `map` using a `do/end`-style code block ullustrates thef act that if you supply a code block but the method you call doesn't see it (or doesn't look for it), no error occurs: methods aren't obliged to yield, and many methods (including `map`) have well defined behaviors for cases where there's a code block and cases where there isn't. If a method seems to be ignoring a block that you expect it to yield to, look closely at the precedence rules and make sure the block really is available to the method.
+
+We'll continue looking at iterators and iteration by doing with several built-in Ruby iterators what we did with `loop`: examining the method and then implementing our own. We'll start with a method that's a slight refinement of `loop`:`times`.
+
+### *Implementing times* ###
+The `times` method is an instance method of the `Integer` class, which means you call it as a method on integers. It runs the code block *n* times, for any integer *n*, and at the end of the method the return value is *n*.
+
+You can see both the output and the return value if you run a `times` example in irb:
