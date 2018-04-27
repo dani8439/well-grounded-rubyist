@@ -36,3 +36,6 @@ end
 # (irb):2: warning: found = in conditional, should be ==
 # Hi!
 # => nil
+
+# whereas
+if x = y # No warning. 
