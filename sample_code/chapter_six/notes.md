@@ -10,10 +10,10 @@ Ruby's control-flow techniques include the following:
 
 • *Exceptions* - Error conditions are handled by special control-flow rules.
 
-They're all indespensible to both the understanding and the practice of Ruby. The first, condition execution (`if` and friends), is a fundamental and straightforward programming tool in almost any programming language. Looping is a more specialized but closely related technique, and Ruby provides you with several ways to do it. When we get to iteration, we'll be in true Ruby hallmark territory. The technique isn't unique to Ruby, but it's a relatively rare programming language feature that figures prominently in Ruby. Finally, we'll look at Ruby's extensive mechanism for handling error conditions through exceptions. Exceptions stop the flow of a program, either completely or until the error condition has been dealt with. Exceptions are objects, and you can create your own exception classes, inheriting from the ones built in to Ruby, for specialized handling of error conditions in your programs.
+They're all indispensable to both the understanding and the practice of Ruby. The first, condition execution (`if` and friends), is a fundamental and straightforward programming tool in almost any programming language. Looping is a more specialized but closely related technique, and Ruby provides you with several ways to do it. When we get to iteration, we'll be in true Ruby hallmark territory. The technique isn't unique to Ruby, but it's a relatively rare programming language feature that figures prominently in Ruby. Finally, we'll look at Ruby's extensive mechanism for handling error conditions through exceptions. Exceptions stop the flow of a program, either completely or until the error condition has been dealt with. Exceptions are objects, and you can create your own exception classes, inheriting from the ones built in to Ruby, for specialized handling of error conditions in your programs.
 
 ## *Conditional code execution* ##
-*Allow a user access to a site if the password is corred. Print an error message unless the requested item exists. Concede defeat if the king is checkmated.* The list of uses for controlling the flow of a program conditionally-executing specific lines or segments of code only if certain conditions are met-is endless. Without getting too philosophical, we might even say that decision making based on unpredictable but discernible conditions is as common in programming as it is in life.
+*Allow a user access to a site if the password is correct. Print an error message unless the requested item exists. Concede defeat if the king is checkmated.* The list of uses for controlling the flow of a program conditionally-executing specific lines or segments of code only if certain conditions are met-is endless. Without getting too philosophical, we might even say that decision making based on unpredictable but discernible conditions is as common in programming as it is in life.
 
 Ruby gives you a number of ways to control program flow on a conditional basis. The most important ones fall into two categories:
 
@@ -24,7 +24,7 @@ Ruby gives you a number of ways to control program flow on a conditional basis. 
 We'll look at both in this section.
 
 ### *The if keyword and friends* ###
-The workhorse of conditional execution, not surprisingly, is the `if` keyword. `if` clauses can take serveral forms. The simplest is the following:
+The workhorse of conditional execution, not surprisingly, is the `if` keyword. `if` clauses can take several forms. The simplest is the following:
 
 ```ruby
 if condition
@@ -42,7 +42,7 @@ You can also use semicolons to mimic the line breaks, and to set off the `end` k
 
 `if x > 10; puts x; end`
 
-Conditional execution often involves more than one branch; you may want to do one thing if the condition succeeds and another if it doesn't. For example, *if the password is correct, let the user in; otherwise pring an error message.* Ruby makes full provisions for multiple conditional branches, using `else` and `elsif`.
+Conditional execution often involves more than one branch; you may want to do one thing if the condition succeeds and another if it doesn't. For example, *if the password is correct, let the user in; otherwise print an error message.* Ruby makes full provisions for multiple conditional branches, using `else` and `elsif`.
 
 ### THE ELSE AND ELSIF KEYWORDS ###
 You can provide an `else` branch in your `if` statement as follows:
@@ -222,7 +222,7 @@ An `if` statement that doesn't succeed anywhere returns `nil`. Here's a full irb
 Conditional statements interact with other aspects of Ruby syntax in a couple of ways that you need to be aware of-in particular, with assignment syntax. It's worth looking in some detail at how conditionals behave in assignments, because it involves some interesting points about how Ruby parses code.
 
 ## *Assignment syntax in condition bodies and tests* ##
-Assignment syntax and conditional expressions cross paths at two points: in the bodies of conditional expressions, where the assigments may or may not happen at all, and in the conditional tests themselves:
+Assignment syntax and conditional expressions cross paths at two points: in the bodies of conditional expressions, where the assignments may or may not happen at all, and in the conditional tests themselves:
 
 ```ruby
 if x = 1  #<--- Assignment in conditional test
@@ -278,7 +278,7 @@ What's particularly nice about this warning mechanism is that Ruby is smart enou
 
 Unlike `x = 1`, the assignment expression `x = y` may or may not succeed as a conditional test. (It will be false if `y` is false.) Therefore, it's not implausible that you'd test that expression, so Ruby doesn't warn you.
 
-Why would you want to use an assigment in a conditional test? You certainly never have to; you can always do this:
+Why would you want to use an assignment in a conditional test? You certainly never have to; you can always do this:
 
 ```ruby
 x = y
@@ -318,7 +318,7 @@ end
 ```
 You don't have to combine them into one expression. But at least in this case there's some semantic weight to doing so: the expression may or may not pass the conditional test, so it's reasonable to test it.
 
-Althought `if` and friends are Ruby's bread-and-butter conditional keywords, they're not the only ones. We'll look next at `case` statements.
+Although `if` and friends are Ruby's bread-and-butter conditional keywords, they're not the only ones. We'll look next at `case` statements.
 
 ### case statements ###
 A `case` statement starts with an expression-usually a single object or variable, but any expression can be used-and walks it through a list of possible matches. Each possible match is contained in a `when` statement consisting of one or more possible matching objects and a segment of code. When one of the terms in a given `when` clause matches, that `when` is considered to have "won," and its code segment is executed. Only one match, at most, can win.
@@ -448,7 +448,7 @@ else
   puts "You're not David Black, and it's not Friday."
 end
 ```
-The simple `case` keyword in this manner is an alternate way of writing an `if` statement. In fact, any `case` statement can be written as an `if` statement. `case` statements with explicit arguments to `case` are often considerably shorter than their `if` counterparts, which have to resort to calling `===` or other comparison methods. Those without explicit test arugments are usually no shorter than the equivalent `if` statements; for instance, the previous example would be written like this using `if`:
+The simple `case` keyword in this manner is an alternate way of writing an `if` statement. In fact, any `case` statement can be written as an `if` statement. `case` statements with explicit arguments to `case` are often considerably shorter than their `if` counterparts, which have to resort to calling `===` or other comparison methods. Those without explicit test arguments are usually no shorter than the equivalent `if` statements; for instance, the previous example would be written like this using `if`:
 
 ```ruby
 if user.first_name == "David" or user.last_name == "Black"

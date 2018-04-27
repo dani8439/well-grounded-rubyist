@@ -1,13 +1,11 @@
 ## Repeating Action with Loops ##
-Ruby's facilities for looping repeatedly through code also allow you to incorporate conditional logic: you can loop *while* a 
-given condition is true (such as a variable being equal to a given value), and you can loop *until* a given condition is true. 
-You can also break out of a loop *unconditionally*, terminating the loop at a certain point, and resume execution of the program 
+Ruby's facilities for looping repeatedly through code also allow you to incorporate conditional logic: you can loop *while* a given condition is true (such as a variable being equal to a given value), and you can loop *until* a given condition is true. You can also break out of a loop *unconditionally*, terminating the loop at a certain point, and resume execution of the program
 after the loop.
 
 We'll look at several ways to loop-starting, appropriately with a method called `loop`.
 
 ### *Unconditional looping with the loop method* ###
-The `loop` method doesn't take any normal arguments: you just call it. It does, however, take a code block-that is, a delimited set of program instructions, written as part of the method call (the call to `loop`) and available to be executed *from* the method. (We'll look at code blocks in much more detail later in this chapter. Can get by with just the placeholder level of knowlege here.) The anatomy of a call to `loop`, then, looks like this:
+The `loop` method doesn't take any normal arguments: you just call it. It does, however, take a code block-that is, a delimited set of program instructions, written as part of the method call (the call to `loop`) and available to be executed *from* the method. (We'll look at code blocks in much more detail later in this chapter. Can get by with just the placeholder level of knowledge here.) The anatomy of a call to `loop`, then, looks like this:
 
 `loop codeblock`
 
@@ -16,7 +14,7 @@ Code blocks can be written in one of two ways: either in curly braces (`{}`) or 
 ```ruby
 loop { puts "Looping forever!" }
 
-loop do 
+loop do
   puts "Looping forever!"
 end
 ```
@@ -38,7 +36,7 @@ Another technique skips to the next iteration of the loop without finishing the 
 
 ```ruby
 n = 1
-loop do 
+loop do
   n = n + 1
   next unless n == 10
   break
@@ -89,7 +87,7 @@ begin
 end while n < 11
 puts "Done!"
 ```
-The output from this example is the same as the output from the previous example. There's a difference betweet putting `while` at the beginning and putting it at the end. If you put `while` at the beginning, and if the `while` condition is false, the code isn't executed:
+The output from this example is the same as the output from the previous example. There's a difference between putting `while` at the beginning and putting it at the end. If you put `while` at the beginning, and if the `while` condition is false, the code isn't executed:
 
 ```ruby
 n = 10
@@ -105,7 +103,7 @@ begin
   puts n
 end while n < 10
 ```
-the number 10 is printed. Obviously, `n` isn't less than 10 at any point. But because the `while` test is positioned at hte end of the statement, the body is executed once before the test is performed. Like `if` and `unless`, the conditional loop keywords come as a pair: `while` and `until`.
+the number 10 is printed. Obviously, `n` isn't less than 10 at any point. But because the `while` test is positioned at the end of the statement, the body is executed once before the test is performed. Like `if` and `unless`, the conditional loop keywords come as a pair: `while` and `until`.
 
 ### THE UNTIL KEYWORD ###
 The `until` keyword is used the same way as `while` but with reverse logic. Here's another labor-intensive way to print out the integers from 1 to 10, this time illustrating the use of `until`.
@@ -139,7 +137,7 @@ a += 1 until true
 ```
 `a` will still be 1; the `a += 1` statement won't be executed, because `true` is already true. But in this case:
 
-```ruby 
+```ruby
 a = 1
 begin
   a += 1
@@ -150,10 +148,10 @@ the body of the `begin/end` block does get executed once.
 In addition to looping unconditionally (`loop`) and conditionally (`while`,`until`) you can loop through a list of values, running the loop once for each value. Ruby offers several ways to do this, one of which is the keyword `for`.
 
 ### *Looping based on a list of values* ###
-Let's say you want to print a chart of Fahrenheit equvalents of Celsius values. You can do this by putting the Celsius values in an array and then looping through the arrag using the `for/in` keyword pair. The loop runs once for each value in the array; each time through, that value is assigned to a variable when you specify:
+Let's say you want to print a chart of Fahrenheit equivalents of Celsius values. You can do this by putting the Celsius values in an array and then looping through the array using the `for/in` keyword pair. The loop runs once for each value in the array; each time through, that value is assigned to a variable when you specify:
 
 ```ruby
-celsius = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100] 
+celsius = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 puts "Celsius\tFahrenheit" #<--- Header for chart (\t prints a tab)
 for c in celsius
   puts "#{c}\t#{Temperature.c2f(c)}"
@@ -167,7 +165,7 @@ The body of the loop (the `puts` statement) runs 11 times. The first time throug
 The control-flow techniques we've looked at so far involve controlling how many times or under what conditions, a segment of code gets executed. In this section, we'll examine a different kind of control-flow facility. The techniques we'll discuss here don't just perform an execute-or-skip operation on a segment of code; they bounce control of the program from one scope to another and back again, through *iteration*.
 
 ### *The ingredients of iteration* ###
-In focusing on movement beween local scopes, it may sound like we've gone back to talking about method calls. After all, when you call a method on an object, control is passed to the body of the method (a different scope); and when the method has finished executing, control returns to the point right after the point where the method call took place.
+In focusing on movement between local scopes, it may sound like we've gone back to talking about method calls. After all, when you call a method on an object, control is passed to the body of the method (a different scope); and when the method has finished executing, control returns to the point right after the point where the method call took place.
 
 We are indeed back in method-call territory, but we're exploring new aspects of it, not just revisiting the old. We're talking about a new construct called a *code block* and a keyword by the name of `yield`.
 
@@ -175,20 +173,20 @@ We saw earlier a code sample that looked like this:
 
 `loop { puts "Looping forever!" }`
 
-The word `loop`and the message in the string clue you in as to what you get if you run it: that message, printed forever. But what *exactly* is going on? Why does that `puts` statement get executed at all-and why does it get executed in a loop?
+The word `loop` and the message in the string clue you in as to what you get if you run it: that message, printed forever. But what *exactly* is going on? Why does that `puts` statement get executed at all-and why does it get executed in a loop?
 
 The answer is that `loop` is an *iterator*. An iterator is a Ruby method that has an extra ingredient in its calling syntax: it expects you to provide it with a code block. The curly braces in the loop example delimit the block; the code in the block consists of the `puts` statement.
 
-The `loop` method has access to the code inside the block: the method can *call* (execute) the block. To do this from an iterator of your own, you use the keyword `yield`. Together, the code block (supplied by the calling code) and `yield` (involked from within the method) are the chief ingredients of iteration.
+The `loop` method has access to the code inside the block: the method can *call* (execute) the block. To do this from an iterator of your own, you use the keyword `yield`. Together, the code block (supplied by the calling code) and `yield` (invoked from within the method) are the chief ingredients of iteration.
 
-`loop` itself is written in C (and uses a C function to achieve the same effect as `yield`). But the whole idea of looping suggests an interesting exercise: reimplementating the `loop` in pure Ruby. This exercise will give you a first glimpse at `yield` in action.
+`loop` itself is written in C (and uses a C function to achieve the same effect as `yield`). But the whole idea of looping suggests an interesting exercise: reimplementing the `loop` in pure Ruby. This exercise will give you a first glimpse at `yield` in action.
 
 ### *Iteration, home-style* ###
 The job of `loop` is to yield control to the block, again and again. Here's how you might write your own version of `loop`:
 
 ```ruby
 def my_loop
-  while tru
+  while true
     yield
   end
 end
@@ -208,7 +206,7 @@ and the message would be printed over and over.
 
 By providing a code block, you're giving `my_loop` something-a chunk of code-to which it can yield control. When the method yields to the block, the code in the block runs, and then control returns to the method. Yielding isn't the same as returning from a method. Yielding takes place while the method is still running. After the code block executes, control returns to the method at the statement immediately following the call to `yield`.
 
-The code block is part of the method call-that is, part of its syntax. This is an important point: a code block isn't an argument. The arguments to methods are the arguments. The code block is the code block. They're two separate construts. You can see the logic behind the distinction if you look at the full picture of how method calls are put together.
+The code block is part of the method call-that is, part of its syntax. This is an important point: a code block isn't an argument. The arguments to methods are the arguments. The code block is the code block. They're two separate constructs. You can see the logic behind the distinction if you look at the full picture of how method calls are put together.
 
 ### *The anatomy of the method call* ###
 Every method call in Ruby has the following syntax:
@@ -231,16 +229,16 @@ loop() { puts "Hi" }
 string.scan(/[^,]+/)
 string.scan(/[^,]+/) { |word| puts word }
 ```
-(The last example shows a block paramenter, `word`. We'll get back to block parameters presently.) The difference between a method call with a block and a method call without a block comes down to whether or not the method can yield. If there's a block, then it can; if not, it can't, because there's nothing to yield to.
+(The last example shows a block parameter, `word`. We'll get back to block parameters presently.) The difference between a method call with a block and a method call without a block comes down to whether or not the method can yield. If there's a block, then it can; if not, it can't, because there's nothing to yield to.
 
 Furthermore, some methods are written so they'll at least do *something*, whether you pass them a code block or not. `String#split` for example, splits its receiver (a string, of course), on the delimiter you pass in and returns an array of the split elements. If you pass it a block, `split` also yields the split elements to the block, one at a time. Your block can then do whatever it wants with each substring: print it out, stash it in a database column, and so forth.
 
-If you learn to think of the code block as a syntactic element of th method call, rather than as one of the arguments, you'll be able to keep things straight as you see more variations on the basic iteration theme.
+If you learn to think of the code block as a syntactic element of the method call, rather than as one of the arguments, you'll be able to keep things straight as you see more variations on the basic iteration theme.
 
 Earlier you saw, in brief, that code blocks can be delimited either by curly braces or by the `do/end` keyword pair. Let's look more closely now at how these two delimiter options differ from each other.
 
 ### *Curly braces vs. do/end in code block syntax* ###
-The difference between the two way sof delimiting a code block is a difference in precendence. Look at this example, and you'll start to see how it plays out:
+The difference between the two ways of delimiting a code block is a difference in precedence. Look at this example, and you'll start to see how it plays out:
 
 ```irb
 >> array = [1, 2, 3]
@@ -255,14 +253,14 @@ The difference between the two way sof delimiting a code block is a difference i
 30
 => nil
 >> puts array.map do |n| n * 10 end #<--4
-  #<Enumberator:0x0000000101123048>
+  #<Enumerator:0x0000000101123048>
 => nil
 ```
 The `map` method works through an array one method at a time, calling the code block once for each item and creating a new array consisting of the results of all of those calls to the block. Mapping our `[1, 2, 3]` array through a block that multiplies each item by 10 results in the new array `[10, 20 ,30]`. Furthermore, for a simple map operation, it doesn't matter whether we use curly braces (#1) or `do/end` (#2). The results are the same.
 
-But look at what happens when we use the outcome of the map operation as an argument to `puts`. THe curly-brace version prints out the `[10, 20, 30]` array (one item per line, in keeping with how `puts` handles arrays) (#3). But the `do/end` version returns an enumerator-which is precisely what `map` does when it's called with *no* code block (#4). (You'll learn more about enumerators later on. The relevant point here is that the two block syntaxes produce different results.)
+But look at what happens when we use the outcome of the map operation as an argument to `puts`. The curly-brace version prints out the `[10, 20, 30]` array (one item per line, in keeping with how `puts` handles arrays) (#3). But the `do/end` version returns an enumerator-which is precisely what `map` does when it's called with *no* code block (#4). (You'll learn more about enumerators later on. The relevant point here is that the two block syntaxes produce different results.)
 
-The reason is that the precendence is different. The first `puts` statement is interpreted like this:
+The reason is that the precedence is different. The first `puts` statement is interpreted like this:
 
 `puts(array.map {|n| n * 10 })`
 
@@ -270,13 +268,13 @@ The second is interpreted like this:
 
 `puts(array.map) do |n| n * 10 end`
 
-In the second case, the code block is interpreted as being part of the call to `puts`, not the call to `map`. And if you call `puts` with a block, it ignores the blcok. So the `do/end` version is really equivalent to
+In the second case, the code block is interpreted as being part of the call to `puts`, not the call to `map`. And if you call `puts` with a block, it ignores the block. So the `do/end` version is really equivalent to
 
 `puts array.map`
 
 And that's why we get an enumerator.
 
-The call to `map` using a `do/end`-style code block ullustrates thef act that if you supply a code block but the method you call doesn't see it (or doesn't look for it), no error occurs: methods aren't obliged to yield, and many methods (including `map`) have well defined behaviors for cases where there's a code block and cases where there isn't. If a method seems to be ignoring a block that you expect it to yield to, look closely at the precedence rules and make sure the block really is available to the method.
+The call to `map` using a `do/end`-style code block illustrates the fact that if you supply a code block but the method you call doesn't see it (or doesn't look for it), no error occurs: methods aren't obliged to yield, and many methods (including `map`) have well defined behaviors for cases where there's a code block and cases where there isn't. If a method seems to be ignoring a block that you expect it to yield to, look closely at the precedence rules and make sure the block really is available to the method.
 
 We'll continue looking at iterators and iteration by doing with several built-in Ruby iterators what we did with `loop`: examining the method and then implementing our own. We'll start with a method that's a slight refinement of `loop`:`times`.
 
