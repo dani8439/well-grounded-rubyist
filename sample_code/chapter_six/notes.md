@@ -142,7 +142,7 @@ You can also put conditional tests in *modifier* position, directly after a stat
 ## **Life without the dangling `else` ambiguity** ##
 In some languages, you can't tell which `else` clause goes with which `if` clause without a special rule. In C, for example, an `if` statement might look like this:
 
-```ruby 
+```ruby
 if (x)
   if (y) { execute this code }
   else { execute this code };    #<--- x is true, but y isn't.
@@ -160,9 +160,9 @@ All that's changed is the indentation of the third line (which doesn't matter to
 
 You tell by knowing the rule in C: a dangling `else` goes with the last unmatched `if` (the first of the two behaviors in this example). But in Ruby, you have `end` to help you out:
 
-```ruby 
-if x > 50 
-  if x > 100 
+```ruby
+if x > 50
+  if x > 100
     puts "Big number"
   else
     puts "Medium number"
@@ -224,12 +224,12 @@ Conditional statements interact with other aspects of Ruby syntax in a couple of
 ## *Assignment syntax in condition bodies and tests* ##
 Assignment syntax and conditional expressions cross paths at two points: in the bodies of conditional expressions, where the assigments may or may not happen at all, and in the conditional tests themselves:
 
-```ruby 
+```ruby
 if x = 1  #<--- Assignment in conditional test
   y = 2  #<--- Assignment in conditional body
 end
 ```
-What happens (or doesn't) when you use these idioms? We'll look at both, starting with variable assignment in the body of the conditional-specifically, local variable assignment, which displays some perhaps unexpected behavior in this context. 
+What happens (or doesn't) when you use these idioms? We'll look at both, starting with variable assignment in the body of the conditional-specifically, local variable assignment, which displays some perhaps unexpected behavior in this context.
 
 ### LOCAL VARIABLE ASSIGNMENT IN A CONDITIONAL BODY ###
 Ruby doesn't draw as clear a line as compiled languages do between "compile time" and "runtime," but the interpreter does parse your code before running it, and certain decisions are made during the process. An important one is the recognition and allocation of local variables.
@@ -241,14 +241,14 @@ When the Ruby parser sees the sequence *identifiers, equal-sign,* and *value*, a
 it allocates space for a local variable called `x`. The creation of the variable-not the assignment of a value to it, but the internal creation of a variable-always takes place as a result of this kind of expression, even if the code isn't executed!
 Consider this example:
 
-```ruby 
+```ruby
 if false
   x = 1
 end
 p x   #<--- Output: nil
 p y   #<--- Fatal error: y is unknown
 ```
-The assignment to `x` isn't executed, because it's wrapped in a failing conditional test. But the Ruby parser sees the sequence `x = 1`, from which it deduces that the program involves a local variable `x`. The parser doesn't care whether `x` is ever assigned to a value. Its job is just to scour the code for local variables for which space needs to be allocated. 
+The assignment to `x` isn't executed, because it's wrapped in a failing conditional test. But the Ruby parser sees the sequence `x = 1`, from which it deduces that the program involves a local variable `x`. The parser doesn't care whether `x` is ever assigned to a value. Its job is just to scour the code for local variables for which space needs to be allocated.
 
 The result is that `x` inhabits a strange kind of variable limbo. It has been brought into being and initialized to `nil`. In that respect, it differs from a variable that has no existence at all; as you can see in the example, examining `x` gives you the value `nil`, whereas trying to inspect the nonexistent variable `y` results in a fatal error. But although `x` exists, it hasn't played any role in the program. It exists only as an artifact of the parsing process.
 
@@ -256,10 +256,10 @@ None of this happens with class, instance, or global variables. All three of tho
 
 You also have to keep your wits about you when using assignment syntax in the test part of a conditional.
 
-### ASSIGNMENT IN A CONDITIONAL TEST ### 
+### ASSIGNMENT IN A CONDITIONAL TEST ###
 In this example, not that the conditional test is an assignment (`x = 1`) and not an equality test (which would be `x==1`):
 
-```ruby 
+```ruby
 if x = 1
   puts "Hi!"
 end
@@ -280,28 +280,28 @@ Unlike `x = 1`, the assignment expression `x = y` may or may not succeed as a co
 
 Why would you want to use an assigment in a conditional test? You certainly never have to; you can always do this:
 
-```ruby 
+```ruby
 x = y
 if x
 #etc
 ```
 But sometimes it's handy to do the assigning and testing at the same time, particularly when you're using a method that returns `nil` on failure and some other value on success. A common example is pattern matching with the `match` method. This method, which you'll see a lot more of in chapter 11, tests a string against a regular expression, returning `nil` if there's no match and an instance of `MatchData` if there is one. The `MatchData` object can be queried for information about the specifics of the match. Note the use of a literal regular expression, `/la/`, in the course of testing for a match against the string `name`:
 
-```ruby 
+```ruby
 name = "David A. Black"
 if m = /la/.match(name)    #<--- (#1).
   puts "Found a match!"
   print "Here's the unmatched start of the string: "
-  puts m.pre_match 
+  puts m.pre_match
   print "Here's the unmatched end of the string: "
-  puts m.post_match 
-else 
+  puts m.post_match
+else
   puts "No match"
 end
 ```
 The output from this snippet is
 
-```irb 
+```irb
 Found a match!
 Here's the unmatched start of the string: David A. B
 Here's the unmatched end of the string: ck
@@ -310,9 +310,9 @@ The match method looks for the pattern `la` in the string `"David A. Black"`. Th
 
 As always, you could rewrite the assignment and the conditional test like this:
 
-```ruby 
+```ruby
 m = /la/.match(name)
-if m 
+if m
   # etc
 end
 ```
@@ -323,7 +323,7 @@ Althought `if` and friends are Ruby's bread-and-butter conditional keywords, the
 ### case statements ###
 A `case` statement starts with an expression-usually a single object or variable, but any expression can be used-and walks it through a list of possible matches. Each possible match is contained in a `when` statement consisting of one or more possible matching objects and a segment of code. When one of the terms in a given `when` clause matches, that `when` is considered to have "won," and its code segment is executed. Only one match, at most, can win.
 
-`case` statements are easier to grasp by example than description. The following listing shows a `case` statement that tests a line of keyboard input and branches based on its value. 
+`case` statements are easier to grasp by example than description. The following listing shows a `case` statement that tests a line of keyboard input and branches based on its value.
 
 ```ruby
 print "Exit the program? (yes or no): "
@@ -367,7 +367,7 @@ You can see this clearly if you look first at a `case` statement and then a tran
 if "yes" === answer
   puts "Good-bye!"
   exit
-elsif "no" === answer 
+elsif "no" === answer
   puts "OK, we'll continue"
 else
   puts "That's an unknown answer-assuming you meant 'no'"
@@ -412,10 +412,10 @@ when ticket2     #<--- #2
   puts "Same location as ticket2!"
 when ticket3     #<--- #3
   puts "Same location as ticket3!"
-else 
+else
   puts "No match"
 end
-  
+
 ```
 The output from the listing is as follows:
 
@@ -451,7 +451,7 @@ end
 The simple `case` keyword in this manner is an alternate way of writing an `if` statement. In fact, any `case` statement can be written as an `if` statement. `case` statements with explicit arguments to `case` are often considerably shorter than their `if` counterparts, which have to resort to calling `===` or other comparison methods. Those without explicit test arugments are usually no shorter than the equivalent `if` statements; for instance, the previous example would be written like this using `if`:
 
 ```ruby
-if user.first_name == "David" or user.last_name == "Black:
+if user.first_name == "David" or user.last_name == "Black"
   puts "You must be David Black."
 elsif Time.now.wday == 5
   puts "You're not David Black, but at least it's Friday!"
@@ -465,7 +465,7 @@ The advantage of the testless `case` statement is that it doesn't limit you to w
 An important final point to keep in mind about `case` statements is that every `case` statement evaluates to a single object. If there's a successful `when` or `else` clause, the return value of the entire `case` statement is the value returned by the code in that clause. Otherwise, if the `case` statement fails to find a match, the entire statement evaluates to `nil`, similar to `if` statements that fail.
 Thus you could, for example, rewrite the conditionless example like this:
 
-```ruby 
+```ruby
 puts case
   when user.first_name == "David", user.last_name == "Black"
     "You might be David Black."
@@ -474,7 +474,7 @@ puts case
   else
     "You're not David Black, and it's not Friday."
   end
- end 
+ end
 ```
 In this version, the call to `puts` has been extracted out of the `when` clauses; the whole `case` statement is dedicated to finding an argument to the single `puts` call on the left. That argument will be whichever of the three strings the `case` statement returns.
 
