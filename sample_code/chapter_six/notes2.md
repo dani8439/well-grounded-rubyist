@@ -43,7 +43,7 @@ loop do
   next unless n == 10
   break
   end
- end
+end
 ```
 Here, control falls through to the `break` statement only if `n == 10 ` is true. If `n == 10` is *not* true (`unless n == 10`), the `next` is executed, and control jumps back to the beginning of the loop before it reaches `break`.
 
