@@ -335,7 +335,7 @@ I'm on iteration 1!
 I'm on iteration 2!
 I'm on iteration 3!
 I'm on iteration 4!
->> 5
+  => 5
 ```
 It works just like `times`. The implementation of `my_times` is by no means the most concise implementation possible, but it works. You'll learn plenty more iteration and collection-manipulation techniques that you can use to make your method definitions both concise and clear.
 
