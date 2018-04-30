@@ -282,3 +282,34 @@ We'll continue looking at iterators and iteration by doing with several built-in
 The `times` method is an instance method of the `Integer` class, which means you call it as a method on integers. It runs the code block *n* times, for any integer *n*, and at the end of the method the return value is *n*.
 
 You can see both the output and the return value if you run a `times` example in irb:
+
+```irb
+>> 5.times { puts "Writing this 5 times!" }    #<---1
+Writing this 5 times!
+Writing this 5 times!
+Writing this 5 times!
+Writing this 5 times!
+Writing this 5 times!
+=> 5      #<---2
+
+```
+The call to the method includes a code block(#1) that gets executed five times. The return value of the *whole* method is the object we started with: the integer 5(#2).
+
+The behavior of `times` illustrates nicely the fact that yielding to a block and returning from a method are two different things. A method may yield to its block any number of times, from zero to infinity (the latter in the case of `loop`). But every method returns exactly once (assuming no fatal errors) when it's finished doing everything it's going to do. It's a bit like a jump in figure skating. You take off, execute some rotations in the air, and land. And no matter how many rotations you execute, you only take off once and only land once. Similarly, a method call caused the method to run once and to return once. But in between, like rotations in the air, the method can yield control back to the block (if there is one) zero or more times.
+
+Before we implement `times`, let's look at another of its features. Each time `times` yields to its block, it yields something. Sure enough, code blocks, like methods, can take arguments. When a method yields, it can yield one or more values.
+
+The block picks up the argument through its parameters. In the case of `times`, you can supply a single parameter, and that parameter will be bound to whatever value gets yielded to the block on each iteration. As you might guess, the values yielded by `times` are the integers 0 through *n*-1:
+
+```irb
+>> 5.times {|i| puts "I'm on iteration #{i}!" }
+I'm on iteration 0!
+I'm on iteration 1!
+I'm on iteration 2!
+I'm on iteration 3!
+I'm on iteration 4!
+=> 5
+```
+Each time through-that is, each time `times` yields to the code block-it yields the next value, and that value is placed in the variable `i`.
+
+We're ready to implement `times`-or rather, `my_times`-and here's what it looks like:
