@@ -313,3 +313,30 @@ I'm on iteration 4!
 Each time through-that is, each time `times` yields to the code block-it yields the next value, and that value is placed in the variable `i`.
 
 We're ready to implement `times`-or rather, `my_times`-and here's what it looks like:
+
+```ruby
+class Integer
+  def my_times
+    c = 0
+    until c == self
+      yield(c)
+      c += 1
+    end
+    self
+  end
+end
+```
+If you want to try an example in irb, you can either type the previous code into your irb session or put it in a file-say, my_times.rb- and then issue the command `require "./my_times.rb"` in irb. You can then see the results of trying it:
+
+```irb
+>> 5.my_times {|i| puts "I'm on iteration #{i}!" }
+I'm on iteration 0!
+I'm on iteration 1!
+I'm on iteration 2!
+I'm on iteration 3!
+I'm on iteration 4!
+>> 5
+```
+It works just like `times`. The implementation of `my_times` is by no means the most concise implementation possible, but it works. You'll learn plenty more iteration and collection-manipulation techniques that you can use to make your method definitions both concise and clear.
+
+Speaking of which, our next stop is the `each` method. As you'll see here, and in even greater depth in the later chapters where we explore collection objects extensively, `each` is a busy, pivotal method.
