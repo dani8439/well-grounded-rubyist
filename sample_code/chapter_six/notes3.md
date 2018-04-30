@@ -95,3 +95,38 @@ class Array
   end
 end
 ```
+We now get the same results from `my_map` that we did from `map`:
+
+```irb
+>> name.my_map {|name| name.upcase}
+=> ["DAVID", "ALAN", "BLACK"]
+```
+Like `my_each`, `my_map` yields each element of the array in turn. Unlike `my_each`, `my_map` stores the value that comes back from the block. That's how it accumulates the mapping of the old values to the new values: the new values are based on the old values, processed through the block.
+
+But our implementation of `my_map` fails to deliver on the promise of `my_each`-the promise being that `each` serves as the vanilla iterator on top of which the more complex iterators can be built. Let's reimplement `map`. This time, we'll write `my_map` in terms of `my_each`
+
+### BUILDING MAP ON TOP OF EACH ###
+Building `map` on top of `each` is almost startlingly simple:
+
+```ruby
+class Array
+  # put the definition of my_each here
+  def my_each
+    c = 0
+    until c == size
+      yield(self[c])      #<--- Uses [] to get current array element
+      c += 1
+    end
+    self
+  end
+
+  def my_map
+    acc = []
+    my_each {|e| acc << yield(e)}
+    acc
+  end
+end
+```
+We piggyback on the vanilla iterator, allowing `my_each` to do the walk-through of the array. There's no need to maintain an explicit counter or to write an `until` loop. We've already got that logic; it's embodied in `my_each`. In writing `my_map`, if makes sense to take advantage of it.
+
+There's much, much more to say about iterators, and in particular, the ways Ruby builds on `each` to provide an extremely rich toolkit of collection-processing methods. We'll go down that avenue later on. Here, meanwhile, let's delve a bit more deeply into some of the nuts and bolts of iterators-starting with the assignment and scoping rules that govern their use of parameters and variables.
