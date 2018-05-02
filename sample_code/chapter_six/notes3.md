@@ -130,3 +130,64 @@ end
 We piggyback on the vanilla iterator, allowing `my_each` to do the walk-through of the array. There's no need to maintain an explicit counter or to write an `until` loop. We've already got that logic; it's embodied in `my_each`. In writing `my_map`, if makes sense to take advantage of it.
 
 There's much, much more to say about iterators, and in particular, the ways Ruby builds on `each` to provide an extremely rich toolkit of collection-processing methods. We'll go down that avenue later on. Here, meanwhile, let's delve a bit more deeply into some of the nuts and bolts of iterators-starting with the assignment and scoping rules that govern their use of parameters and variables.
+
+### *Block parameters and variable scope* ###
+You've seen that block parameters are surrounded by pipes, rather than parentheses as method parameters are. But you can use what you've learned about method arguments to create block parameter lists. Remember the  `args_unleashed` method from chapter 2?
+
+```ruby
+def args_unleashed(a,b=1,*c,d,e)
+  puts "Arguments: "
+  p a,b,c,d,e
+end
+```
+Here's a block-based version of the method:
+
+```ruby
+def block_args_unleashed
+  yield(1,2,3,4,5)
+end
+
+block_args_unleashed do |a,b=1,*c,d,e|
+  puts "Arguments: "
+  p a,b,c,d,e
+end
+```
+The parameter bindings and program output are the same as they were with the original version:
+
+```irb
+Arguments:
+1
+2
+[3]
+4
+5
+```
+What about scope? A method definition, as you know, starts a new local scope. Blocks are a little more complicated.
+
+Let's start with a simple case: inside a block, you refer to a variable (not a block parameter; just a variable) called `x`, and you've already got a variable called `x` in scope before you write the block:
+
+```ruby
+def block_scope_demo
+  x = 100
+  1.times do     #<--- Single iteration serves to create code block context
+    puts x
+  end
+end
+```
+When you run the method (which includes a handy `puts` statement), you'll see that the `x` inside the block is the same as the `x` that existed already:
+
+`block_scope_demo` <--- **Output: 100**
+
+Now, what about assigning to the variable inside a block? Again, it turns out that the variable inside the block is the same as the one that existed prior to the block, as you can see by changing it inside the block and then printing it out after the block is finished:
+
+```ruby
+def block_scope_demo_2
+  x = 100
+  1.times do
+    x = 200
+  end
+  puts x
+end
+block_scope_demo_2   #<--Output: 200
+```
+Blocks, in other words, have direct access to variables that already exist (such as `x` in the example).
