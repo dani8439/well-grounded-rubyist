@@ -190,4 +190,39 @@ def block_scope_demo_2
 end
 block_scope_demo_2   #<--Output: 200
 ```
-Blocks, in other words, have direct access to variables that already exist (such as `x` in the example).
+Blocks, in other words, have direct access to variables that already exist (such as `x` in the example). However, block parameters (the variable names between the pipes) behave differently non-parameter variables. If you have a variable of a given name in scope and also use that name as one of your block parameters, then the two variables-the one that exists already and the one in the parameter list-are *not* the same as each other.
+
+**NOTE** Although it's important in its own right, the fact that blocks share local scope with the code that precedes them will take on further significance when we look at `Proc` objects and *closures* later on. You'll learn that blocks can serve as the bodies of anonymous function objects, and those objects preserve the local variables that are in scope at the time of their creation-even if the function objects get handed around other local scopes.
+
+Look at the variables named `x` in this example:
+
+```ruby
+def block_local_parameter
+  x = 100    #<--- Outer x (before block)
+  [1,2,3].each do |x|     #<--- Block parameter x
+    puts "Parameter x is #{x}"
+    x = x + 10   #<--- Assignment to x inside block
+    puts "Reassigned to x in block; it's now #{x}"
+  end
+  puts "Outer x is still #{x}"
+end
+```
+The output from a call to this method is
+
+```irb
+Parameter x is 1
+Reassigned to x in block; it's now 11
+Parameter x is 2
+Reassigned to x in block; it's now 12
+Parameter x is 3
+Reassigned to x in block; it's now 13
+Outer x is still 100
+```
+The `x` inside the block isn't the same as the `x` outside the block, because `x` is used as a block parameter. Even reassigning to `x` inside the block doesn't overwrite the "outer" `x`. This behavior enables you to use any variable name you want for your block parameters without having to worry about whether a variable of the same name is already in scope.
+
+Sometimes you may want to use a temporary variable inside a block, even if it isn't one of the parameters being assigned to when the block is called. And when you do this, it's nice not to have to worry that you're accidentally reusing a variable from outside the block. Ruby provides a special notation indicating that you want one or more variables to be local to the block, even if variables with the same name already exist: a semicolon in the black parameter list.
+
+Here's an example, & note the semicolon in the parameter list:
+
+```ruby
+```
