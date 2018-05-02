@@ -225,4 +225,38 @@ Sometimes you may want to use a temporary variable inside a block, even if it is
 Here's an example, & note the semicolon in the parameter list:
 
 ```ruby
+def block_local_variable
+  x = "Original x!"
+  3.times do |i;x|
+    x = i
+    puts "x in the block is now #{x}"
+  end
+  puts "x after the block ended is #{x}"
+end
+block_local_variable
 ```
+The semicolon followed by `x` indicates that the block needs its own `x`, unrelated to any `x` that may have been created already in the scope outside the block. In the example, we assign to `x` inside the block, but these assignments don't affect the `x` that existed already. The output shows that the original `x` survives:
+
+```irb
+x in the block is now 0
+x in the block is now 1
+x in the block is now 2
+x after the block ended is Original x!
+```
+Sure enough, the original `x` has been protected from change.
+
+The variables listed after the semicolon aren't considered block parameters; they don't get bound to anything when the block is called. They're *reserved names*- names you want to be able to use as temporary variables inside the block without having to check for name collisions from outside the block.
+
+In sum, three basic "flavors" of block variable are available to you:
+
+• Local variables that exist already when the block is created.
+
+• Block parameters, which are always block-local.
+
+• True block-locals, which are listed after the semicolon and aren't assigned to but do protect any same-named variables from the outer scope.
+
+With these tools at hand, you should be able to engineer your blocks so that they do what you need them to with respect to variables and scope, and so you don't "clobber" any variables from the outer scope that you don't want to clobber.
+
+Ruby's iterators and code blocks allow you to write and use methods that are engineered to share their own functionality with their callers. The method contains some logic and procedure, but when you call the method, you supply additional code that fills out the logic and individualizes the particular call you're making. It's an elegant feature with endless applications. We'll come back to iterators when we examine collection objects in detail later on.
+
+But now we'll look at another control-flow mechanism. So far, we've been operating in a cooperative, efficient landscape. It doesn't always work that way, though; and one of the most important aspects of control flow that you need to understand is the matter of what happens when things go wrong.

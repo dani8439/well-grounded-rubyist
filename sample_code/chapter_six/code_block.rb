@@ -39,3 +39,18 @@ block_local_parameter
 # Parameter x is 3
 # Reassigned to x in block; it's now 13
 # Outer x is still 100
+
+def block_local_variable
+  x = "Original x!"
+  3.times do |i;x|
+    x = i
+    puts "x in the block is now #{x}"
+  end
+  puts "x after the block ended is #{x}"
+end
+block_local_variable
+
+# x in the block is now 0
+# x in the block is now 1
+# x in the block is now 2
+# x after the block ended is Original x!
