@@ -34,4 +34,49 @@ The table below shows some common exceptions (each of which is a class, descende
 | `IOError` | Caused by reading a closed stream, writing to a read-only stream, and similar operations. | `STDIN.puts("Don't write to STDIN!")`|
 | `Erno::Error` | A family of errors relates to file I/O | `File.open(-12)` |
 | `TypeError` | A method receives an argument it can't handle. | `a = 3 + "can't add a string to a number!"` |
-| `ArgumentError` | Caused by using the wrong number of arguments | `def m(x); end; m(1,2,3,4,5)`
+| `ArgumentError` | Caused by using the wrong number of arguments | `def m(x); end; m(1,2,3,4,5)` |
+
+You can try these examples in irb; you'll get an error message, but the session shouldn't terminate. irb is good about making potentially fatal errors nonfatal-and you can do something similar in your programs, too.
+
+### *The rescue keyword to the rescue!* ###
+Having an exception raised doesn't have to mean your program terminates. You can handle exceptions-deal with the problem and keep the program running-by means of the `rescue` keyword. Rescuing involves a `rescue` block, which is delimited with the `begin` and `end` keywords and has a `rescue` clause in the middle:
+
+```ruby
+print "Enter a number: "
+n = gets.to_i
+begin
+  result = 100 / n
+rescue
+  puts "Your number didn't work. Was it zero???"
+  exit
+end
+puts "100/#{n} is #{result}."
+```
+
+If you run this program and enter `0` as your number, the division operation (`100/n`) raises a `ZeroDivisionError`. Because you've done this inside a `begin/end` block with a `rescue` clause, control is passed to the `rescue` clause. An error message is printed out, and the program exits.
+
+If you enter something other than `0` and the division succeeds, program control skips over the `rescue` statement and block, and execution resumes thereafter (with the call to `puts`).
+
+You can refine this technique by pinpointing the exception you want to trap. Instead of a generic rescue instruction, which rescues any error that's a descendant class of `StandardError`, you tell `rescue` what to rescue:
+
+`rescue ZeroDivisionError`
+
+This traps a single type of exception but not others. The advantage is that you're no longer running the risk of inadvertently covering up some other problem by rescuing too eagerly.
+
+Rescuing exceptions inside a method body or code block has a couple of distinct features worth noting.
+
+### USING RESCUE INSIDE METHODS AND CODE BLOCKS ###
+The beginning of a method or code block provides an implicit `begin/end` context. Therefore, if you use the `rescue` keyword inside a method or code block, you don't have to say `begin` explicitly-assuming that you want the `rescue` clause to govern the entire method or block:
+
+```ruby
+def open_user_file
+  print "File to open: "
+  filename = gets.chomp
+  fh = File.open(filename) #<---1.
+  yield fh
+  fh.close
+rescue     #<---2.
+    puts "Couldn't open your file!"
+end
+```
+If the file-opening operation 
