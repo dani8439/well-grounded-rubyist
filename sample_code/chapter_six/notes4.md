@@ -72,11 +72,67 @@ The beginning of a method or code block provides an implicit `begin/end` context
 def open_user_file
   print "File to open: "
   filename = gets.chomp
-  fh = File.open(filename) #<---1.
+  fh = File.open(filename)        #1.
   yield fh
   fh.close
-rescue     #<---2.
+rescue                            #2.
     puts "Couldn't open your file!"
 end
 ```
-If the file-opening operation 
+If the file-opening operation (#1) triggers an exception, control jumps directly to the `rescue` clause (#2). The `def/end` keywords serve to delimit the scope of the rescue operation. But you may want to get a little more fine-grained about which lines your `rescue` clause applies to. In the previous example, the `rescue` clause is triggered even if an exception is raised for reasons having nothing to do with trying to open the file. For example, if the call to `gets` raises an exception for any reason, the rescue clause executes.
+
+To get more fine-grained, you have to go back to using an explicit `begin/end` wrapper:
+
+```ruby
+def open_user_file
+  print "File to open: "
+  filename = gets.chomp
+  begin                               #1
+    fh = File.open(filename)
+  rescue                              #2
+    puts "Couldn't open your file!"
+    return                            #3
+  end
+  yield fh
+  fh.close
+end
+```
+In this version, the `rescue` clause only governs what comes between the `begin` keyword (#1) and `rescue` (#2). Moreover, it's necessary to give an explicit `return` command inside the `rescue` clause (#3) because otherwise the method will continue to execute.
+
+So far, we've been looking at how to trap exceptions raised by Ruby-and you'll learn more exception-trapping techniques. But let's turn now to the other side of the coin: how to raise exceptions yourself.
+
+### *Raising exceptions explicitly* ###
+When it comes to Ruby's traditional flexibility and compact coding power, exceptions are, so to speak, no exception. You can raise exceptions in your own code, and you can create new exceptions to raise.
+
+To raise an exception, you use `raise` plus the name of the exception you wish to raise. If you don't provide an exception name (and if you're no re-raising a different kind of exception, as described later), Ruby raises the rather generic `RuntimeError`. You can also give `raise` a second argument, which is used as the message string when the exception is raised:
+
+```ruby
+def fussy_method(x)
+  raise ArgumentError, "I need a number under 10" unless x < 10
+end
+fussy_method(20)
+```
+If run from a file called fussy.rb, this code prints out the following:
+
+```irb
+fussy.rb:2:in `fussy_method': I need a number under 10 (ArgumentError)
+        from fussy.rb:4:in `<main>'
+```
+You can also use `rescue` in such a case:
+
+```ruby
+begin
+  fussy_method(20)
+rescue ArgumentError
+  puts "That was not an acceptable number!"
+end
+```
+A nice tweak is that if you give `raise` a message as the only argument, rather than as the second argument where an exception class is the first argument, `raise` figures out that you want it to raise a `RuntimeError` using the message provided. These two lines are equivalent:
+
+```ruby
+raise "Problem!"
+raise RuntimeError, "Problem!"
+```
+In your `rescue` clauses, it's possible to capture the exception object in a variable and query it for possibly useful information.
+
+### *Capturing an exception in a rescue clause* ###
