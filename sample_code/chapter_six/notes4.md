@@ -136,3 +136,4 @@ raise RuntimeError, "Problem!"
 In your `rescue` clauses, it's possible to capture the exception object in a variable and query it for possibly useful information.
 
 ### *Capturing an exception in a rescue clause* ###
+To assign the exception object to a variable, you use the special operator `=>` along with the `rescue` command. The exception object, like any object, responds to messages. Particularly 
