@@ -12,4 +12,21 @@ Which of these happens-dealing with the problem or aborting the program-depends 
 
 To see exceptions in action, try dividing by zero:
 
-`$ ruby -e 1/10` 
+`$ ruby -e 1/10`
+
+Ruby raises an exception:
+
+```irb
+-e:1:in `/': divided by 0 (ZeroDivisionError)
+  from -e:1:in `<main>'
+```
+`ZeroDivisionError` is the name of this particular exception. More technically, it's the name of a class-a descendant class of the class `Exception`. Ruby has a whole family tree of exceptions classes, all of them going back eventually to `Exception.`
+
+### SOME COMMON EXCEPTIONS ###
+The table below shows some common exceptions (each of which is a class, descended from `Exception`) along with common reasons they're raised and an example of code that will raise each on:
+
+## Common Exceptions ##
+|Exception Name          |  Common reason(s)              | How to raise it                              |
+|------------------------|--------------------------------|----------------------------------------------|
+| `RuntimeError`         | The default exception raised by the `raise` method |`Raise`                   |
+|  `NoMethodError`       | An object is sent a message it can't resolve to a method name; the default `method_missing` raises this exception. |   `a = Object.new`      `a.some_unknown_method_name`           |
