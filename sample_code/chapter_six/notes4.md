@@ -136,4 +136,144 @@ raise RuntimeError, "Problem!"
 In your `rescue` clauses, it's possible to capture the exception object in a variable and query it for possibly useful information.
 
 ### *Capturing an exception in a rescue clause* ###
-To assign the exception object to a variable, you use the special operator `=>` along with the `rescue` command. The exception object, like any object, responds to messages. Particularly 
+To assign the exception object to a variable, you use the special operator `=>` along with the `rescue` command. The exception object, like any object, responds to messages. Particularly useful are the `backtrace` and the `message` methods. `backtrace` returns an array of strings representing the call stack at the time the exception was raised: method names, filenames, and line numbers, showing a full roadmap of the code that was executed along the way to the exception. `message` returns the message string provided to `raise`, if any.
+
+To see these facilities in action, put the preceding definition of `fussy_method` in the file fussy.rb (if you haven't already), and then add the following `begin/end` block:
+
+```ruby
+begin
+  fussy_method(20)
+rescue ArgumentError => e                              #1
+  puts "That was not an acceptable number!"
+  puts "Here's the backtrace for this exception: "
+  puts e.backtrace                                     #2
+  puts "And here's the exception object's message: "
+  puts e.message                                       #3
+end
+```
+In the `rescue` clause, we assign the exception object to the variable `e` (#1) and then ask the exception object to display its backtrace(#2) and its message(#3). Assuming you've got one blank line between `fussy_method` and `begin` keyword, you'll see the following output  (and, in any case, you'll see something almost identical, although the line numbers may differ) when you run fussy.rb.
+
+```irb
+That was not an acceptable number!
+Here's the backtrace for this exception:
+fussy.rb:2:in `fussy_method'
+fussy.rb:17:in `<main>'
+And here's the exception object's message:
+I need a number under 10
+```
+The backtrace shows you that we were in the `fussy_method` method on line 2 of fussy.rb when the exception was raised, and that we were previously on line 6 of the same file in the `<main>` context-in other words, at the top level of the program (outside of any class, module, or method definition.) The message, "I need a number under 10" comes from the call to `raise` inside `fussy_method`. Your `rescue` clause can also re-raise the exception that triggered it.
+
+<Note in text about language of exception raising being class-based. Instances of the exception classes are raised, but we get a break from writing `raise ZeroDivisionError.new`.>
+
+### RE-RAISING AN EXCEPTION ###
+It's not uncommon to want to re-raise an exception, allowing the next location on the call stack to handle it after your `rescue` block has handled it. You might, for example, want to log something about the exception but still have it treated as an exception by the calling code.
+
+Here's a second version of the `begin/end` block from the `open_user_file` method a few examples back. This version assumes that you have a `logfile` method that returns a writeable file handle on a log file:
+
+```ruby
+begin
+  fh = File.open(filename)
+rescue => e
+  logfile.puts("User tried to open #{filename}, #{Time.now}")
+  logfile.puts("Exception: #{e.message}")
+  raise
+end
+```
+The idea here is to intercept the exception, make a note of it in the log file, and then re-raise it by calling `raise`. (Even though there's no argument to `raise` from inside a `rescue` clause it figures out that you want to re-raise the exception being handled and not the usual generic `RuntimeError.`) The spot in the program that called `open_user_file` in the first place then has to handle the exception-or not, if it's better to allow it to stop program execution.
+
+Another refinement of handling control flow with exceptions is the `ensure` clause, which executes unconditionally no matter what else happens when an exception is raised.
+
+### *The ensure clause* ###
+Let's say you want to read a line from a data file and raise an exception if the line doesn't include a particular substring. If it does include the substring, you want to return the line. If it doesn't, you want to raise `ArgumentError`. But whatever happens, you want to close the file handle before the method finishes.
+
+Here's how you might accomplish this using an `ensure` clause:
+
+```ruby
+def line_from_file(filename, substring)
+  fh = File.open(filename)
+  begin
+    line = fh.gets
+    raise ArgumentError unless line.include?(substring)
+  rescue ArgumentError
+    puts "Invalid line!"
+    raise
+  ensure
+    fh.close
+  end
+  return line
+end
+```
+In this example, the `begin/end` block wraps the line that reads from the file, and the `rescue` clause only handles `ArgumentError`-which means that if something else goes wrong (like the file not existing), it isn't rescued. But if `ArgumentError` is raised based on the test for the inclusion of `substring` in the string `line`, the `rescue` clause is executed.
+
+Moreover, the `ensure` clause is executed whether an exception is raised or not. `ensure` is pegged to the `begin/end` structure of which it's a part, and its execution is unconditional. In this example, we want to ensure that the file handle gets closed. The `ensure` clause takes care of this, whatever else may have happened.
+
+One lingering problem with the `line_from_file` method is that `ArgumentError` isn't the best name for the exception we're raising. The best name would be something like `InvalidLineError`, which doesn't exis. Fortunately, you can create your own exception classes and name them whatever you want.
+
+**NOTE**
+There's a better way to open a file, involving a code block that wraps the file operations and takes care of closing the file for you. But one thing at a time, we'll see that technique later on when we look at I/O techniques.
+
+### *Creating your own exception classes* ###
+You create a new exception class by inheriting from `Exception` or from a descendant class of `Exception`:
+
+```ruby
+class MyNewException < Exception
+end
+raise MyNewException, "some new kind of error has occurred!"
+```
+This technique offers two primary benefits. First, by letting you give new names to exception classes, it performs a self-documenting function: when a `MyNewException` gets raised, it's distinct from say, a `ZeroDivisionError` or a plain-vanilla `RuntimeError`.
+
+Second, this approach lets you pinpoint your rescue operations. Once you've created `MyNewException`, you can rescue it by name:
+
+```ruby
+class MyNewException < Exception
+end
+begin
+  puts "About to raise exception..."
+  raise MyNewException
+rescue MyNewException => e
+  puts "Just raised an exception: #{e}"
+end
+```
+The output from this snippet is as follows:
+
+```irb
+About to raise exception...
+Just raised an exception: MyNewException
+```
+Only `MyNewException` errors will be trapped by that `rescue` clause. If another exception is raised first for any reason, it will result in program termination without rescue.
+
+Here's what our `line_from_file` method would look like with a custom exception-along with the code that creates the custom exception class. We'll inherit from `StandardError`, the superclass of `RuntimeError`:
+
+```ruby
+class InvalidLineError < StandardError
+end
+def line_from_file(filename, substring)
+  fh = File.open(filename)
+  line = fh.gets
+  raise InvalidLineError unless line.include?(substring)
+  return line
+rescue InvalidLineError
+  puts "Invalid line!"
+  raise
+ensure
+  fh.close
+end
+```
+
+This time around, we'll fully pinpoint the exception we want to intercept.
+
+Simply by inheriting from `StandardError`, `InvalidLineError` provides a meaningful exception name and refines the semantics of the rescue operation. Custom exception classes are easy and cheap to produce and can add considerable value. Ruby itself has lots of exception classes-so take the hint, and don't hesitate to create your own any time you feel that none of the built-in exceptions quite expresses what you need. And don't forget that exceptions are classes, classes are constants, and constants can be namespaced, courtesy of nesting:
+
+```ruby
+module TextHandler
+  class InvalidLineError < StandardError
+  end
+end
+def line_from_file(filename, substring)
+  fh = File.open(filename)
+  line = fh.gets
+  raise TextHandler::InvalidLineError unless line.include?(substring)   #<-- Nicely namespaced exception name!
+```
+Namespacing exceptions this way is polite, in the sense that it lets other people name exceptions as they like without fearing name clashes. It also becomes a necessity once you start creating more than a very small number of exception classes.
+
+With our exploration of exceptions and how they're handled, we've reached the end of this examination of control flow. As you've seen, control can jump around a fair amount-but if you keep in mind the different kinds of jumping (conditionals, loops, iterators, and exceptions), you'll be able to follow any Ruby code and write code that makes productive use of the many flow-related techniques available.
