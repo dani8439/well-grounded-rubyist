@@ -115,9 +115,11 @@ Automatically sugared methods collected below:
 |                   | `>=`      | `def >= (x)`           | `obj.>=(x)`         | `obj >= x`           |
 |                   | `<=`      | `def <= (x)`           | `obj.<=(x)`         | `obj <= x`           |
 |Case equality operator | `===` | `def === (x)`          | `obj.===(x)`        | `obj === x`          |
-| Bitwise operators | `|` (OR)  | `def | (x)`            | `obj.|(x)`          | `obj | x`            |
+| Bitwise operators | OR defined below|                  |                     |                      |
 |                   | `&` (AND) | `def & (x)`            | `obj.&(x)`          | `obj & x`            |
 |                   | `^` (XOR) | `def ^ (x)`            | `obj.^(x)`          | `obj ^ x`            |
+
+OR: `|` OR    `def | (x)`             `obj.|(x)`           `obj | x`            
 
 Remembering which methods get the sugar treatment isn't difficult. They fall into several distinct categories (as shown in table above). These categories are for the convenience of learning and reference only; Ruby doesn't categorize the methods, and the responsibility for implementing meaningful semantics lies with you. The category names indicate how these method names are used in Ruby's built-in classes and how they're most often used, by convention, when programmers implement them in new classes.
 
@@ -178,3 +180,48 @@ puts !banner          #Output: !s'divaD ta taE
 puts (not banner)     #Output: !s'divaD ta taE
 ```
 As it so often does, Ruby gives you an object-oriented, method-based way to customize what you might at first think are hardwired syntactic features-even unary operators like `!`. Unary negation isn't the only use Ruby makes of the exclamation point.
+
+## *Bang (!) methods and "danger"* ##
+Ruby methods can end with an exclamation point (`!`), or bang. The bang has no significance to Ruby internally; bang methods are called and executed just like any other methods. But by convention, the bang labels a method as "dangerous"-specifically, as the dangerous equivalent of a method with the same name but without the bang.
+
+*Dangerous* can mean whatever the person writing the method wants it to mean. In the case of the built-in classes, it usually means *this method, unlike its nonbang equivalent, permanently modifies its receiver.* It doesn't always, though,: `exit!` is a dangerous alternative to `exit`, in the sense that it doesn't run any finalizers on the way out of the program. The danger in `sub!` (a method that substitutes a replacement string for a matched pattern for a string) is partly that it changes its receiver and partly that it returns `nil`, if not change has taken place-unlike `sub`, which always returns a copy of the original string with the replacement (or no replacement) made.
+
+If "danger" is too melodramatic for you, you can think of the `!` in method names as a kind of `Heads up!` And, with very few, very specialized exceptions, every bang method should occur in a pair with a nonbang equivalent. We'll return to the questions of best method-naming practice after we've looked at some bang methods in action.
+
+### *Destructive (receiver-changing) effects as danger* ###
+No doubt most of the bang methods you've come across in the core Ruby language have the bang on them because they're destructive: they change the object on which they're called. Calling `upcase` on a string gives you a new string consisting of the original string in uppercase: but `upcase!` turns the original string into its own uppercase equivalent, in place:
+
+```irb
+>> str = "Hello"
+=> "Hello"
+>> str.upcase
+=> "HELLO"
+>> str
+=> "Hello"           <----- 1.
+>> str.upcase!
+=> "HELLO"
+>> str
+=> "HELLO"          <------- 2.
+```
+
+Examining the original string after converting it to uppercase shows that the uppercase version was a copy; the original string is unchanged (#1). But the bang operation has changed the content of `str` itself (#2.)
+
+Ruby's core classes are full of destructive (receiver-changing) bang methods paired with their nondestructive counterparts: `sort/sort!` for arrays, `strip/strip!` (strip leading and trailing whitespace) for strings, `reverse/reverse!` for strings, and arrays, and many more. In each new case, if you call the nonbang version of the method on the object, you get a new object. If you call the bang version, you operate in-place on the same object to which you sent the message.
+
+You should always be aware of whether the method you're calling changes its receiver. Neither option is always right or wrong: which is best depends on what you're doing. One consideration, weighing in on the side of modifying objects instead of creating new ones, is efficiency: creating new objects (like a second string that's identical to the first except for one letter) is expensive in terms of memory and processing. This doesn't matter if you're dealing with a small number of objects. But when you get into, say, handling data from large files and using loops and iterators to do so, creating new objects can be a drain on resources.
+
+On the other hand, you need to be cautious about modifying objects in place, because other parts of the program may depend on those objects not to change. For example, let's say you have a database of names. You read the names out of the database into an array. At some point, you need to process the names for printed output-all in capital letters. You may do something like this:
+
+```ruby
+names.each do |name|
+  capped = name.upcase
+  # ...code that does something with capped...
+end
+```
+In this example, `capped` is a new object-an uppercase duplicate of `name`. When you go through the same array later, in a situation where you *do not* want the names in uppercase, such as saving them back to the database, the names will be the way they were originally.
+
+By creating a new string (`capped`) to represent the uppercase version of each name, you avoid the side effect of changing the names permanently. The operation you perform on the names achieves its goals without changing the basic state of the data. Sometimes you'll want to change an object permanently, and sometimes you won't want to. There's nothing wrong with that, as long as you know which you're doing and why.
+
+Furthermore, don't assume a direct correlation between bang methods and destructive methods. They often coincide, but they're not the same thing.
+
+### *Destructiveness and "danger" vary independently* ###
