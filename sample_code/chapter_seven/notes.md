@@ -94,6 +94,87 @@ puts acc       #<---- Output 15
 ```
 By defining the `-` instance method(#1.) we gain the `-=` shortcut, and can subtract from the account using that notation (#2). This is a simple but instructive example of the fact that Ruby encourages you to take advantage of the very same "wiring" that the language itself uses, so as to integrate your programs as smoothly as possible into the underlying technology.
 
-Automatically sugared methods in enormous table on pg 195 in book.
+Automatically sugared methods collected below:
 
-Remembering which methods get the sugar treatment isn't difficult. They fall into several distinct categories (as shown in book in table 7.2). These categories are for the convenience of learning and reference only; Ruby doesn't categorize the methods, and the responsibility for implementing meaningful semantics lies with you. The category names indicate how these method names are used in Ruby's built-in classes and how they're most often used, by convention, when programmers implement them in new classes.
+#### Methods with operator-style syntactic sugar-calling notation ####
+|     Category      |   Name    |   Definition example   |   Calling example   |   Sugared Notation   |
+|-------------------|-----------|------------------------|---------------------|----------------------|
+| Arithmetic method/ operators | `+`  | `def + (x)`      | `obj.+(x)`          | `obj + x`            |
+|                   | `-`       | `def - (x)`            | `obj.-(x)`          | `obj - x`            |
+|                   | `*`       | `def * (x)`            | `obj.*(x)`          | `obj * x`            |
+|                   | `/`       | `def / (x)`            | `obj./(x)`          | `obj / x`            |
+|                   | `%` modulo | `def % (x)`           | `obj.%(x)`          | `obj % x`            |
+|                   | `**` exponent | `def ** (x)`       | `obj.%(x)`          | `obj % x`            |
+| Get/set/append data | `[]`    | `def [](x)`            | `obj.[](x)`         | `obj[x]`             |
+|                   | `[]=`     | `def []=(x,y)`         | `obj.[]=(x,y)`      | `obj[x] = y`         |
+|                   | `<<`      | `def << (x)`           | `obj.<<(x)`         | `obj << x`           |
+|Comparison method/operators| `<=>` |`def <=> (x)`       | `obj.<=>(x)`        | `obj <=> x`          |
+|                   | `==`      | `def == (x)`           | `obj.==(x)`         | `obj == x`           |
+|                   | `>`       | `def > (x)`            | `obj.>(x)`          | `obj > x`            |
+|                   | `<`       | `def < (x)`            | `obj.<(x)`          | `obj < x`            |
+|                   | `>=`      | `def >= (x)`           | `obj.>=(x)`         | `obj >= x`           |
+|                   | `<=`      | `def <= (x)`           | `obj.<=(x)`         | `obj <= x`           |
+|Case equality operator | `===` | `def === (x)`          | `obj.===(x)`        | `obj === x`          |
+| Bitwise operators | `|` (OR)  | `def | (x)`            | `obj.|(x)`          | `obj | x`            |
+|                   | `&` (AND) | `def & (x)`            | `obj.&(x)`          | `obj & x`            |
+|                   | `^` (XOR) | `def ^ (x)`            | `obj.^(x)`          | `obj ^ x`            |
+
+Remembering which methods get the sugar treatment isn't difficult. They fall into several distinct categories (as shown in table above). These categories are for the convenience of learning and reference only; Ruby doesn't categorize the methods, and the responsibility for implementing meaningful semantics lies with you. The category names indicate how these method names are used in Ruby's built-in classes and how they're most often used, by convention, when programmers implement them in new classes.
+
+(Don't forget, too, the conditional assignment operator `||=`, as well as its rarely spotted cousin `&&=`, both of which provide the same kind of shortcut as the pseudo-operator methods but are based on operators, namely `||` and `&&`, that you can't override.)
+
+The extensive use of this kind of syntactic sugar-where something *looks like* an operator but *is* a method call-tells you a lot about the philosophy behind Ruby as a programming language. The fact that you can define and even redefine elements like the plus sign, minus sign, and square brackets means that Ruby has a great deal of flexibility. But there are limits to what you can redefine in Ruby. You can't redefine any of the literal object constructors: `{}` is always a hash literal (or a code block, if it appears in that context). `""` will always delimit a string, and so forth.
+
+But there's plenty that you can do. You can even define some unary operators via methods definitions.
+
+### *Customizing unary operators* ###
+The unary operators `+` and `-` occur most frequently as signs for numbers, as in `-1`. But they can be defined; you can specify the behavior of the expressions `+obj` and `-obj` for your own objects and classes. You do so by defining the methods `+@` and `-@`.
+
+Let's say that you want `+` and `-` to mean uppercase and lowercase for a stringlike object. Here's how you define the appropriate unary operator behavior, using a `Banner` class as an example:
+
+```ruby
+class Banner
+  def initialize(text)
+    @text = text
+  end
+
+  def to_s   #<---1.
+    @text
+  end
+
+  def +@
+    @text.upcase
+  end
+
+  def -@
+    @text.downcase
+  end
+end
+```
+Now create a banner, and manipulate its case using the unary `+` and `-` operators:
+
+```ruby
+banner = Banner.new("Eat at David's!")
+puts banner      #<---- Output: Eat at David's!
+puts +banner     #<---- Output: EAT AT DAVID'S!
+puts -banner     #<---- Output: eat at david's!
+```
+The basic string output for the banner text, unchanged, is provided by the `to_s` conversion method(#1), which we'll see up close later on.
+
+You can also define the `!` (logical *not*) operator, by defining the `!` method. In fact, defining the `!` method gives you both the unary `!` and the keyword `not`. Let's add a definition to `Banner:`
+
+```ruby
+class Banner
+  def !
+    reverse
+    #In code example, this does not work, nor does self.reverse, have to add reverse method onto instance variable @text.reverse. Otherwise get undefined local variable or method for 'reverse'
+  end
+end
+```
+Now examine the banner, "negated." We'll need to use parentheses around the `not` version to clarify the precedence of expressions (otherwise `puts` things we're trying to print `not`):
+
+```ruby
+puts !banner          #Output: !s'divaD ta taE
+puts (not banner)     #Output: !s'divaD ta taE
+```
+As it so often does, Ruby gives you an object-oriented, method-based way to customize what you might at first think are hardwired syntactic features-even unary operators like `!`. Unary negation isn't the only use Ruby makes of the exclamation point.
