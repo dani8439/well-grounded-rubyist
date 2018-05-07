@@ -94,7 +94,6 @@ puts acc       #<---- Output 15
 ```
 By defining the `-` instance method(#1.) we gain the `-=` shortcut, and can subtract from the account using that notation (#2). This is a simple but instructive example of the fact that Ruby encourages you to take advantage of the very same "wiring" that the language itself uses, so as to integrate your programs as smoothly as possible into the underlying technology.
 
-Automatically sugared methods collected below:
-#### Methods with operator-style syntactic sugar-calling notation ####
-|       Category      | Name      |Definition example | Calling example | Sugared notation              |
-|---------------------|-----------|-------------------|------------------|------------------------------|
+Automatically sugared methods in enormous table on pg 195 in book.
+
+Remembering which methods get the sugar treatment isn't difficult. They fall into several distinct categories (as shown in book in table 7.2). These categories are for the convenience of learning and reference only; Ruby doesn't categorize the methods, and the responsibility for implementing meaningful semantics lies with you. The category names indicate how these method names are used in Ruby's built-in classes and how they're most often used, by convention, when programmers implement them in new classes.
