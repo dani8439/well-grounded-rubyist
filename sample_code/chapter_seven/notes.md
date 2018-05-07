@@ -225,3 +225,82 @@ By creating a new string (`capped`) to represent the uppercase version of each n
 Furthermore, don't assume a direct correlation between bang methods and destructive methods. They often coincide, but they're not the same thing.
 
 ### *Destructiveness and "danger" vary independently* ###
+What follows here is some commentary on conventions and best practices. Ruby doesn't care; Ruby is happy to execute methods whose names end in `!` whether they're dangerous, safe, paired with a nonbang method, not paired-whatever. The value of the `!` notation as a token of communication between a method author and a user of that method resides entirely in conventions. It's worth gaining a solid understanding of those conventions and why they make sense.
+
+The best advice on when to use bang-terminated method names is...
+
+#### **DON'T USE ! EXCEPT IN M/M! METHOD PAIRS** ####
+The `!` notation for a method name should only be used when there's a method of the same name without the `!`, when the relation between those two methods is that they both do substantially the same thing, and when the bang version also has side effects, a different return value, or some other behavior that diverges from its nonbang counterpart.
+
+Don't use the `!` just because you think your method is dangerous in some vague, abstract way. All methods do something: that in itself isn't dangerous. The `!` is a warning that there may be more going on than the name suggests-and that, in turn, makes sense only if the name is in use for a method that doesn't have the dangerous behavior.
+
+Don't name a method `save!` just because it writes to a file. Call that method `save` and then, if you have another method that writes to a file but (say) doesn't back up the original file (assuming that `save` does so), go ahead and call that one `save!`.
+
+If you find yourself writing one method to write to the file, and you put a `!` at the end because you're worried the method is too powerful or too unsafe, you should reconsider your method naming. Any experienced Rubyist who sees a `save!` method documented is going to want to know how it differs from `save`. The exclamation point doesn't mean anything in isolation; it only makes sense at the end of one of a pair of otherwise identical method names.
+
+#### **DON'T EQUATE ! NOTATION WITH DESTRUCTIVE BEHAVIOR, OR VICE-VERSA** ####
+Danger in the bang sense usually means object-changing or "destructive" behavior. It's therefore not uncommon to hear people assert that the `!` means destructive. From there, it's not much of a leap to start wondering why some destructive methods' names don't end with `!`.
+
+This line of thinking is problematic from the start. The bang doesn't mean destructive; it means dangerous, possibly unexpected behavior. If you have a method called `upcase` and you want to write a destructive version of it, you're free to call it `destructive_upcase`; no rule says you have to add a `!` to the original name. It's just a convention, but it's an expressive one.
+
+Destructive methods do not always end with `!`, nor would that make sense. Many nonbang methods have names that lead you to *expect* the receiver to change. These methods have no nondestructive counterparts. (What would it mean to have a nondestructive version of `String#clear`, which removes all the characters from a string and leaves it equal to `""`? If you're not changing the string in place, why wouldn't you just write `""` in the first place?) If a method name without a bang already suggests in-place modification or any other kind of "dangerous behavior", then it's not a dangerous method.
+
+You'll almost certainly find that the conventional usage of the `!` notation is the most elegant and logical usage. It's best not to slap bangs on names unless you're playing along with those conventions.
+
+Leaving danger behind us, we'll look next at the facilities Ruby provides for converting one object to another.
+
+## Built-in and custom to_* (conversion) methods ##
+Ruby offers a number of built-in methods whose names consist of `to_` plus an indicator of a class *to* which the method converts an object: `to_s` (to string), `to_sym` (to symbol), `to_a` (to array), `to_i` (to integer), and `to_f` (to float). Not all objects respond to all of these methods, But many objects respond to a lot of them, and the principle is consistent enough to warrant looking at them collectively.
+
+### *String conversions: to_s* ###
+The most commonly used `to_` method is probably `to_s`. Every Ruby object-except instances of `BasicObject`-responds to `to_s`, and thus has a way of displaying itself as a string. What `to_s` does, as the following irb excerpts show, ranges from nothing more than return its own receiver, when the object is already a string
+
+```irb
+>> "I am already a string!".to_s
+=> "I am already a string!"
+```
+to returning a string containing a codelike representation of an object
+
+```irb
+>> ["one", "two", "three", 4, 5, 6].to_s
+=> "[\"one\", \"two\", \"three\", 4, 5, 6]"
+```
+(where the blackslash-escaped quotation marks mean there's a literal quotation mark inside the string) to returning an informative, if cryptic, descriptive string about an object:
+
+```irb
+>> Object.new.to_s
+=> "#<Object:0x000001030389b0>"
+```
+The salient point about 'to_s' is that it's used by certain methods and in certain syntactic contexts to provide a canonical string representation of an object. The `puts` method for example, calls `to_s` on its arguments. If you write your own `to_s` for a class or override it on an object, your `to_s` will surface when you give your object to `puts`. You can see this clearly, if a bit nonsensically, using a generic object:
+
+```irb
+2.3.1 :001 > obj = Object.new
+ => #<Object:0x0000000187e118>                   <---#1.
+2.3.1 :002 > puts obj
+#<Object:0x0000000187e118>                     <---#2.
+ => nil
+2.3.1 :003 > def obj.to_s                   <---#3.
+2.3.1 :004?>   "I'm an object!"
+2.3.1 :005?>   end
+ => :to_s                                 <---#4.
+2.3.1 :006 > puts obj                   <---#5.
+I'm an object!
+ => nil
+```
+The object's default string representation is the usual class and memory-location screen dump (#1). When you call `puts` on the object, that's what you see (#2). But if you define a custom `to_s` method on the object (#3), subsequent calls to `puts` reflect the new definition (#5). (Note that the method definition itself evaluates to a symbol `:to_s`, representing the name of the method (#4).)
+
+You also get the output of `to_s` when you use an object in string interpolation:
+
+```irb
+>> "My object says: #{obj}"
+=> "My object says: I'm an object!"
+```
+
+Don't forget, too, that you can call `to_s` explicitly. You don't have to wait for Ruby to go looking for it. But a large percentage of calls `to_s` are automatic, behind-the-scenes calls on behalf of `puts` or the interpolation mechanism.
+
+While we're looking a string representations of objects, let's examine a few related methods. We're drifting a bit from the `to_*` category, perhaps, but these are all methods that generate strings from objects, and a consideration of them is therefore timely.
+
+**NOTE**
+When it comes to generating string representations of their instances, arrays do things a little differently from the norm. If you call `puts` on an array, you get a cyclical representation based on calling `to_s` on each of the elements in the array and outputting one per line. That's a special behavior; it doesn't correspond to what you get when you call `to_s` on an array-namely-a string representation of the array in square brackets.
+
+#### **BORN TO BE OVERRIDDEN: INSPECT** ###
