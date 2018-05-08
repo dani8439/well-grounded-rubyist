@@ -34,3 +34,9 @@ end
 # Method definition is true!
 # Strings appear to be true!
 # 100 is greater than 50!
+
+puts true.class
+puts false.class
+
+# TrueClass
+# FalseClass

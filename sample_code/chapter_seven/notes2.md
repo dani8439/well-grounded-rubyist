@@ -232,4 +232,72 @@ To see what values are returned by the expressions whose truth value we've been 
  => true
 2.3.1 :006 >
 ```
-The empty class definition (#1) evaluates to `nil`, which is a special object (discussed further in this chapter). All you need
+The empty class definition (#1) evaluates to `nil`, which is a special object (discussed further in this chapter). All you need to know for the moment about `nil` is that it has a Boolean value of false (as you can detect from the behavior of the `if` clauses that dealt with it earlier).
+
+The class definition with the number 1 in it (#2) evaluates to the number 1, because every class definition block evaluates to the last expression contained inside of it, or `nil` if the block is empty.
+
+The method definition evaluates to the symbol `:m` (#3), representing the name of the method that's just been defined.
+
+The string `literal` (#4) evaluates to itself; it's a literal object and doesn't have to be calculated or processed into some other form when evaluated. Its value as an expression is itself.
+
+Finally, the comparison expression `100 > 50` (#5) evaluates to `true`-not just to something that has the Boolean value true, but to the object `true`. The object `true` does have the Boolean value true. But along with `false`, it has a special role to play in the realm of truth and falsehood and how they're represented in Ruby.
+
+#### *true and false as objects* ####
+The Boolean objects `true` and `false` are special objects, each being the only instance of a class especially created for it: `TrueClass` and `FalseClass`, respectively. You can ask `true` and `false` to tell you their classes' names, and they will:
+
+```ruby
+puts true.class     #<--- Output: TrueClass
+puts false.class    #<--- Output: FalseClass
+```
+The terms `true` and `false` are keywords. You can't use them as variable or method names; they're reserved for Ruby's exclusive use.
+
+You can pass the objects `true` and `false` around, assign them to variables, and examine them like any other object. Here's an irb session that puts `true` through its paces in its capacity as a Ruby object:
+
+```irb
+2.3.1 :001 > a = true
+ => true
+2.3.1 :002 > a = 1 unless a
+ => nil
+2.3.1 :003 > a
+ => true
+2.3.1 :004 > b = a
+ => true
+```
+You'll sometimes see `true` and `false` used as method arguments. For example, if you want a class to show you all of its instance methods but to exclude those defined in ancestral classes, you can provide the argument `false` to your request:
+
+`>> String.instance_methods(false)`
+
+The problem with Boolean arguments is that it's very hard to remember what they do. They're rather cryptic. Therefore, it's best to avoid them in your own code, unless there's a case where the true/false distinction is very clear.
+
+Let's summarize the true/false situation in Ruby with a look at Boolean states versus Boolean values.
+
+#### **TRUE/FALSE: STATES VS. VALUES** ####
+As you now know, every Ruby expression is true or false in a Boolean sense (as indicated by the `if` test), and there are also objects called `true` and `false`. This double usage of the true/false terminology is sometimes a source of confusion: when you say that something is true, it's not always clear whether you mean it has a Boolean truth value or that it's the object `true`.
+
+Remember that every expression has a Boolean value-including the expression `true` and the expression `false`. It may seem awkward to have to say, "The object `true` is true." But that extra step makes it possible for the model to work consistently.
+
+Building on this point, and on some of the cases you saw in slightly different for earlier, the following table shows a mapping of some sample expressions to both the outcome of their evaluation and their Boolean value.
+
+Not in particular that zero and empty strings (as well as empty arrays and hashes) have a Boolean value of true. The only objects that have a Boolean value of false are `false` and `nil`.
+
+#### **Mapping sample expressions to their evaluation results and Boolean values** ####
+|     Expression    | Object to which expression evaluates  |     Boolean value of expression       |
+|-------------------|---------------------------------------|---------------------------------------|
+| `1`               |  `1`                                  | True                                  |
+| `0`               |  `0`                                  | True                                  |
+| `1+1`             |  `2`                                  | True                                  |
+| `true`            |  `true`                               | True                                  |
+| `false`           |  `false`                              | False                                 |
+| `nil`             |  `nil`                                | False                                 |
+| `"string"`        |  `"string"`                           | True                                  |
+| `""`              |  `""`                                 | True                                  |
+| `puts "string"`   |  `nil`                                | False                                 |
+| `100 > 50         |  `true`                               | True                                  |
+| `x = 10`          |  `10`                                 | True                                  |
+| `def x; end`      |  `:x`                                 | True                                  |
+| `class C; end`    |  `nil`                                | False                                 |
+| `class C; 1; end` |  `1`                                  | True                                  |
+
+And on the subject of `nil`: it's time for us to look more closely at this unique object.
+
+### *The special object nil* ###
