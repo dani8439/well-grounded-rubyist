@@ -304,3 +304,65 @@ While we're looking a string representations of objects, let's examine a few rel
 When it comes to generating string representations of their instances, arrays do things a little differently from the norm. If you call `puts` on an array, you get a cyclical representation based on calling `to_s` on each of the elements in the array and outputting one per line. That's a special behavior; it doesn't correspond to what you get when you call `to_s` on an array-namely-a string representation of the array in square brackets.
 
 #### **BORN TO BE OVERRIDDEN: INSPECT** ###
+Every Ruby object-once again, with the exception of instances of `BasicObject`-has an `inspect` method. By default-unless a given class overrides `inspect`-the `inspect` string is a mini-screen dump of the objects's memory location:
+
+```irb 
+>> Object.new.inspect 
+=> "#<Object:0x007fe24a292b68>"
+```
+Actually, irb uses `inspect` on every value it prints out, so you can see the `inspect` strings of various objects without even explicitly calling `inspect`" 
+
+```irb 
+>> Object.new 
+=> #<Object:0x007f91c2a8d1e8>
+>> "abc"
+=> "abc"
+>> [1,2,3]
+=> [1, 2, 3]
+>> /a regular expression/
+=> /a regular expression/
+```
+If you want a useful `inspect` string for your classes, you need to define `inspect` explicitly: 
+```ruby 
+class Person 
+  def initialize(name)
+    @name = name 
+  end
+  def inspect 
+    @name
+  end
+end
+
+david = Person.new("David")
+puts david.inspect              # Output: David
+```
+(Note that overriding `to_s` and overriding `inspect` are two different things. Prior to Ruby 2, `inspect` piggybacked on `to_s`, so you could override both by overriding one. That's no longer the case.)
+
+Another, less frequently used, method generates and displays a string representation of an object: `display`.
+
+#### **USING DISPLAY** #### 
+You won't see `display` much. It occurs only once, at last count, in all the Ruby program files in the entire standard library. (`inspect` occurs 160 times.) It's a specialized output method. 
+
+`display` takes an argument: a writable output stream, in the form of a Ruby I/O object. By default, it uses `STDOUT`, the standard output stream: 
+
+```irb 
+>> "Hello".display
+Hello=> nil
+```
+Note that `display` unlike `puts` but like `print`, doesn't automatically insert a newline character. That's why `=> nil` is run together on one line with the output. 
+
+You can redirect the output of `display` by providing, for example, an open file handle as an argument: 
+
+```irb 
+>> fh = File.open("/tmp/display.out", "w")
+=> #<File:/tmp/display.out>
+>> "Hello".display(fh)                            #<----1.
+=> nil
+>> fh.close
+=> nil
+>> puts(File.read("/tmp/display.out"))                 #<----2.
+Hello
+```
+The string `"Hello"` is "displayed" directly to the file (#1.), as we confirm by reading the contents of the file and printing them out (#2.). 
+
+Let's leave string territory at this point and look at how conversion techniques play out in the case of the `Array` class. 
