@@ -301,3 +301,32 @@ Not in particular that zero and empty strings (as well as empty arrays and hashe
 And on the subject of `nil`: it's time for us to look more closely at this unique object.
 
 ### *The special object nil* ###
+The special object `nil` is indeed, an object (it's the only instance of a class called `NilClass`). But in practice, it's also a kind of nonobject. The Boolean value of `nil` is false, but that's just the start of its nonbjectness.
+
+`nil` denotes an absence of anything. You can see this graphically when you inquire into the value of, for example, an instance variable you haven't initializes:
+
+`puts  @x`
+
+This command prints `nil`. (If you try this with a local variable, you'll get an error; local variables aren't automatically initialized to anything, not even `nil`.) `nil` is also the default value for nonexistent elements of container and collection objects. For example, if you create an array with three elements, and then you try to access the tenth element (at index 9 because array indexing starts at 0), you'll find that it's `nil`.
+
+```irb
+2.3.1 :001 > ["one","two","three"][9]
+ => nil
+```
+`nil` is sometimes a difficult object to understand. It's all about absence and nonexistence; but `nil` does exist, and it responds to method calls like other objects:
+
+```irb
+2.3.1 :002 > nil.to_s
+ => ""
+2.3.1 :003 > nil.to_i
+ => 0
+2.3.1 :004 > nil.object_id
+ => 8
+```
+The `to_s` conversion of `nil` is an empty string (""); the integer representation of `nil` is 0; and `nil`'s object ID is 8. (`nil` has no special relationship to 8; that just happens to be the number designated as its ID.)
+
+It's not accurate to say that `nil` is empty, because doing so would imply that it has characteristics and dimension, like a number or a collection, which it isn't supposed to. Trying to grasp `nil` can take you into some thorny philosophical territory. You can think of `nil` as an object that exists and that comes equipped with a survival kit of methods but that serves the purpose of representing absence and a state of being undetermined.
+
+Coming full circle, remember that `nil` has a Boolean value of false. `nil` and `false` are the only two objects that do. They're not the only two *expressions* that do; `100 < 50` has a Boolean value of false, because it evaluates to the object `false`. All other Ruby objects-numbers, strings, instances of `MyCoolClass`-have a Boolean value of true. Tested directly, they all pass the `if` test.
+
+Boolean values and testing provide a segue into the next topic: comparisons between objects. We'll look at testing involving two objects and ways of determining whether they're equal-and, if they aren't, whether they can be ranked as greater/lesser, and based on what criteria. 
