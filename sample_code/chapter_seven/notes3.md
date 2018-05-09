@@ -179,3 +179,32 @@ You can make a similar request of a module:
 In addition to straightforward method and instance-method lists, Ruby provides a certain number of tweaks to help you make more fine-grained queries.
 
 ### *Filtered and selected method lists* ###
+Sometimes you'll want to see the instance methods defined in a particular class without bothering with the methods every object has. After all, you already know that your object has *those* methods. You can view a class's instance methods without those of the class's ancestors by using the slightly arcane technique, introduced earlier, of providing the argument `false` to the `instance_methods` method:
+
+`String.instance_methods(false).sort`
+
+You'll see many fewer methods this way, because you're looking at a list of only those defined in the `String` class, without those defined in any of `String`'s ancestral classes or modules. This approach gives you a restricted picture of the methods available to string objects, but it's useful for looking in a more fine-grained way at how and where the method definitions behind a given object are positioned.
+
+Other method-listing methods include the following (of which you've seen `singleton_methods` already):
+
+• `obj.private_methods`
+
+• `obj.public_methods`
+
+• `obj.protected_methods`
+
+• `obj.singleton_methods`
+
+In addition, classes and modules let you examine their instance methods:
+
+• `MyClass.private_instance_methods`
+
+• `MyClass.protected_instance_methods`
+
+• `MyClass.public_instance_methods`
+
+The last of these, `public_instance_methods`, is a synonym for `instance_methods`.
+
+The mechanisms for examining objects' methods are extensive. As always, be clear in your own mind what the object is (in particular, class/module or "regular" object) that you're querying and what you're asking it to tell you.
+
+We've reached the end of our midbook bootstrap session, survival kit, literacy guide... Whatever you call it, it puts us in a good position to look closely at a number of important core classes, which we'll do over the next several chapters.
