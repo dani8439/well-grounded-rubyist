@@ -79,3 +79,43 @@ You can escape the backslash to get \n and \t with double quotes.
 You'll see other cases of string interpolation and character escaping as we proceed. Meanwhile, by far the best way to get a feel for these two behaviors firsthand is to experiment with strings in irb.
 
 Ruby gives you several ways to write strings in addition to single and double quotation marks.
+
+### OTHER QUOTING MECHANISMS ###
+The alternate quoting mechanisms take the form `%char{text}`, where `char` is one of those several special characters and the curly braces stand in for a delimiter of your choosing. Here's an example of one of these mechanisms: `%q`, which produces a single-quoted string.
+
+`puts %q{You needn't escape apostrophes when using %q.}`
+
+As the sample sentence points out, because you're not using the single-quote character as a quote character, you can use it unescaped inside the string.
+
+Also available to you are `%Q{}`, which generates a double-quoted string, and plain `%{}` (percent sign and delimiter), which also generates a double-quoted string. Naturally, you don't need to escape the double-quote character inside strings that are represented with either of these notations.
+
+The delimiter for the %-style notations can be just about anything you want, as long as the opening delimiter matches the closing one. *Matching* in this case means either making up a left/right pair of braces (curly, curved, or square) or being two of the same characters. Thus all of the following are acceptable:
+
+```ruby
+%q-A string-
+%Q/Another String/
+%[Yet another string]
+```
+You can't use alphanumeric characters as your delimiters, but if you feel like being obscure, you can use a space. It's hard to see in an example, so the entire following example is surrounded by square brackets that you shouldn't type if you're entering the example in an irb session or Ruby program file:
+
+`[%q Hello!]`
+
+The space-delimited example, aside from being silly (although instructive), brings to mind the question of what happens if you use the delimiter inside the string (because many strings have spaces inside them). If the delimiter is a single character, you have to escape it:
+
+```ruby
+[%q Hello\ there!]
+%q-Better escape the \- inside this string!-
+```
+
+If you're using left/right matching braces and Ruby sees a left-hand one inside the string, it assumes that the brace is part of the string and looks for a matching right-hand one. If you want to include an unmatched brace of the same type as the ones you're using for delimiters, you have to escape it:
+
+```ruby
+%Q[I can put [] in here unescaped.]
+%q(I have to escape \ (if I use it alone in here.)
+%Q(And the same goes for \).)
+```
+
+Each of the `%char`-style quoting mechanisms generates either a single- or double-quoted string. That distinction pervades stringdom; ever string is one or the other, no matter which notation you use-including the next one we'll look at, the "here" document syntax.
+
+**irb doesn't play well with some of this syntax**
+irb has its own Ruby parser, which has to contend with the fact that as it parses one line, it has no way of knowing what the next line will be. The result is that irb does things a little differently from the Ruby interpreter. In the case of quote mechanisms, you may find that in irb, escaping unmatched square and other brackets produces odd results. Generally, you're better off plugging in these examples into the command line format `ruby -e 'puts %q[ Example: \[]'` and similar.
