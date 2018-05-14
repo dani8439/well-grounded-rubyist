@@ -119,3 +119,51 @@ Each of the `%char`-style quoting mechanisms generates either a single- or doubl
 
 **irb doesn't play well with some of this syntax**
 irb has its own Ruby parser, which has to contend with the fact that as it parses one line, it has no way of knowing what the next line will be. The result is that irb does things a little differently from the Ruby interpreter. In the case of quote mechanisms, you may find that in irb, escaping unmatched square and other brackets produces odd results. Generally, you're better off plugging in these examples into the command line format `ruby -e 'puts %q[ Example: \[]'` and similar.
+
+### "HERE" DOCUMENTS ###
+A *"here" document*, or *here-doc,* is a string, usually a multiline string, that often takes the form of a template or a set of data lines. It's said to be "here" because it's physically present in the program file, not read in from a separate text file.
+
+Here-docs come into being through the `<<` operator, as shown below:
+
+```irb
+>> text = <<EOM
+This is the first line of text.
+This is the second line.
+Now we're done.
+EOM
+=> "This is the first line of text.\nThis is the second line.\nNow we're done.\n"
+```
+The expression `<<EOM` means *the text that follows, up to but not including the next occurrence of "EOM."* The delimiter can be any string; `EOM` (end of message) is a common choice. It has to be flush-left, and it has to be the only thing on the line where it occurs. You can switch off the flush-left requirement by putting a hyphen before the `<<` operator:
+
+```
+>> text = <<-EOM
+The EOM doesn't have to be flush left!
+      EOM
+=> "The EOM doesn't have to be flush left!\n"  
+```
+
+The EOM that stops the reading of this here-doc (only a one-line document this time) is in the middle of the line.
+
+By default, here-docs are read in as double-quoted strings. Thus they can include string interpolation and use of escape characters like `\n` and `\t`. If you want a single-quoted here-doc, put the closing delimiter in single quotes when you start the document. To make the difference clearer, this example includes a `puts` of the here-doc:
+
+```irb
+>> text = <<-'EOM'
+Single-quoted!
+Note the literal \n.
+And the literal #{2 + 2}.
+EOM
+ => "Single-quoted!\nNote the literal \\n.\nAnd the literal \#{2 + 2}.\n"
+>> puts text
+Single-quoted!
+Note the literal \n.
+And the literal #{2 + 2}.
+ => nil
+```
+The `<<EOM` or equivalent doesn't have to be the last thing on its line. Wherever it occurs, it serves as a placeholder for the upcoming here-doc. HEre's one that gets converted to an integer and multiplied by 10:
+
+```irb
+a = <<EOM.to_i * 10
+5
+EOM
+puts a      #Output: 50
+```
