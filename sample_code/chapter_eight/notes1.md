@@ -167,3 +167,25 @@ a = <<EOM.to_i * 10
 EOM
 puts a      #Output: 50
 ```
+You can even use a here-doc in a literal object constructor. Here's an example where a string gets put into an array, creating the string as a here-doc:
+
+```ruby 
+array = [1,2,3, <<EOM, 4]
+This is the here-doc!
+It becomes array[3].
+EOM
+p array
+
+[1, 2, 3, "This is the here-doc!\nIt becomes array[3].\n", 4]
+```
+As you can use the `<<EOM` notation as a method argument; the argument becomes the here-doc that follows the line on which the method call occurs. This can be useful if you want to avoid cramming too much text into your argument list: 
+
+```ruby 
+do_something_with_args(a, b, <<EOM)
+http://some_very_long_url_or_other_text_best_put_on_its_own_line 
+EOM
+```
+In addition to creatin strings, you need to know what you can do with them. You can do a lot, and we'll look at much of it in detail, starting with the basics of string manipulation.
+
+### *Basic String manipulation* ### 
+*Basic* in this context means manipulating the object at the lowest levels: retrieving and setting substrings, and combining strings with each other. From Ruby's perspective, these techniques aren't any more basic than those that come later in our survey of strings; but conceptually, they're closer to the string metal, so to speak.
