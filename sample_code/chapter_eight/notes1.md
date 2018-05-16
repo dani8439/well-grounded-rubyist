@@ -261,3 +261,43 @@ To set part of a string to a new value, you use the `[]=` method. It takes the s
 >> string
 => "Ruby is a great thing to learn!"
 ```
+Integers, ranges, strings, and regular expression can thus all work as index or substring specifiers. If you try to set part of the string that doesn't exist-that is, a too-high or too-low numerical index, or a string or regular expression that doesn't match the string-you get a fatal error.
+
+In addition to changing individual strings, you can also combine strings with each other.
+
+### COMBINING STRINGS ###
+There are several techniques for combining strings. These techniques differ as to whether the second string is permanently added to the first or whether a new, third string is created out of the first two-in other words, whether the operation changes the receiver.
+
+To create a new string consisting of two or more strings, you can use the `+` method/operator to run the original strings together. Here's what irb has to say about adding strings:
+
+```irb 
+>> "a" + "b"
+=> "ab"
+>> "a" + "b" + "c"
+=> "abc"
+```
+The string you get back from `+` is always a new string. Yuo can test this by assigning a string to a variable, using it in a `+` operation, and checking to see what its value is after the operation:
+
+```irb 
+>> str = "Hi "
+=> "Hi "
+>> stri + "there."
+=> "Hi there."          #<----1.
+>> str
+=> "Hi "                    #<----2.
+```
+The expression `str + "there."` (which is syntactic sugar for the method call `str.+("there")`) evaluates to the new string `"Hi there."` (#1.) but leaves `str` unchanged (#2). 
+
+To add (append) a second string permanently to an existing string, use the `<<` method, which also has a syntactic sugar, pseudo-operator form:
+
+```irb
+>> str = "Hi "
+=> "Hi "
+>> str << "there."
+=> "Hi there."
+>> str
+=> "Hi there."        #<----1.
+```
+In this example, the original string `str` has had the new string appended to it, as you can see from the evaluation of `str` at the end (#1). 
+
+String interpolation is (among other things) another way to combine strings. You've seen it in action already, but let's take the opportunity to look at a couple of details of how it works. 
