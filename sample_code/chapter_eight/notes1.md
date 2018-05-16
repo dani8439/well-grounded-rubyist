@@ -301,3 +301,55 @@ To add (append) a second string permanently to an existing string, use the `<<` 
 In this example, the original string `str` has had the new string appended to it, as you can see from the evaluation of `str` at the end (#1). 
 
 String interpolation is (among other things) another way to combine strings. You've seen it in action already, but let's take the opportunity to look at a couple of details of how it works. 
+
+### STRING COMBINATION VIA INTERPOLATION ###
+At its simplest, string interpolation involves dropping one existing string into another:
+
+```irb 
+>> str = "Hi "
+=> "Hi "
+>> "#{str} there"
+=> "Hi there."
+```
+The result is a new string: `"Hi there."` However, it's good to keep in mind that the interpolation can involve any Ruby expression:
+
+```irb 
+>> "The sum is #{2 + 2}."
+=> "The sum is 4."
+```
+The code inside the curly braces can be anything. (THey do have to be curly braces; it's not like `%q{}`, where you can choose your own delimiter.) It's unusual to make the code terribly complex, because that detracts from the structure and readability of the program-but Ruby is happy with any interpolated code and will obligingly place a string representation of the value of the code in yuor string:
+
+```irb 
+>> "My name is #{ class Person
+                    attr_accessor :name
+                  end
+                  d = Person.new 
+                  d.name = "David"
+                  d.name
+                  }."
+=> "My name is David."
+```
+You really, *really* don't want to do this, but it's important to understand that you can interpolate any code you want. Ruby patiently waits for it all to run and then snags the final value of the whole thing (`d.name`, in this case, because that's the last expression inside the interpolation block) and interpolates it.
+
+There's a much nicer way to accomplish something similar. Ruby interpolates by calling `to_s` on the object to which the interpolation code evaluates. You can take advantage of this to streamline string construction, by defining your own `to_s` methods appropriately:
+
+```irb 
+>> class Person
+>>    attr_accessor :name
+>>    def to_s
+>>      name
+>>    end
+>> end
+=> :to_s
+>> david = Person.new
+=> #<Person:0x00000101a73cb0>
+>> david.name = "David"
+=> "David"
+>> "Hello, #{david}!"
+=> "Hello, David!"
+```
+Here the object `david` serves as the interpolated code, and produces the result of its `to_s` operation, which is defined as a wrapper around the `name` getter method. Using the `to_s` hook is a useful way to control your objects' behavior in interpolated strings. Remember, though, that you can also say (in the preceeding example) `david.name`. So, if you have a broader use for a class's `to_s` than a very specific interpolation scenario, you can usually accomodate it.
+
+After you've created and possibly altered a string, you can ask it for a considerable amount of information about itself. We'll look into how you query strings now.
+
+## *Querying strings* ##
