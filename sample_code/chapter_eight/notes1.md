@@ -189,3 +189,75 @@ In addition to creatin strings, you need to know what you can do with them. You 
 
 ### *Basic String manipulation* ### 
 *Basic* in this context means manipulating the object at the lowest levels: retrieving and setting substrings, and combining strings with each other. From Ruby's perspective, these techniques aren't any more basic than those that come later in our survey of strings; but conceptually, they're closer to the string metal, so to speak.
+
+### GETTING AND SETTING SUBSTRINGS ### 
+To retrieve the *n*th character in a string, you use the `[]` operator/method, giving it the index, on a zero-origin basis, for the the character you want. Negative numbers index from the end of the string:
+
+```irb
+>> string = "Ruby is a cool language."
+=> "Ruby is a cool language."
+>> string[5]
+=> "i"
+>> string[-12]
+=> "o"
+```
+If you provide a second integer argument, *m*, you'll get a substring of *m* characters, starting at the index you've specified.
+
+```irb
+>> string[5,10]
+=> "is a cool "
+```
+You can also provide a single *range* object as the argument. We'll look at ranges in more depth later; for now, you can think of *n..m* as all of the values between *n* and *m*, inclusive (or exclusive of *m*, if you use the three dots instead of two). The range can use negative numbers, which count from the end of the string backward, but the second index always has to be closer to the end of the string than the first index; the index logic only goes from left to right:
+
+```irb 
+>> string[7..14]
+=> " a cool "
+>> string[-12..-3]
+=> "ol languag"
+>> string[-12..20]
+=> "ol langua"
+>> string[15..-1]
+=> "language."
+```
+You can also grab substrings based on an explicit substring search. If the substring is found it's returned; if not, the return value is `nil`.
+
+```irb 
+>> string["cool lang"]
+=> "cool lang"
+>> string["very cool lang"]
+=> nil
+```
+It's also possible to search for a pattern match using the `[]` technique with a regular expression--`[]` is a method, and what's inside it are the arguments, so it can do whatever it's programmed to do:
+
+```irb 
+>> string[/c[ol ]+/]
+=> "cool l"
+```
+We'll look at regular expressions later on, at which point you'll get a sense of the possibilities of this way of looking for substrings. 
+
+The `[]` method is also available under the name `slice`. Furthermore, a receiver-changing version of `slice`, namely `slice!`, removes the character(s) from the string permanently:
+
+```irb 
+>> string.slice!("cool ")
+=> "cool "
+>> string
+=> "Ruby is a language."
+```
+To set part of a string to a new value, you use the `[]=` method. It takes the same kinds of indexing arguments as `[]` but changes the value to what you specify. Putting the preceding little string through its paces, here are some substring-setting examples, with an examination of the changed string after each one:
+
+```irb
+>> string = "Ruby is a cool language."
+=> "Ruby is a cool language."
+>> string["cool"] = "great"
+=> "great"
+>> string 
+=> "Ruby is a great language."
+>> string[-1] = "!"
+=> "!"
+>> string
+=> "Ruby is a great language!"
+>> string[-9..-1] = "thing to learn!"
+=> "thing to learn!"
+>> string
+=> "Ruby is a great thing to learn!"
+```
