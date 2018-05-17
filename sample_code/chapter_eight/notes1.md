@@ -430,4 +430,35 @@ To negate the search-that is, to count the number of characters that don't match
 >> string.count("ag-m", "^l")    #<------Count "a" and "g-m" except for "l".
 => 6
 ```
-Another way to query strings as to their content is with the `index` method. `index` is sort of the inverse of using `[]` with a numerical index: instead of looking up a substring 
+Another way to query strings as to their content is with the `index` method. `index` is sort of the inverse of using `[]` with a numerical index: instead of looking up a substring at a particular index, it returns the index at which a given substring occurs. The first occurrence from the left is returnced. If you want the first occurrence from the right, use `rindex`:
+
+```irb 
+>> string.index("cool")
+=> 10
+>> string.index("l")
+=> 13
+>> string.rindex("l")
+=> 15
+```
+Although strings are made up of characters, Ruby has no separate character class. One-character strings can tell you their ordinal code, courtesy of the `ord` method:
+
+```irb 
+>> "a".ord
+=> 97
+```
+If you take the `ord` of a longer string, you get the code for the first character:
+
+```irb 
+>> "abc".ord
+=> 97
+```
+The reverse operation is available as the `chr` method on integers:
+
+```irb
+>> 97.chr
+=> "a"
+```
+Asking a number that doesn't correspond to any character for its `chr` equivalent causes a fatal error.
+
+In addition to providing information about themselves, strings can compare themselves with other strings, to test for equality and order. 
+
