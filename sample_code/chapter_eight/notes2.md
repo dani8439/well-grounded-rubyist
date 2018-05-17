@@ -70,3 +70,119 @@ You can perform a number of transformations on the format of a string, most of w
 #### FORMATTING TRANSFORMATIONS #### 
 Strictly speaking, format transformations are a subset of content transformations; if the sequence of characters represented by the string didn't change, it wouldn't be much of a transformation. We'll group under the formatting heading some transformations whose main purpose is the enhance the presentation of strings.
 
+The `rjust` and `ljust` methods expand the size of your string to the length you provide in the first argument, padding with blank spaces as necessary:
+
+```irb 
+>> string = "David A. Black"
+=> "David A. Black"
+>> string.rjust(25)
+=> "           David A. Black"
+>> string.ljust(25)
+=> "David A. Black           "
+```
+If you supply a second argument, it's used as padding. This second argument can be more than one character long:
+
+```irb 
+>> string.rjust(25, '.')
+=> "...........David A. Black"
+>> string.rjust(25, '><')
+=> "><><><><><>David A. Black"
+```
+The padding pattern is repeated as many times as it will fit, truncating the last placement if necessary.
+
+And to round things out in the justification realm, there's a `center` method, which behaves like `rjust` and `ljust` but puts the characters of the string in the center:
+
+```irb 
+>> "The middle".center(21, "*")
+=> "*****The middle*****"
+```
+Odd-numbered padding spots are rendered right-heavy:
+
+```irb 
+>> "The middle".center(20, "*")
+=> "*****The middle******"
+```
+Finally, you can prettify your strings by stripping whitespace from either or both sides, using the `strip`, `lstrip` and `rstrip` methods:
+
+```irb 
+>> string = "   David A. Black    "
+=> "    David A. Black    "
+>> string.strip
+=> "David A. Black"
+>> string.lstrip 
+=> "David A. Black    "
+>> string.rstrip 
+=> "    David A. Black"
+```
+All three of the string-stripping methods have `!` versions that change the string permanently in place. 
+
+#### CONTENT TRANSFORMATIONS ####
+The `chop` and `chomp` methods are both in the business of removing characters from the ends of strings-but they go about it differently. The main difference is that `chop` removes a character unconditionally, whereas `chomp` removes a target substring if it finds that substring at the end of the string. By default, `chomp`'s target substring is the newline character, `\n`. You can override the target by providing `chomp` with an argument.
+
+```irb 
+>> "David A. Black".chop
+=> "David A. Blac"
+>> "David A. Black\n".chomp
+=> "David A. Black"
+>> "David A Black".chomp('ck')
+=> "David A. Bla"
+```
+By far, the most common use of either `chop` or `chomp` is the use of `chomp` to remove newlines from the ends of strings, usually strings that come to the program in the form of lines of a file or keyboard input.
+
+Both `chop` and `chomp` have bang equivalents that change the string in place. 
+
+On the more radical end of character removal stands the `clear` method, which empties a string of all its characters, leaving the string empty:
+
+```irb 
+>> string = "David A. Black"
+=> "David A. Black"
+>> string.clear
+=> ""
+>> string
+=> ""
+```
+`String#clear` is a great example of a method that changes its receiver but doesn't end with the `!` character. The name `clear` makes it clear, so to speak, that something is happening to the string. There would be no point in having a `clear` method that didn't change the string in place; it would just be a long-winded way to say `""` (the empty string).
+
+If you want to swap out all your characters without necessarily leaving your string bereft of content, you can use `replace`, which takes a string argument and replaces the current content of the string with the content of that argument:
+
+```irb 
+>> string = "(to be named later)"
+=> "(to be named later)"
+>> string.replace("David A. Black")
+=> "David A. Black"
+```
+As with `clear`, the `replace` method permanently changes the string-as suggested, once again, by the name.
+
+You can target certain characters for removal from a string with `delete`. The arguments to `delete` follow the same rules as the arguments to `count`.
+
+```irb 
+>> "David A. Black".delete("abc")
+=> "Dvid A. Blk"
+>> "David A. Black".delete("^abc")
+=> "aac"
+>> "David A. Black".delete("a-e", "^c") 
+=> "Dvid A. Blck"
+```
+Another specialized string transformation is `crypt`, which performs a Data Encryption Standard (DES) encryption on the string, similar to the UNIX `crypt(3)` library function. The single argument to `crypt` is a two-character salt string:
+
+```irb 
+>> "David A. Black".crypt("34")
+=> "347OEY. 7YRmio"
+```
+Make sure you read up on the robustness of any encryption techniques you use, including `crypt`. 
+
+The last transformations technique we'll look at is string incrementation. You can get the next-highest string with the `succ` method (also available under the name `next`). The ordering of strings is engineered to make sense, even at the expense of string character-code order: `"a"` comes after `"``"` (the backtick character) as it does in ASCII, but after `"z"` comes `"aa"`, not `"{"`. Incrementation continues, odometer-stype throughout the alphabet:
+
+```irb 
+>> "a".succ
+=> "b"
+>> "abc".succ 
+=> "abd"
+>> "azz".succ 
+=> "baa"
+```
+The ability to increment strings comes in handy in cases where you need batch-generated unique strings, perhaps to use as filenames. 
+
+As you've already seen, strings (like other objects) can convert themselves with methods in the `to_*` family. We'll look next at some further details of string conversion.
+
+#### *String conversions* ####
