@@ -353,3 +353,81 @@ Here the object `david` serves as the interpolated code, and produces the result
 After you've created and possibly altered a string, you can ask it for a considerable amount of information about itself. We'll look into how you query strings now.
 
 ## *Querying strings* ##
+String queries come in a couple of flavors. SOme give you a Boolean (true or false) response, and some give you a kind of status report on the current state of the string. 
+
+### BOOLEAN STRING QUERIES### 
+You can ask a string whether it includes a given substring, using `include?`. Given the string used earlier (`"Ruby is a cool language."`), inclusion queries might look like this:
+
+```irb 
+>> string.include?("Ruby")
+=> true
+>> string.include?("English")
+=> false
+```
+You can test for a given start or end to a string with `start_with?` and `end_with?`:
+
+```irb
+>> string.start_with?("Ruby")
+=> true
+>> string.end_with?("!!!")
+=> false
+```
+And you can test for the absence of content--that is, for the presence of any characters at all-with the `empty?` method:
+
+```irb 
+>> string.empty?
+=> false
+>> "".empty?
+=> true
+```
+Keep in mind that whitespace counts as characters; the string `" "` isn't empty. 
+
+### CONTENT QUERIES ### 
+The `size` and `length` methods (they're synonyms for the same method) do what their names suggest they do:
+
+```irb 
+>> string.size
+=> 24
+```
+If you want to know how many times a given letter or set of letters occurs in a string, use `count`. To count occurrences of one letter, provide that one letter as the argument. Still using the string `"Ruby is a cool language."`, there are three occurrences of `"a"`:
+
+```irb 
+>> string.count("a")
+=> 3
+```
+
+To count how many of a range of letters there are, you can use a hyphen-separated range:
+
+```irb 
+>> string.count("g-m")
+=> 5
+```
+Character specifications are case-sensitive:
+
+```irb 
+>> string.count("A-Z")
+=> 1
+```
+You can also provide a written-out set of characters you want to count:
+
+```irb
+>> string.count("aey. ")      #<----Three letters plus period and space character.
+=> 10 
+```
+To negate the search-that is, to count the number of characters that don't match the ones you specify-put a `^` (caret) at the beginning of your specification:
+
+```irb
+>> string.count("^aey. ")
+=> 14
+>> string.count("^g-m")
+=> 19
+```
+(If you're familiar with regular expressions, you'll recognize the caret technique as a close cousin of regular expression character class negation.) You can combine the specification syntaxes and even provide more than one argument:
+
+```irb
+>> string.count("ag-m")
+=> 8
+>> string.count("ag-m", "^l")    #<------Count "a" and "g-m" except for "l".
+=> 6
+```
+Another way to query strings as to their content is with the `index` method. `index` is sort of the inverse of using `[]` with a numerical index: instead of looking up a substring 
