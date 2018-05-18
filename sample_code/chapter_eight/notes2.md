@@ -296,3 +296,50 @@ At this point, we'll wrap up our survey of string methods and turn to a class wi
 :book
 :"Here's how to make a symbol with spaces in it."
 ```
+You can also create a symbol programmatically by calling the `to_sym` method (also known by the synonym `intern`) on a string, as you saw in the last section:
+
+```irb
+>> "a".to_sym
+=> :a
+>> "Converting string to symbol with intern....".intern
+=> :"Converting string to symbol with intern...."
+```
+
+Note the telltale leading colons on the evaluation results returned by irb.
+
+You can easily convert a symbol to a string:
+
+```irb
+>> :a.to_s
+=> "a
+```
+That's just the beginning though. Symbols differ from strings in important ways. Let's look at symbols on their own terms and then come back to a comparative look at symbols and strings.
+
+### *Chief characteristics of symbols* ###
+Symbols are a hard nut to crack for many people learning Ruby. They're not quite like anything else, and they don't correspond exactly to data types most people have come across previously. In some respects they're rather stringlike, but at the same time, they have a lot in common with integers. It's definitely worth a close look at their chief characteristics: immutability and uniqueness.
+
+#### IMMUTABILITY ####
+Symbols are immutable. There's no such thing as appending characters to a symbol; once the symbol exists, that's it. You'll never see `:abc << :d` or anything of that kind.
+
+That's not to say that there's no symbol `:abcd`. Like an integer, a symbol can't be changed. When you want to refer to `5`, you don't change the object `4` by adding `1` to it. You can add `1` to `4` by calling `4.+(1)` (or `4 + 1`), but you can't cause the object `4` to be object `5`. Similarly, although you can use a symbol as a hint to Ruby for the generation of another symbol, you can't alter a given symbol.
+
+#### UNIQUENESS ###
+Symbols are unique. Whenever you see `:abc` you're seeing a representation of the same object. Again, symbols are more like integers than strings in this respect. When you see the notation `"abc"` in two places, you're looking at two different representations of two different string objects; the literal constructor `""` creates a new string. But `:abc` is always the same `Symbol` object, just as `100` is always the same object.
+
+You can see the different between strings and symbols in the matter of uniqueness by querying objects as to their `object_id`, which is unique for every separate object:
+
+```irb
+>> "abc".object_id
+=> 10615980
+>> "abc".object_id
+=> 10612200
+>> :abc.object_id
+=> 1181788
+>> :abc.object_id
+=> 1181788
+```
+The `"abc"` notation creates a new string each time, as you can see from the fact that each such string has a different object ID. But the `:abc` notation always represents the same object, `:abc` identifies itself with the same ID number no matter how many times you ask it.
+
+Because symbols are unique, there's no point having a constructor for them; Ruby has no `Symbol#new` method. You can't create a symbol any more than you can create a new integer. In both cases, you can only refer to them.
+
+The word *symbol* has broad connotations; it sounds like it might refer to any identifier or token. It's important to get a handle on the relation between symbol objects and symbols in a more generic sense. 
