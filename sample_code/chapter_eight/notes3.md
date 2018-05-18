@@ -81,3 +81,49 @@ The second is from Ruby 2:
 ```
 
 Somewhere along hte line, symbols have learned to do lots of new things, mostly from the string domain. But note that there are no bang versions of the various case-changing and incrementation methods. For strings, `upcase!` means *upcase yourself in place*. Symbols, on the other hand, are immutable; the symbol `:a` can show you the symbol `:A`, but it can't be the symbol `:A`.
+
+In general, the semantics of the stringlike symbol methods are the same as the string equivalents, including incrementation:
+
+```irb
+>> sym = :david
+=> :david
+>> sym.upcase
+=> :DAVID
+>> sym.succ
+=> :davie
+>> sym[2]
+=> "v"                   #<-----1
+>> sym.casecmp(:david)
+=> 0
+```
+Note that indexing into a symbol returns a substring(#1), not a symbol. From the programmer's perspective, symbols acknowledge the fact that they're representations of text by giving you a number of ways to manipulate their content. But it isn't really content, `:david` doesn't contain "david" any more than `100` contains "100." It's a matter of the interface and of a characteristically Ruby-like confluence of object theory and programming practicality.
+
+Underneath, symbols are more like integers than strings. (The symbol table is basically an integer-based hash.) They share with integers not only immutability and uniqueness, but also immediacy: a variable to  which a symbol is bound provides the actual symbol value, not a reference to it. If you're puzzled over how exactly symbols work, or over why both strings and symbols exist when they seem to be duplicating each other's efforts in representing text, think of symbols as integer-like entities dressed up in characters. It sounds odd, but explains a lot.
+
+## *Numerical objects* ##
+In Ruby, numbers are objects. You can send messages to them, just as you can any object:
+
+```ruby
+n = 99.6
+m = n.round
+puts m                #<--------1
+x = 12
+if x.zero?
+  puts "x is zero"
+else
+  puts "x is not zero"          #<--------2
+end
+puts "The ASCII character equivalent of 97 is #{97.chr}"     #<--------3
+```
+As you'll see if you run this code, floating-point numbers know how to round themselves (#1) (up or down). Numbers in general know (#2) whether they're zero. And integers can convert themselves to the character that corresponds to their ASCII value (#3).
+
+Numbers are objects; therefore, they have classes- a whole family tree of them
+
+            |----> `Float`
+            |
+`Numerical` |
+            |                | ----> `Fixnum`
+            |----> `Integer` |  
+                             | ----> `Bignum`
+                             
+### *Numerical classes* ###
