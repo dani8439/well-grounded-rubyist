@@ -119,11 +119,78 @@ As you'll see if you run this code, floating-point numbers know how to round the
 
 Numbers are objects; therefore, they have classes- a whole family tree of them
 
-            |----> `Float`
-            |
-`Numerical` |
-            |                | ----> `Fixnum`
-            |----> `Integer` |  
-                             | ----> `Bignum`
-                             
+                           Numeric
+                        /           \
+                  Float               Integer
+                                    /         \
+                                Fixnum        Bignum
+
 ### *Numerical classes* ###
+Several classes make up the numerical landscape. Figure above shows a slightly simplified view (mixed-in modules aren't shown) of those classes, illustrating the inheritance relations among them.
+
+The top class in the hierarchy of numerical classes is `Numeric`; all the others descend from it. The first branch in the tree is between floating-point and integral numbers: the `Float` and `Integer` classes. Integers are broken into two-classes: `Fixnum` and `Bignum`. `Bignum`s, as you may surmise, are large integers. When you use or calculate an integer that's big enough to be a `Bignum` rather than a `Fixnum`, Ruby handles the conversion automatically for you; you don't have to worry about it.
+
+### *Performing arithmetic operations* ###
+For the most part, numbers in Ruby behave as the rules of arithmetic and the usual conventions of arithmetic notation lead you to expect. The examples in table above should be reassuring in their boringness.
+
+Note that when you divide integers, the result is always an integer. If you want floating-point division, you have to feed Ruby floating-point numbers (even if all you're doing is adding .0 to the end of an integer)
+
+##### Common arithmetic expressions and their evaluative results #####
+
+|     Expression      |       Result        |               Comments                                |
+|---------------------|---------------------|-------------------------------------------------------|
+| `1 + 1`             | `2`                 | Addition                                              |
+| `10/5 `             | `2`                 | Integer division                                      |
+| `16/5 `             | `3`                 | Integer division (no automatic floating-point conversion)|
+| `10/3.3`            | `3.3333333333`      | Floating-point division                               |
+| `1.2 + 2.3`         | `4.6`               | Floating-point addition                               |
+| `-12 - -7`          | `-5`                | Subtraction                                           |
+| `10 % 3`            | `1`                 | Modulo (remainder)                                    |
+
+
+Ruby also lets you manipulate numbers in nondecimal bases. Hexadecimal integers are indicated by a leading `0x`. Here are some irb evaluations of hexadecimal integer expressions:
+
+```irb
+>> 0x12
+=> 18
+>> 0x12 + 12          #<-----1
+=> 30
+```
+The second 12 in the last expression (#1) is a decimal 12; the `0x` prefix applies only to the numbers it appears on.
+
+Integers beginning with 0 are interpreted as *octal* (base 8):
+
+```irb
+>> 012
+=> 10
+>> 012 + 12
+=> 22
+>> 012 + 0x12
+=> 28
+```
+
+You can also use the `to_i` method of strings to convert numbers in any base to decimal. To perform such a conversion, you need to supply the base you want to convert *from* as an argument to `to_i`. The string is then interpreted as an integer in that base, and the whole expression returns the decimal equivalent. You can try any base from 2 to 36 inclusive. Here are some examples:
+
+```irb
+>> "10".to_i(17)
+=> 17
+>> "12345".to_i(13)
+=> 33519
+>> "ruby".to_i(35)
+=> 1194794
+```
+Keep in mind that most of the arithmetic operators you see in Ruby are *methods*. They don't look that way because of the operator-like syntactic sugar that Ruby gives them. But they are methods, and they can be called as methods:
+
+```irb
+>> 1.+(1)
+=> 2
+>> 12./(3)
+=> 4
+>> -12.-(-7)
+=> -5
+```
+In practice, no one writes arithmetic operations that way; you'll always see the syntactic sugar equivalents (`1 + 1` and so forth). But seeing examples of the method-call form is a good reminder of the fact that they're methods-and also of the fact that if you define, say, a method called `+` in a class of your own, you can use the operator's syntactic sugar. (And if you see arithmetic operators behaving weirdly, it may be that someone has redefined their underlying methods.)
+
+We'll turn now to the next and last category in scalar objects we'll discuss in this chapter: time and datetime objects.
+
+## *Times and dates* ##
