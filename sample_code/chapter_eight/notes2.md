@@ -186,3 +186,41 @@ The ability to increment strings comes in handy in cases where you need batch-ge
 As you've already seen, strings (like other objects) can convert themselves with methods in the `to_*` family. We'll look next at some further details of string conversion.
 
 #### *String conversions* ####
+The `to_i` method is one of the conversion methods available to strings. This method offers an additional feature: if you give it a positive integer argument in the range 2-36, the string you're converting is interpreted as representing a number in the base corresponding to the argument.
+
+For example, if you want to interpret 100 as a base 17 number, you can do so like this:
+```irb
+>> "100".to_i(17)
+=> 289
+```
+The output is the decimal equivalent of 100, base 17.
+
+Base 8 and base 16 are considered special cases and have dedicated methods so you don't have to go the `to_i` route. These methods are `oct` and `hex`, respectively:
+
+```irb 
+>> "100".oct
+=> 64
+>> "100".hex
+=> 256
+```
+Other conversion methods available to strings include `to_f` (to float), `to_s` (to string; it returns its receiver), and `to_sym` or `intern`, which converts the string to a `Symbol` object. None of these hold any particular surprises:
+
+```irb
+>> "1.2345".to_f
+=> 1.2345
+>> "Hello".to_s
+=> "Hello"
+>> "abcde".to_sym
+=> "abcde
+>> "1.2345and some words".to_f
+=> 1.2345
+>> "just some words".to_i
+=> 0
+```
+Every string consists of a sequence of bytes. The bytes map to characters. Exactly *how* they map to characters-how many bytes make up a character, and what those characters are-is a matter of *encoding*, which we'll now take a brief look at.
+
+#### *String encoding: a brief introduction* #### 
+The subject of character encoding is interesting but vast. Encodings are many, and there's far from a global consensus on a single best one. Ruby 1.9 added a great deal of encoding intelligence and functionality to strings. The big change in Ruby 2 was the use of UTF-8, rather than US-ASCII, as the default encoding for Ruby scripts. Encoding in Ruby continues to be an area of ongoing discussion and development. We'll just explore some important encoding-related techniques. 
+
+#### SETTING THE ENCODING OF THE SOURCE FILE #### 
+To start with, your source code uses a certain encoding. By default, Ruby source files use UTF-8 encoding. You can determine this by asking Ruby to display the value `__ENCODING__`. 
