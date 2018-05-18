@@ -268,4 +268,31 @@ The bang version of `encode` changes the encoding of the string permanently:
 >> str.encoding
 => #<Encoding:US-ASCII>
 ```
-The encoding of a string is also affected by the presence of certain characters in a string and/or 
+The encoding of a string is also affected by the presence of certain characters in a string and/or by the amending of the string with certain characters. You can represent arbitrary characters in a string using either the `\x` escape sequence for a two-digit hexadecimal number representing a byte, or the `\u` escape sequence, which is followed by a UTF-8 code, and inserts the corresponding character.
+
+The effect on the string's encoding depends on the character. Given an encoding of US-ASCII, adding an escaped character in the range 0-127 (0x00-ox7F in hexadecimal) leaves the encoding unchanged. If the character is in the range 128-155 (0xA00xFF), the encoding switches to UTF-8. If you add a UTF-8 character in the range 0x0000-0x007F, the ASCII string's encoding is unaffected. UTF-8 codes higher than 0x007F cause the string's encoding to switch to UTF-8. Here's an example:
+
+```irb
+>> str = "Test string"
+=> "Test string"
+>> str.encode!("US-ASCII")
+=> "Test string"
+>> str << ". Euro symbol: \u20AC"    #<----1.
+=> "Test string. Euro symbol: €"
+>> str.encoding
+=> #<Encoding:UTF-8>
+```
+The `\u` escape sequence (#1.) lets you insert any UTF-8 character, whether you can type it directly or not. (Didn't actually work in my irb)
+
+There's a great deal more to the topic of character and string encoding, but you've seen enough at this point to know the kinds of operations that are available. How deeply you end up exploring encoding will depend on your needs as a Ruby developer. Again, be aware that encoding has tended to be the focus of particularly intense discussion and development in Ruby (and elsewhere).
+
+At this point, we'll wrap up our survey of string methods and turn to a class with some string affinities with the `String` class but also some interesting differences: the `Symbol` class.
+
+## *Symbols and their uses* ##
+*Symbols* are instances of the built-in Ruby class `Symbol`. They have a literal constructor: the leading colon. You can always recognize a symbol literal (and distinguish it form a string, a variable name, a method name, or anything else) by this token:
+
+```ruby
+:a
+:book
+:"Here's how to make a symbol with spaces in it."
+```
