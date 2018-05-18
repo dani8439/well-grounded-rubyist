@@ -1,4 +1,4 @@
-### *String comparison and ordering* ### 
+### *String comparison and ordering* ###
 The `String` class mixes in the `Comparable` module and defines a `<=>` method. Strings are therefore good to go when it comes to comparisons based on character code (ASCII or otherwise) order:
 
 ```irb
@@ -11,14 +11,14 @@ The `String` class mixes in the `Comparable` module and defines a `<=>` method. 
 >> "." > ","
 => true
 ```
-Remember that the spaceship method/operator returns `-1` if the right object is greater, `1`if the left object is greater, and `0` if the two objects are equal. In the first case in the previous sequence, it returns `-1` becuase the string `"b"` is greater than the string `"a"`. But `"a"` is greater than `"A"`, because the order is done by character value and the character values for `"a"` and `"A"` are 97 and 65 respectively, in Ruby's default encoding of UTF-8. Similarly, the string `"."` is greater than `","` becuase the value for a period is 46 and that for a comma is 44. 
+Remember that the spaceship method/operator returns `-1` if the right object is greater, `1`if the left object is greater, and `0` if the two objects are equal. In the first case in the previous sequence, it returns `-1` becuase the string `"b"` is greater than the string `"a"`. But `"a"` is greater than `"A"`, because the order is done by character value and the character values for `"a"` and `"A"` are 97 and 65 respectively, in Ruby's default encoding of UTF-8. Similarly, the string `"."` is greater than `","` becuase the value for a period is 46 and that for a comma is 44.
 
 Like Ruby objects in general, strings have several methods for testing equality.
 
-#### COMPARING TWO STRINGS FOR EQUALITY #### 
+#### COMPARING TWO STRINGS FOR EQUALITY ####
 The most common string comparison method is `==`, which tests for equality of string content:
 
-```irb 
+```irb
 >> "string" == "string"
 =>  true
 >> "string" == "house"
@@ -28,7 +28,7 @@ The two literal `"string"` objects are different objects, but they have the same
 
 Another equality-test method, `String#eql?` tests two strings for identical content. In practice, it usually returns the same result as `==`. (There are subtle diffferences in the implementations of these two methods, but you can use either. You'll find that `==` is more common.) A third method, `String#equal?`, behaves like `equal?` usually does: it tests whether two strings are the same object-or for that matter, whether a string and any other object are the same object:
 
-```irb 
+```irb
 >> "a" == "a"
 => true
 >> "a".equal?("a")
@@ -41,23 +41,23 @@ The first test succeeds because the two strings have the same contents. The seco
 The next two sections present string *transformations* and *conversions*, the difference beting that a transformation involves applying some kind of algorithm or procedure to the content of a string, whereas a conversion means deriving a second, unrelated object-usually not even a string-from the string.
 
 ### *String transformation* ###
-String transformations in Ruby fall informally into three categories: case, formatting, and content transformations. 
+String transformations in Ruby fall informally into three categories: case, formatting, and content transformations.
 
-#### CASE TRANSFORMATIONS #### 
+#### CASE TRANSFORMATIONS ####
 Strings let you raise, lower, and swap their case. All of the case-changing methods have receiver-modifying bang equivalents:
 
-```irb 
+```irb
 >> string = "David A. Black"
 => "David A. Black"
->> string.upcase 
+>> string.upcase
 => "DAVID A. BLACK"
->> string.downcase 
+>> string.downcase
 => "david a. black"
->> string.swapcase 
-=> "dAVID a. bLACK" 
+>> string.swapcase
+=> "dAVID a. bLACK"
 ```
 There's also a nice refinement that lets you capitalize the string:
-```irb 
+```irb
 >> string = "david"
 => "david"
 >> string.capitalize
@@ -65,14 +65,14 @@ There's also a nice refinement that lets you capitalize the string:
 ```
 Like other transformers, `capitalize` has an in-place equivalent, `capitalize!`
 
-You can perform a number of transformations on the format of a string, most of which are designed to help you make your strings look nicer. 
+You can perform a number of transformations on the format of a string, most of which are designed to help you make your strings look nicer.
 
-#### FORMATTING TRANSFORMATIONS #### 
+#### FORMATTING TRANSFORMATIONS ####
 Strictly speaking, format transformations are a subset of content transformations; if the sequence of characters represented by the string didn't change, it wouldn't be much of a transformation. We'll group under the formatting heading some transformations whose main purpose is the enhance the presentation of strings.
 
 The `rjust` and `ljust` methods expand the size of your string to the length you provide in the first argument, padding with blank spaces as necessary:
 
-```irb 
+```irb
 >> string = "David A. Black"
 => "David A. Black"
 >> string.rjust(25)
@@ -82,7 +82,7 @@ The `rjust` and `ljust` methods expand the size of your string to the length you
 ```
 If you supply a second argument, it's used as padding. This second argument can be more than one character long:
 
-```irb 
+```irb
 >> string.rjust(25, '.')
 => "...........David A. Black"
 >> string.rjust(25, '><')
@@ -92,34 +92,34 @@ The padding pattern is repeated as many times as it will fit, truncating the las
 
 And to round things out in the justification realm, there's a `center` method, which behaves like `rjust` and `ljust` but puts the characters of the string in the center:
 
-```irb 
+```irb
 >> "The middle".center(21, "*")
 => "*****The middle*****"
 ```
 Odd-numbered padding spots are rendered right-heavy:
 
-```irb 
+```irb
 >> "The middle".center(20, "*")
 => "*****The middle******"
 ```
 Finally, you can prettify your strings by stripping whitespace from either or both sides, using the `strip`, `lstrip` and `rstrip` methods:
 
-```irb 
+```irb
 >> string = "   David A. Black    "
 => "    David A. Black    "
 >> string.strip
 => "David A. Black"
->> string.lstrip 
+>> string.lstrip
 => "David A. Black    "
->> string.rstrip 
+>> string.rstrip
 => "    David A. Black"
 ```
-All three of the string-stripping methods have `!` versions that change the string permanently in place. 
+All three of the string-stripping methods have `!` versions that change the string permanently in place.
 
 #### CONTENT TRANSFORMATIONS ####
 The `chop` and `chomp` methods are both in the business of removing characters from the ends of strings-but they go about it differently. The main difference is that `chop` removes a character unconditionally, whereas `chomp` removes a target substring if it finds that substring at the end of the string. By default, `chomp`'s target substring is the newline character, `\n`. You can override the target by providing `chomp` with an argument.
 
-```irb 
+```irb
 >> "David A. Black".chop
 => "David A. Blac"
 >> "David A. Black\n".chomp
@@ -129,11 +129,11 @@ The `chop` and `chomp` methods are both in the business of removing characters f
 ```
 By far, the most common use of either `chop` or `chomp` is the use of `chomp` to remove newlines from the ends of strings, usually strings that come to the program in the form of lines of a file or keyboard input.
 
-Both `chop` and `chomp` have bang equivalents that change the string in place. 
+Both `chop` and `chomp` have bang equivalents that change the string in place.
 
 On the more radical end of character removal stands the `clear` method, which empties a string of all its characters, leaving the string empty:
 
-```irb 
+```irb
 >> string = "David A. Black"
 => "David A. Black"
 >> string.clear
@@ -145,7 +145,7 @@ On the more radical end of character removal stands the `clear` method, which em
 
 If you want to swap out all your characters without necessarily leaving your string bereft of content, you can use `replace`, which takes a string argument and replaces the current content of the string with the content of that argument:
 
-```irb 
+```irb
 >> string = "(to be named later)"
 => "(to be named later)"
 >> string.replace("David A. Black")
@@ -155,33 +155,33 @@ As with `clear`, the `replace` method permanently changes the string-as suggeste
 
 You can target certain characters for removal from a string with `delete`. The arguments to `delete` follow the same rules as the arguments to `count`.
 
-```irb 
+```irb
 >> "David A. Black".delete("abc")
 => "Dvid A. Blk"
 >> "David A. Black".delete("^abc")
 => "aac"
->> "David A. Black".delete("a-e", "^c") 
+>> "David A. Black".delete("a-e", "^c")
 => "Dvid A. Blck"
 ```
 Another specialized string transformation is `crypt`, which performs a Data Encryption Standard (DES) encryption on the string, similar to the UNIX `crypt(3)` library function. The single argument to `crypt` is a two-character salt string:
 
-```irb 
+```irb
 >> "David A. Black".crypt("34")
 => "347OEY. 7YRmio"
 ```
-Make sure you read up on the robustness of any encryption techniques you use, including `crypt`. 
+Make sure you read up on the robustness of any encryption techniques you use, including `crypt`.
 
 The last transformations technique we'll look at is string incrementation. You can get the next-highest string with the `succ` method (also available under the name `next`). The ordering of strings is engineered to make sense, even at the expense of string character-code order: `"a"` comes after `"``"` (the backtick character) as it does in ASCII, but after `"z"` comes `"aa"`, not `"{"`. Incrementation continues, odometer-stype throughout the alphabet:
 
-```irb 
+```irb
 >> "a".succ
 => "b"
->> "abc".succ 
+>> "abc".succ
 => "abd"
->> "azz".succ 
+>> "azz".succ
 => "baa"
 ```
-The ability to increment strings comes in handy in cases where you need batch-generated unique strings, perhaps to use as filenames. 
+The ability to increment strings comes in handy in cases where you need batch-generated unique strings, perhaps to use as filenames.
 
 As you've already seen, strings (like other objects) can convert themselves with methods in the `to_*` family. We'll look next at some further details of string conversion.
 
@@ -197,7 +197,7 @@ The output is the decimal equivalent of 100, base 17.
 
 Base 8 and base 16 are considered special cases and have dedicated methods so you don't have to go the `to_i` route. These methods are `oct` and `hex`, respectively:
 
-```irb 
+```irb
 >> "100".oct
 => 64
 >> "100".hex
@@ -219,8 +219,53 @@ Other conversion methods available to strings include `to_f` (to float), `to_s` 
 ```
 Every string consists of a sequence of bytes. The bytes map to characters. Exactly *how* they map to characters-how many bytes make up a character, and what those characters are-is a matter of *encoding*, which we'll now take a brief look at.
 
-#### *String encoding: a brief introduction* #### 
-The subject of character encoding is interesting but vast. Encodings are many, and there's far from a global consensus on a single best one. Ruby 1.9 added a great deal of encoding intelligence and functionality to strings. The big change in Ruby 2 was the use of UTF-8, rather than US-ASCII, as the default encoding for Ruby scripts. Encoding in Ruby continues to be an area of ongoing discussion and development. We'll just explore some important encoding-related techniques. 
+#### *String encoding: a brief introduction* ####
+The subject of character encoding is interesting but vast. Encodings are many, and there's far from a global consensus on a single best one. Ruby 1.9 added a great deal of encoding intelligence and functionality to strings. The big change in Ruby 2 was the use of UTF-8, rather than US-ASCII, as the default encoding for Ruby scripts. Encoding in Ruby continues to be an area of ongoing discussion and development. We'll just explore some important encoding-related techniques.
 
-#### SETTING THE ENCODING OF THE SOURCE FILE #### 
-To start with, your source code uses a certain encoding. By default, Ruby source files use UTF-8 encoding. You can determine this by asking Ruby to display the value `__ENCODING__`. 
+#### SETTING THE ENCODING OF THE SOURCE FILE ####
+To start with, your source code uses a certain encoding. By default, Ruby source files use UTF-8 encoding. You can determine this by asking Ruby to display the value `__ENCODING__`. Put this line in a file, and run it:
+
+`puts __ENCODING__`   <---- Output: UTF-8
+
+You need to put the line in a file because you may get different results if you run the command directly from the command line. The reason for the difference is that a fileless Ruby run takes its encoding from the current locale setting. You can verify this by observing the effect of running the same command with the `LANG` environment variable set to a different value:
+
+`LANG=en_US.iso885915 ruby -e 'puts __ENCODING__'`   <---- Output: US-ASCII
+
+To change the encoding of a source file, you need to use a *magic comment* at the top of the file. The magic comment takes the form:
+
+`# encoding: *encoding*`
+
+Where *encoding* is an identifier for an encoding. For example, to encode a source file in US-ASCII, you put this line at the top of the file:
+
+`# encoding: ASCII`
+
+This line (which can use the word *coding* rather than the word *encoding*, if you prefer) is sometimes referred to as a "magic comment".
+
+In addition to your source file, you can also query and set the encoding of individual strings.
+
+#### ENCODING OF INDIVIDUAL STRINGS ####
+Strings will tell you their encoding:
+
+```irb
+>> str = "Test string"
+=> "Test string"
+>> str.encoding
+=> #<Encoding:US-ASCII>
+```
+You can encode a string with a different encoding, as long as the conversion from the original encoding to the new one--the *transcoding*--is permitted (which depends on the capability of the string with the new encoding):
+
+```irb
+>> str.encode("US-ASCII")
+=> "Test string"
+```
+If you need to, you can force an encoding with the `force_encoding` method, which bypasses the table of "permitted" encodings and encodes the bytes of the string with the encoding you specify, unconditionally.
+
+The bang version of `encode` changes the encoding of the string permanently:
+
+```irb
+>> str.encode!("US-ASCII")
+=> "Test string"
+>> str.encoding
+=> #<Encoding:US-ASCII>
+```
+The encoding of a string is also affected by the presence of certain characters in a string and/or 
