@@ -342,4 +342,67 @@ The `"abc"` notation creates a new string each time, as you can see from the fac
 
 Because symbols are unique, there's no point having a constructor for them; Ruby has no `Symbol#new` method. You can't create a symbol any more than you can create a new integer. In both cases, you can only refer to them.
 
-The word *symbol* has broad connotations; it sounds like it might refer to any identifier or token. It's important to get a handle on the relation between symbol objects and symbols in a more generic sense. 
+The word *symbol* has broad connotations; it sounds like it might refer to any identifier or token. It's important to get a handle on the relation between symbol objects and symbols in a more generic sense.
+
+### *Symbols and identifiers* ###
+This code includes one `Symbol` object (`:x`) and one local variable identifier (`s`):
+
+`s = :x`
+
+But it's not unusual to refer to the `s` as a symbol. And it *is* a symbol, in the sense that it represents something other than itself. In fact, one of the potential causes of confusion surrounding the `Symbol` class and symbol objects is the fact that symbol objects *don't* represent anything other than themselves. In a sense, a variable name is more "symbolic" than a symbol.
+
+And a connection exists between symbol objects and symbolic identifiers. Internally, Ruby uses symbols to keep track of all the names it's created for variables, methods, and constants. You can see a list of them, using the `Symbol.all_symbols` class method. Be warned; there are a lot of them! Here's the tip of the iceberg:
+
+```irb
+>> Symbol.all_symbols
+=> [:inspect, :intern, :object_id, :const_missing, :method_missing, :method_added, :singleton_method_added, :method_removed, :singleton_method_removed]
+```
+And on it goes, listing more than 3,000 symbols.
+
+When you assign a value to a variable or constant, or create a class or write a method, the identifier you choose goes into Ruby's internal symbol table. You can check for evidence of this with some array-probing techniques:
+
+```irb
+>> Symbol.all_symbols.size
+=> 3593
+>> abc = 1
+=> 1
+>> Symbol.all_symbols.size
+=> 3594
+>> Symbol.all_symbols.grep(/abc/)    #<--- Use grep rather than include? (see note below)
+=> [:abc]
+```
+You can see from the measurement of the size of the array returned by `all_symbols` that it grows by 1 when you make an assignment to `abc`. In addition, the symbol `:abc` is now present in the array, as demonstrated by the `grep` operation.
+
+**NOTE Tests for symbol inclusion are always true**
+`grep` is a regular expression-based way of looking for matching elements in an array. Why not just say this?
+
+`>> Symbol.all_symbols.include?(:abc)`
+
+Because it will always be true! The very act of writing `:abc` in the `include?` test puts the symbol `:abc` into the symbol table, so the test passes even if there was no previous assignment to the identifier `:abc`
+--
+
+The symbol table is just that: a symbol table. It's not an object table. If you use an identifier for more than one purpose-say, as a local variable and also as a method name-the corresponding symbol will still only appear once in the symbol table:
+
+```irb
+>> def abc; end       #<---- Reuses "abc" identifier
+=> :abc                     #<---- Method definition returns their names as symbols
+>> Symbol.all_symbols.size        
+=> 3594                           #<---- Same size; :abc is in table only once
+```
+Ruby keeps track of what symbols it's supposed to know about so it can look them up quickly. The inclusion of a symbol in the symbol table doesn't tell you anything about what hte symbol is for.
+
+Combing full circle, you can also see that when you assign a symbol to a variable, that symbol gets added to the table:
+
+```irb
+>> abc = :my_symbol
+=> :my_symbol
+>> Symbol.all_symbols.size
+=> 3595
+>> Symbol.all_symbols.grep(/my_symbol/)
+=> [:my_symbol]
+```
+Not only symbols matching variable and method names are put in the table; any symbol Ruby Ruby sees anywhere in the program is added. The fact that `:my_symbol` gets stored in the symbol table by virtue of your having used it means that the next time you use it, Ruby will be able to look it up quickly. And unlike a symbol that corresponds to an identifier to which you've assigned a more complex object, like a string or array, a symbol that you're using purely as a symbol, like `:my_symbol`, doesn't require any further lookup. It's just itself: the symbol `:my_symbol`.
+
+Ruby is letting you, the programmer, use the same symbol-storage mechanism that Ruby uses to track identifiers. Only you're not tracking identifiers; you're using symbols for your own purposes. But you still get the benefits of Ruby exposing the whole symbol mechanism for programmer-side use.
+
+What do you do with symbols?
