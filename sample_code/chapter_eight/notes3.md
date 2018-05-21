@@ -279,4 +279,89 @@ By default, Ruby expands the century for you if you provide a one- or two-digit 
 ```
 You can create Julian and commercial (Monday-based rather than Sunday-based day-of-week counting) `Date` objects with the methods `jd` and `commercial`, respectively. You can also scan a string against a format specification, generating a `Date` object, with `strptime`. These constructor techniques are more specialized than the others, and we won't go into them in detail here; but if your needs are similarly specialized, the `Date` class can address them.
 
-The `Time` class, like the `Date` class has multiple constructors. 
+The `Time` class, like the `Date` class has multiple constructors.
+
+#### CREATING TIME OBJECTS ####
+You can create a time object using any of several constructors: `new` (a.k.a. `now`), `at`, `local` (a.k.a. `mktime`), and `parse`. This plethora of constructors, excessive though it may seem at first, does provide a variety of functionalities, all of them useful. Here are some examples, irb-style:
+
+```irb
+>> Time.new
+=> 2018-05-21 15:53:58 +0000                #<-----1.
+>> Time.at(100000000)
+=> 1973-03-03 09:46:40 +0000                   #<-----2.
+>> Time.mktime(2007,10,3,14,3,6)
+=> 2007-10-03 14:03:06 +0000                      #<-----3.
+>> require 'time'
+=> true                                               #<-----4.
+>> Time.parse("March 22, 1985, 10:35 PM")
+=> 1985-03-22 22:35:00 +0000                              #<-----5.
+```
+`Time.new` (or `Time.now`) creates a time object representing the current time (#1). `Time.at(seconds)` gives you a time object for the number of seconds since the epoch (midnight on January 1, 1970, GMT) represented by the `seconds` argument (#2). `Time.mktime` or (`Time.local`) expects year; month, day, hour, minute and second arguments. You don't have to provide all of them; as you drop arguments off from the right `Time.mktime` fills in with reasonable defaults (1 for month and day; 0 for hour, minute, and second) (#3).
+
+To use `Time.parse` you have to load the `time` library (#4). Once you do, `Time.parse` makes as much sense as it can of the arguments you give it, much like `Date.parse` (#5).
+
+#### CREATING DATE/TIME OBJECTS ####
+`DateTime` is a subclass of `Date`, but its constructors are a little different thanks to some overrides. The most common constructors are `new` (also available as `civil`), `now`, and `parse`.
+
+```irb
+>> puts DateTime.new(2009, 1, 2, 3, 4, 5)
+2009-01-02T03:04:05+00:00
+=> nil
+>> puts DateTime.now
+2018-05-21T16:18:06+00:00
+=> nil
+>> puts DateTime.parse("October 23, 1973, 10:34 AM:)
+```
+`DateTime` also features the specialized `jd` (Julian date), `commercial`, and `strptime` constructors mentioned earlier in connection with the `Date` class.
+
+Let's turn now to the various ways in which you can query date/time objects.
+
+### *Date/time query methods* ###
+In general, the time and date objects have the query methods you'd expect them to have. Time objects can be queried as to their year, month, day, hour, minute, and second, as can date/time objects. Date objects can be queried as to their year, month, and day:
+
+```irb
+>> dt = DateTime.now
+=> #<DateTime: 2018-05-21T16:21:05+00:00 ((2458260j,58865s,468104470n),+0s,2299161j)>
+>> dt.year
+=> 2018
+>> dt.hour
+=> 16
+>> dt.minute
+=> 21
+>> dt.second
+=> 5
+>> t = Time.now
+=> 2018-05-21 16:21:16 +0000
+>> t.month
+=> 5
+>> t.sec
+=> 16
+>> d = Date.today
+=> #<Date: 2018-05-21 ((2458260j,0s,0n),+0s,2299161j)>
+>> d.day
+=> 21
+```
+Note that date/time objects have a `second` method, as well as `sec`. Time objects have only `sec`.
+
+Some convenient day-of-week methods work equally for all three classes. Through them, you can determine whether the given date/time is or isn't a particular day of the week:
+
+```irb
+>> d.monday?
+=> true
+>> dt.friday?
+=> false
+```
+Other available queries  include Boolean ones for leap year (`leap?`) and daylight saving time (`dst?`, for time objects only).
+
+As you've seen, the string representations of date/time objects differ considerably, depending on exactly what you've asked for and which of the three classes you're dealing with. In practice, the default string representations aren't used much. Instead, the objects are typically formatted using methods designed for that purpose.
+
+### *Date/time formatting methods* ###
+All date/time objects have the `strftime` method, which allows you to format their fields in a flexible way using format strings, in the style of the Unix `strftime(3)` system library:
+
+```irb
+ >> t = Time.now
+ => 2018-05-21 16:27:17 +0000
+ >> t.strftime("%m-%d-%y")
+ => "05-21-18"
+
+```
