@@ -363,5 +363,50 @@ All date/time objects have the `strftime` method, which allows you to format the
  => 2018-05-21 16:27:17 +0000
  >> t.strftime("%m-%d-%y")
  => "05-21-18"
-
 ```
+In the example, the format specifiers used are `%m` (two-digit month), `%d` (two-digit day), and `%Y` (four-digit-year). The hyphens between the fields are reproduced in the output as literal hyphens.
+
+Some useful format specifiers for `strftime` shown below:
+
+#### **Common Time and date format specifiers** ####
+|       Specifier       |                     Description                                |
+|-----------------------|----------------------------------------------------------------|
+| `%Y`                  | Year (four digits)                                             |
+| `%y`                  | Year (last two digits)                                         |
+| `%b, %B`              | Short month, full month                                        |
+| `%m`                  | Month (number)                                                 |
+| `%d`                  | Day of month (left-padded with zeros)                          |
+| `%e`                  | Day of month (left-padded with blanks)                         |
+| `%a, %A`              | Short day name, full day name                                  |
+| `%H, %I`              | Hour (24-hour clock), hour (12-hour clock)                     |
+| `%M`                  | minute                                                         |
+| `%S`                  | Second                                                         |
+| `%c`                  | Equivalent to "%a %b %d %H:%M:%S %Y"                           |
+| `%x`                  | Equivalent to "%m/%d/%y"                                       |
+
+**WARNING**
+The `%c` and `%x` specifiers, which involve convenience combinations of other specifiers, may differ from one locale to another; for instance, some systems put the day before the month in the `%x` format. This is good, because it means a particular country's style isn't hard-coded into these formats. But you do need to be aware of it, so you don't count on specific behavior that you may not always get. When in doubt, you can use a format string made up of smaller specifiers.
+
+Here are some more examples of the format specifiers in action:
+
+```irb
+>> t = Time.now
+=> 2018-05-21 17:40:19 +0000
+>> t.strftime("Today is %x")
+=> "Today is 05/21/18"
+>> t.strftime("Otherwise known as %d-%b-%y")
+=> "Otherwise known as 21-May-18"
+>> t.strftime("Or even day %e of %B, %Y.")
+=> "Or even day 21 of May, 2018."
+>> t.strftime("The time is %H:%%m.")
+=> "The time is 17:%m."
+```
+In addition to the facilities provided by `strftime`, the `Date` and `DateTime` classes give you a handful of precooked output formats for specialized cases like RFC 2822 (email) compliance and hte HTTP format specified in RFC 2616:
+
+```irb
+>> Date.today.rfc2822
+=> "Mon, 21 May 2018 00:00:00 +0000"
+>> DateTime.now.httpdate
+=> "Mon, 21 May 2018 17:43:29 GMT"
+```
+One way or another, you can get your times and dates to look the way you want htem to. Date/time objects also allow for conversions of various kinds, from one class of object to another.
