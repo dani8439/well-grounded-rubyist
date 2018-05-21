@@ -477,3 +477,4 @@ Furthermore, date and date/time objects allow you to iterate over a range of the
 2018-05-28 is a Monday
 => #<Date: 2018-05-21 ((2458260j,0s,0n),+0s,2299161j)>
 ```
+The date/time classes offer much more than what you've seen here. But the features we've covered are the most common and, in all likelihood, most useful. Don't forget that you can always use the command-line tool `ri` to get information about methods! If you try `ri Date`, for example, you'll get information about the class as well as a list of available classes and instance methods-any of which you can run `ri` on separately. 
