@@ -194,3 +194,89 @@ In practice, no one writes arithmetic operations that way; you'll always see the
 We'll turn now to the next and last category in scalar objects we'll discuss in this chapter: time and datetime objects.
 
 ## *Times and dates* ##
+Ruby gives you lots of ways to manipulate times and dates. In fact, the extent and variety of classes that represent times and/or dates, and the class and instance methods available through those classes, can be bewildering. SO can the different ways in which instances of the various classes represent themselves. Want to know what the day we call April 24, 1705, would have been called in England prior to the calendar reform of 1752? Load the `date` package and then ask;
+
+```irb
+>> require 'date'
+=> true
+>> Date.parse("April 24, 1705").england.strftime("%B %d %Y")
+=> "April 13 1705"
+```
+On the less exotic side, you can perform a number of useful and convenient manipulations on time and date objects.
+
+Times and dates are manipulated through three classes: `Time`, `Date`, and `DateTime`. (For convenience, the instances of all these classes can be referred to collectively as *date/time objects.* ) To reap the benefits, you have to pull one or both of the `date` and `Time` libraries into your program or irb session:
+
+`require 'date'`
+
+`require 'time'`
+
+Here, the first line provides the `Date` and `DateTime` classes, and the second line enhances the `Time` class. (Actually, even if you don't `require 'date'` you'll be able to see the `Date` class. But it can't do anything yet.) At some point in the future, all available date- and time-related functionality may be unified into one library and made available to programs by default. But for the moment, you have to do the `require` operations if you want the full functionality.
+
+In what follows, we'll examine a large handful of date/time operations-not all of them, but most of the common ones and enough to give you a grounding for further development. Specifically, we'll look at how to instantiate date/time objects, how to query them, and how to convert them from one form or format to another.
+
+### *Instantiating date/time objects* ###
+How you instantiate a date/time object depends on exactly what object is involved.
+We'll look at the `Date`, `Time`, and `DateTime` classes, in that order.
+
+#### CREATING DATE OBJECTS ####
+You can get today's date with the `Date.today` constructor:
+
+```irb
+>> Date.today
+=> #<Date: 2018-05-21 ((2458260j,0s,0n),+0s,2299161j)>
+```
+You can get a simpler string by running `to_s` on the date, or by `puts`ing it:
+
+```irb
+>> puts Date.today
+2018-05-21
+=> nil
+```
+You can also create date objects with `Date.new` (also available as `Date.civil`). Send along a year, month, and day:
+
+```irb
+>> puts Date.new(1948,3,7)
+1948-03-07
+=> nil
+```
+If not provided, the month and day (or just dat) default to 1. If you provide no arguments, the year defaults to -4712-probably not the most useful value.
+
+Finally, you can create a new date with the `parse` constructor, which expects a string representing a date:
+
+```irb
+>> puts Date.parse("2003/6/9")
+2003-06-09     #<-------Assumes year/month/day order
+=> nil     
+```
+By default, Ruby expands the century for you if you provide a one- or two-digit number. If the number is 69 or greater, then the offset added is 1900; if it's between 0 and 68, the offset is 200. (This distinction has to do with the beginning of the Unix "epoch" at the start of 1970.)
+
+```irb
+>> puts Date.parse("03/6/9")
+2003-06-09
+=> nil
+>> puts Date.parse("33/6/9")
+2033-06-09
+=> nil
+>> puts Date.parse("77/6/9")
+1977-06-09
+=> nil
+```
+
+`Date.parse` makes an effort to make sense of whatever you throw at it, and it's pretty good at its job:
+
+```irb
+>> puts Date.parse("November 2 2013")
+2013-11-02
+=> nil
+>> puts Date.parse("Nov 2 2013")
+2013-11-02
+=> nil
+>> puts Date.parse("2 Nov 2013")
+2013-11-02
+=> nil
+>> puts Date.parse("2013/11/2")
+2013-11-02
+```
+You can create Julian and commercial (Monday-based rather than Sunday-based day-of-week counting) `Date` objects with the methods `jd` and `commercial`, respectively. You can also scan a string against a format specification, generating a `Date` object, with `strptime`. These constructor techniques are more specialized than the others, and we won't go into them in detail here; but if your needs are similarly specialized, the `Date` class can address them.
+
+The `Time` class, like the `Date` class has multiple constructors. 
