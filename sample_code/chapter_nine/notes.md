@@ -12,7 +12,7 @@ An *array* is an ordered collection of objects-*ordered* in the sense that you c
 
 *Hashes* in recent versions of Ruby are also ordered collections-and that's a big change from previous versions, where hashes are unordered (in the sense that they have no idea of what their first, last or *n*th element is). Hashes store objects in pairs, each pair consisting of a *key* and a *value*. You retrieve a value by means of the key. Hashes remember the order in which their keys were inserted; that's the order in which the hash replays itself for you if you iterate through the pairs in it or print a string representation of it to the screen.
 
-Any RUby object can serve as a hash key and/or value, but keys are unique per hash: you can have only one key/value pair for any given key. Hashes (or similar data storage types) are sometimes called *dictionaries* or *associative arrays* in other languages. They offer a tremendously-sometimes surprisingly-powerful way of storing and retrieving data. 
+Any Ruby object can serve as a hash key and/or value, but keys are unique per hash: you can have only one key/value pair for any given key. Hashes (or similar data storage types) are sometimes called *dictionaries* or *associative arrays* in other languages. They offer a tremendously-sometimes surprisingly-powerful way of storing and retrieving data. 
 
 Arrays and hashes are closely connected. An array is, in a sense, a hash, where the keys happen to be consecutive integers. Hashes are, in a sense, arrays, where the indexes are allowed to be anything, not just integers. If you do use consecutive integers as hash keys, arrays and hashes start behaving similarly when you do lookups:
 
@@ -39,4 +39,51 @@ Pair 2 is: green/emerald
 ```
 The *index* is an integer counter, maintained as the pairs go by. The pairs are the actual content of the hash.
 
-**TIP** The parentheses in the block paramenters `(key, value)` serve to split appart an array.
+**TIP** The parentheses in the block paramenters `(key, value)` serve to split appat an array. Each key/value pair comes at the block as an array of two elements. If the parameters were `key, value, i`, then the parameter `key` would end up bound to the entire `[key, value]` array; `value` would be bound to the index; and `i` would be `nil`. That's obviously not what you want. The parenthetical grouping of `(key, value)` is a signal that you want the array to be distributed across those two parameters, element by element. 
+
+Conversions of various kinds between arrays and hashes are common. Some such conversions are automatic: if you perform certain operations of selection or extraction of pairs from a hash, you'll get back an array. Other conversions require explicit instructions, such as turning a flat array (`[1,2,3,4]`) into a hash (`{1 => 2, 3 => 4}`). You'll see a good amount of back and forth between these two collection classes, both here in this chapter and in lots of Ruby code. 
+
+## *Collection handling with array* ##
+Arrays are the bread-and-butter way to handle collections of objects. We'll put arrays through their paces in this section: we'll look at the varied techniques available for creating arrays; how to insert, retrieve, and remove array elements; combining arrays wtih each other; transforming arrays (for example, flattening a nested array into a one-dimensional array); and querying arrays as to their properties and state. 
+
+### *Creating a new array* ###
+You can create an array in one of four ways:
+
+• With the `Array.new` method.
+
+• With the literal array constructor (square brackets)
+
+• With a top-level method called `Array`.
+
+• With the special `%w{...}` and `%i{...}` notations.
+
+You'll see all of these techniques in heavy rotation in Ruby code, so they're all worth knowing. We'll look at each in turn. 
+
+#### ARRAY.NEW #### 
+The `new` method on the array class works in the usual way:
+
+`a = Array.new`
+
+You can then add objects to the array using techniques we'll look at later.
+
+`Array.new` lets you specify the size of the array and, if you wish, initialize it's contents. Here's an irb exchange that illustrates both possibilities: 
+
+```irb 
+>> Array.new(3)               #<-----1.
+=> [nil, nil, nil]
+>> Array.new(3, "abc")          #<-----2.
+=> ["abc", "abc", "abc"]
+```
+If you give one argument to `Array.new` (#1), you can get an array of the size you asked for, with all elements set to `nil`. If you give two arguments (#2), you get an array of the size you asked for, with each element initialized to contain the second argument.
+
+You can even supply a code block to `Array.new`. In that case, the elements of the array are initialized by repeated calls to the block:
+
+```irb 
+>> n = 0
+=> 0
+>> Array.new(3) { n += 1; n * 10}     #<-------1.
+=> [10, 20, 30]                           #<-------2.
+```
+In this example, the new array has a size of `3`. Each of the three lements is set to the return value of the code block. The code block inside the block (#1), executed three times, produces the values `10`, `20`, and `30`-and those are the initial values in the array (#2).
+
+**WARNING** 
