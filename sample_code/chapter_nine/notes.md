@@ -108,3 +108,39 @@ Square brackets can mean a lot of different things in Ruby: array construction, 
 Now back to array creation.
 
 #### THE ARRAY METHOD ####
+The third way to create an array is with a *method* (even though it looks like a class name!) called `Array`. As you know from having seen the `Integer` and `Float` methods, it's legal to define methods whose names begin with capital leters. Those names look exactly like constants, and in core Ruby itself, capitalized methods tend to have the same names as classes to which they're related.
+
+**Some more built-in methods that start with uppercase letters** 
+In addition to the `Array` method and the two uppercase-style conversion methods you've already seen (`Integer` and `Float`, the "fussy" versions of `to_i` and `to_f`), Ruby provides a few other top-level methods whose names look like class names: `Complex`, `Rational`, and `String`. In each case, the method returns an object of the class that its name looks like.
+
+The `String` method is a wrapper around `to_s`, meaning `String(obj)` is equivalent to `obj.to_s`. `Complex` and `Rational` correspond to the `to_c` and `to_r` methods available for numerics and strings except `Complex` and `Rational`, like `Integer` and `Float` are fussy: they don't take kindly to non-numeric strings. `"abc".to_c` gives you (`0+0i`), but `Complex("abc")` raises `ArgumentError`, and `Rational` and `to_r` behave similarly. 
+
+We're not covering rational anc complex numbers here, but now you know how to generate them, in case they're of interest.
+___________________ 
+The `Array` method creates an array from its single argument. If the argument object has a `to_ary` method defined, then `Array` calls that method on the object to generate an array. (Remember that `to_ary` is the quasi-typcasting array conversion method.) If there's no `to_ary` method, it tries to call `to_a`. If `to_a` isn't defined either, `Array` wraps the object in an array and returns that:
+
+```irb 
+>> string = "A string"
+=> "A string"
+>> string.respond_to?(:to_ary)
+=> false 
+>> string.respond_to?(:to_a)
+=> false 
+>> Array(string)                      #<-----1.
+=> ["A string"]
+>> def string.to_a                       #<-----2.
+>>    split(//) 
+>> end 
+=> nil 
+>> Array(string)
+=> ["A", " ", "s", "t", "r", "i", "n", "g"]
+```
+In this example, the first attempt to run `Array` on the string (#1) results in a one-element array, where the one element is the string. That's because strings have neither a `to_ary` nor a `to_a` method. But after `to_a` is defined for the string (#2), the result of calling `Array` is different: it now runs the `to_a` method and uses that as its return value. (The `to_a` method splits the string into individual characters.)
+
+Among the various array constructors, the literal `[]` is the most common, followed by `Array.new` and the `Array` method, in that order. But each has its place. The literal constructor is the most succinct; when you learn what it means, it clearly announces "array" when you see it. The `Array` method is constrained by the need for there to be a `to_ary` or `to_a` method available. 
+
+#### THE %w AND %W ARRAY CONSTRUCTORS ####
+As a special dispensation to help you create arrays of strings, Ruby provides a `%w` operator, much in the same family as the `%q`-style operators you've seen already, that automatically generates an array of strings from the space-separated strings you put inside it. You can see how it works by using it in irb and looking at the result: 
+
+```irb 
+```
