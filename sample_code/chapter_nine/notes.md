@@ -86,4 +86,25 @@ You can even supply a code block to `Array.new`. In that case, the elements of t
 ```
 In this example, the new array has a size of `3`. Each of the three lements is set to the return value of the code block. The code block inside the block (#1), executed three times, produces the values `10`, `20`, and `30`-and those are the initial values in the array (#2).
 
-**WARNING** 
+**WARNING** When you initialize multiple elements of an array using a second argument to `Array.new`-as in `Array.new(3, "abc")`-all the elements of the array are initialized to the same object. If you do `a = Array.new(3, "abc"); a[0] << "def"; puts a[1]`, you'll find that the second element of the array is now `"abcdef"`, even though you appended `"def"` to the first element. That's because the first and second positions in the array contain the same string object, not two different strings that happen to both consist of `"abc"`. To create an array that inserts a different `"abc"` string into each slot, you should use `Array.new(3) { "abc" }`. This code block runs three times, each time generating a new string (same characters, different object). 
+
+Preinitializing arrays isn't always necessary; because your arrays grow as you add elements to them. But if and when you need this functionality-and/or if you see it in use and want to understand it-it's there. 
+
+#### THE LITERAL ARRAY CONSTRUCTOR: [] ####
+The second way to create an array is by using the *literal array constructor* [] (square brackets):
+
+`a = []`
+
+When you create an array with the literal constructor, you can put objects into the array at the same time:
+
+`a = [1, 2, "three", 4, []]` 
+
+Notice that the last element in this array is another array. That's perfectly legitimate; you can nest arrays to as many levels as you wish. 
+
+Square brackets can mean a lot of different things in Ruby: array construction, array indexing (as well as string and hash indexing), character classes in regular expressions, delimiters in `%q[]`-style string notation, even the calling of an anonymous function. You can make an initial division of the various uses of square brackets by distinguishing cases where they're a semantic construct from cases where they're the name of a method. It's worth practicing on a few examples like this to get a feel for the way the square brackets play out in different contexts: 
+
+`[1,2,3][1]`  <---- Index 1 on array [1,2,3]
+
+Now back to array creation.
+
+#### THE ARRAY METHOD ####
