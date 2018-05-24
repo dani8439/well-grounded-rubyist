@@ -143,4 +143,58 @@ Among the various array constructors, the literal `[]` is the most common, follo
 As a special dispensation to help you create arrays of strings, Ruby provides a `%w` operator, much in the same family as the `%q`-style operators you've seen already, that automatically generates an array of strings from the space-separated strings you put inside it. You can see how it works by using it in irb and looking at the result: 
 
 ```irb 
+>> %w{ David A. Black }
+=> ["David", "A.", "Black"]
 ```
+If any string in the list contains a whitespace character, you need to escape that character with a backslash: 
+
+```irb 
+>> %w{ David\ A.\ Black is a Rubyist. }
+=> ["David A. Black", "is", "a", "Rubyist."]
+```
+The strings in the list are parsed as single-quotes strings. But if you need double quotes strings, you can use `%W` instead of `%w`:
+
+```irb 
+>> %W{ David is #{2014 - 1959} years old. }
+=> ["David", "is", "55", "years", "old."]
+```
+
+#### THE %i AND %I ARRAY CONSTRUCTORS #### 
+Just as you can create arrays of strings using `%w` and `%W`, you can also create arrays of symbols using `%i` and `%I`. The `i/I` distinction, like the `w/W` distinction, pertains to single- versus double-qyoted string interpretation: 
+
+```irb 
+>> %i{ a b c }
+=> [:a, :b, :c]
+>> d = "David"
+=> "David"
+>> %I{"#{d}"}
+=> [:"\"David\""]
+```
+Let's proceed now to the matter of handling array elements. 
+
+**The `try_convert` family of methods** 
+Each of several built-in classes in Ruby has a class method called `try_convert`, which always takes one argument. `try_convert` looks for a conversion method on the argument object. If the method exists, it gets called; if not, `try_convert` returns `nil`. If the conversion method returns an object of a class other than the class to which conversion is being attempted, it's a fatal error (`TypeError`).
+
+The classes implementing `try_convert` (and the names of the required conversion methods) are `Array` (`to_ary`), `Hash` (`to_hash`), `IO` (`to_io`), `Regexp` (`to_regexp`), and `String` (`to_str`). Here's an example of an object putting `Array.try_convert` through its paces. (The other `try_convert` methods work similarly.) 
+
+```irb 
+>> obj = Object.new 
+=> #<Object:0x00000001028033a8>
+>> Array.try_convert(obj)
+=> nil 
+>> def obj.to_ary 
+>>    [1,2,3]
+>> end 
+=> :to_ary 
+>> Array.try_convert(obj)
+=> [1, 2, 3]
+>> def obj.to_ary 
+>>    "Not an array!"
+>> end 
+=> :to_ary 
+>> Array.try_convert(obj)
+TypeError: can't convert Object to Array (Object#to_ary gives String
+```
+
+### *Inserting, retrieving, and removing array elements* ### 
+An array is a numerically ordered collection. Any object you add to the array goes at the beginning, at the end, or somewhere in the middle. 
