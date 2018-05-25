@@ -253,4 +253,73 @@ You can perform set and get operations on elements anywhere in an array. But ope
 To add an object to the beginning of an array, you can use `unshift`. After this operation
 
 ```ruby
+a = [1,2,3,4]
+a.unshift(0)
 ```
+The array `a` now looks like this: `[0,1,2,3,4]`.
+
+To add an object to the end of an array, you use `push`. Doing this:
+
+```ruby
+a = [1,2,3,4]
+a.push(5)
+```
+Results in the array `a` having a fifth element: `[1,2,3,4,5]`.
+
+You can also use a method called `<<` (two less-than signs), which places an object on the end of the array. Like many methods whose names resemble operators, `<<` offers the syntactic sugar of usage as an infix operator. The following code adds `5` as the fifth element of `a`, just like the `push` operation in the last example:
+
+```ruby
+a = [1,2,3,4]
+a << 5
+```
+The methods `<<` and `push` differ in that `push` can take more than one argument. The code:
+
+```ruby
+a = [1,2,3,4,5]
+a.push(6,7,8)
+```
+adds three elements to `a`, resulting in `[1,2,3,4,5,6,7,8]`.
+
+Corresponding to `unshift` and `push` but with opposite effect are `shift` and `pop`. `shift` removes one object from the beginning of the array (thereby "shifting" the remaining objects to the left by one position), and `pop` removes an object from the end of the array. `shift` and `pop` both return the array element they have removed, as this example shows:
+
+```ruby
+a = [1,2,3,4,5]
+print "The original array: "
+p a
+popped = a.pop
+print "The popped item: "
+puts popped
+print "The new state of the array: "
+p a
+shifted = a.shift
+print "The shifted item: "
+puts shifted
+print "The new state of the array: "
+p a
+```
+The output is:
+
+```irb  
+The original array: [1, 2, 3, 4, 5]
+The popped item: 5
+The new state of the array: [1, 2, 3, 4]
+The shifted item: 1
+The new state of the array: [2, 3, 4]
+```
+As you can see from the running commentary in the output, the return value of `pop` and `shift` is the item that was removed from the array. The array is permanently changed by these operations; the elements are removed, not just referred to or captures.
+
+`shift` and `pop` can remove more than one element at a time. Just provide an integer argument, and that number of elements will be removed. The removed items will be returned as an array (even if the number you provide is 1):
+
+```irb
+>> a = %w{ one two three four five }
+=> ["one", "two", "three", "four", "five"]
+>> a.pop(2)
+=> ["four", "five"]
+>> a
+=> ["one", "two", "three"]
+>> a.shift(2)
+=> ["one", "two"]
+>> a
+=> ["three"]
+```
+We'll turn next from manipulating one array to looking ways to combne two or more arrays.
