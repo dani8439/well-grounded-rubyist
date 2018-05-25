@@ -146,3 +146,130 @@ Next up: hashes. They've crossed our path here and there along the way, and now 
 
 
 ## *Hashes* ##
+Like an array, a hash is a collection of objects. A hash consists of key/value pairs, where any key and any value can be any Ruby object. Hashes let you perform lookup operations based on keys. In addition to simple key-based value retrieval, you can also perform more complex filtering and selection operations.
+
+A typical use of a hash is to store complete strings alone with their abbreviations. Here's a hash containing a selection of names and two-letter state abbreviations, along with some code that exercises it. The `=>` operator connects a key on the left iwth the value corresponding to it on the right (hash rocket):
+
+```ruby
+state_hash = { "Connecticut" => "CT",
+               "Delaware" => "DE",
+               "New Jersey" => "NJ",
+               "Virginia" => "VA" }
+print "Enter the name of a state: "
+state = gets.chomp
+abbr = state_hash[state]
+puts "The abbreviation is #{abbr}."
+```
+When you run this snippet (assuming you enter one of the states defined in the hash), you see the abbreviation.
+
+Hashes remember the insertion order of their keys. Insertion order isn't always terribly important; one of the merits of a hash is that it provides quick lookup in better-than-linear time. And in many cases, items get added to hashes in no particular order; ordering, if any, comes later, when you want to turn, say, a hash of names and birthdays that you've created over time into a chronologically or alphabetically sorted array. Still, however useful it may or may not be for them to do so, hashes remember their key-insertion order and observe that order when you iterate over them or examine them.
+
+Like arrays, hashes can be created in several different ways.
+
+### *Creating a new hash* ###
+There are four ways to create a hash:
+
+• With the literal constructor (curly braces)
+
+• With the `Hash.new` method
+
+• With the `Hash.[]` method (a square-bracket class method of `Hash`)
+
+• With the top-level method whose name is `Hash`
+
+These hash-creation techniques are listed here, as closely as possible, in descending order of commonness. In other words, we'll start with the most common technique and proceed from there.
+
+#### CREATING A LITERAL HASH ####
+When you type out a literal hash inside curly braces, you separate keys from values with the `=>` operator (unless you're using the special `{ key: value }` syntax for symbol keys). After each complete key/value pair you put a comma (except for the last pair, where it's optional).
+
+The literal hash constructor is convenient when you have values you wish to hash that aren't going to change; you'll type them into the program file once and refer to them from the program. State abbreviations are a good example.
+
+You can use the literal hash constructor to create an empty hash:
+
+`h = {} `
+
+You'd presumably want to add items to the empty hash at some point; techniques for doing so will be forthcoming.
+
+The second way to create a hash is with the traditional `new` constructor.
+
+#### THE HASH.NEW CONSTRUCTOR ###
+`Hash.new` creates an empty hash. But if you provide an argument to `Hash.new`, it's treated as the default value for nonexistent hash keys. We'll return to the matter of default values, and some bells and whistles on `Hash.new` once we've looked at key/value insertion and retrieval.
+
+#### THE HASH.[] CLASS METHOD ####
+The third way to create a hash involves another class method of the `Hash` class: the method `[]` (square brackets). this method takes a comma-separated list of items and assuming there's an even number of arguments, treats them as alternating keys and values, which it uses to construct a hash. Thanks to Ruby's syntactic sugar, you can put the arguments to `[]` directly inside the brackets and dispense them with the method-calling dot:
+
+```irb
+>> Hash["Connecticut", "CT", "Delaware", "DE"]
+=> {"Connecticut"=>"CT", "Delaware"=>"DE"}
+```
+If you provide an odd number of arguments, a fatal error is raised, because an odd number of arguments can't be mapped to a series of key/value pairs. However, you can pass in an array of arrays, where each subarray consists of two elements. `Hash.[]` will use the inner arrays as key/value pairs:
+
+```irb
+Hash [ [[1,2], [3,4], [5,6]]]
+=> {1=>2, 3=>4, 5=>6}
+```
+You can also pass in anything that has a method called `to_hash`. The new hash will be the result of calling that method. Another hash-creation technique involves the top-level `Hash` method.
+
+#### THE HASH METHOD ####
+The `Hash` method has slightly idiosyncratic behavior. If called with an empty array ([]) or `nil`, it returns an empty hash. Otherwise, it calls `to_hash` on its single argument. If the argument doesn't have a `to_hash` method, a fatal error (`TypeError`) is raised.
+
+You've now seen a number of ways to create hashes. Remember that they're in approximate descending order by commonness. You'll see a lot more literal hash constructors and calls to `Hash.new` than you will the rest of the techniques presented. Still, it's good to know what's available and how the various techniques work.
+
+### *Inserting, retrieving, and removing hash pairs* ###
+Hashes have a lot in common with arrays when it comes tot he get- and set-style operations-though there are some important differences and some techniques that are specific to each.
+
+#### ADDING A KEY/VALUE PAIR TO A HASH ####
+To add a key/value pair to a hash, you use essentially the same technique as for adding an item to an array: the `[]=` method plus syntactic sugar.
+
+To add a state to `state_hash` to this:
+
+`state_hash["New York"] = "NY"`
+
+which is the sugared version of this:
+
+`state_hash.[]= ("New York", "NY")`
+
+You can also use the synonymous method `store` for this operation. `store` takes two arguments (a key and a value):
+
+`state_hash.store("New York", "NY")`
+
+When you're adding to a hash, keep in mind the important principle that keys are unique. You can have only one entry with a given key. Hash values don't have to be unique; you can assign the same value to two or more keys. But you can't have duplicate keys.
+
+If you add a key/value pair to a hash that already has an entry for the key you're adding, the old entry is overwritten. Here's an example:
+
+```ruby
+h = Hash.new
+h["a"] = 1
+h["a"] = 2
+puts h["a"]   #<---- Output 2
+```
+This code assigns two values to the `"a"` key of the hash `h`. The second assignment clobbers the first, as the `puts` statement shows by outputting `2`.
+
+If you reassign to a given hash key, that key still maintains its place in the insertion order of the hash. The change in the value paired with the key isn't considered a new insertion into the hash.
+
+#### RETRIEVING VALUES FROM A HASH ####
+The workhorse technique for retrieving hash values is the `[]` method. For example, to retrieve `"CT"` from `state_hash` and assign it to a variable, do this:
+
+`conn_abbrev = state_hash["Connecticut"]`
+
+Using a hash key is much like indexing an array-except that the index (the key) can be anything, whereas in an array it's always an integer.
+
+Hashes also have a `fetch` method, which gives you an alternative way of retrieving values by key:
+
+`conn_abbrev = state_hash.fetch("Connecticut")`
+
+`fetch` differs from `[]` in the way it behaves when you ask it to look up a nonexistent key: `fetch` raises an exception, whereas `[]` gives you either `nil` or a default you've specified (as discussed in the next section). If you provide a second argument to hash, that argument will be returned, instead of an exception being raised if the key isn't found. For example, this code
+
+`state_hash.fetch("Nebraska", "Unknown state")`
+
+evaluates to the string `"Unknown state"`.
+
+You can also retrieve values for multiple keys in one operation, with `values_at`:
+
+`two_states = state_hash.values_at("New Jersey", "Delaware")`
+
+This code returns an array consisting of `["NJ", "DE"]` and assigns it to the variable `two_states`.
+
+Now that you have a sense of the mechanics of getting information into and out of a hash, let's circle back and look at the matter of supplying a default value (or default code block) when you create a hash.
+
+### *Specifying default hash values and behaviors* ###
