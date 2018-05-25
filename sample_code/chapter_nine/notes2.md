@@ -273,3 +273,50 @@ This code returns an array consisting of `["NJ", "DE"]` and assigns it to the va
 Now that you have a sense of the mechanics of getting information into and out of a hash, let's circle back and look at the matter of supplying a default value (or default code block) when you create a hash.
 
 ### *Specifying default hash values and behaviors* ###
+By default, when you ask a hash for the value corresponding to a nonexistent key, you get `nil`:
+
+```irb
+>> h = Hash.new
+=> {}
+>> h["no such key!"]
+=> nil
+```
+But you can specify a different default value by supplying an argument to `Hash.new`:
+
+```irb
+>> h = Hash.new(0)
+=> {}
+>> h["no such key!"]
+=> 0
+```
+Here we get back the hash's default value, `0`, when we use a nonexistent key. (You can also set the default on an already existing hash with the `default` method.)
+
+It's important to remember that whatever you specify as the default value is what you get when you specify a *nonexistent* key-and that the key remains nonexistent until you assign a value to it. On other words, saying `h["blah"]` doesn't mean that `h` now has a `"blah"` key. If you want that key in the hash, you have to put it there. You can verify the fact that the hash `h` has no keys by examining it after performing the nonexistent key lookup in the last example:
+
+```irb
+>> h
+=> {}
+```
+If you want references to nonexistent keys to cause the keys to come into existence, you can arrange this by supplying a code block to `Hash.new`. The code block will be executed every time a nonexistent key is referenced. Two objects will be yielded to the block: the hash and the (nonexistent) key.
+
+This technique gives you a foot in the door when it comes to setting keys automatically when they're first used. It's not the most elegant or streamlined technique in Ruby, but it does work. You write a block that grabs the hash and the key, and you do a set operation.
+
+For example, if you want every nonexistent key to be added to the hash with a value of `0`, create your hash like this:
+
+`h = Hash.new {|hash,key| hash[key] = 0 }`
+
+When the hash `h` is asked to retrieve the value for a key it doesn't have, the block is executed with `hash` set to the hash itself and `key` set to the nonexistent key. And thanks to the code in the block, they key is added to the hash after all, with the value of `0`.
+
+Given this assignment of a new hash to `h`, you can trigger the block like this:
+
+```irb
+>> h["new key!"]              #<-----1.
+=> 0
+>> h                            #<-------2.
+=> {"new key!"=>0}
+```
+When you try to look up the key `"new key!"` (#1), it's not there; but thanks to the block it gets added, with the value `0`. Next, when you ask irb to show you the whole hash (#2), it contains the automatically added pair.
+
+This technique has lots of uses. It lets you make assumptions about what's in a hash, even if nothing is there to start with. It also shows you another facet of Ruby's extensive repertoire of dynamic programming techniques and the flexibility of hashes.
+
+We'll turn now to ways you can combine hashes with each other, as we did with strings and arrays.
