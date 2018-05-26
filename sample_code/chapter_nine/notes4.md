@@ -75,3 +75,79 @@ A range also knows whether it's an exclusive (three-dot) range:
 With the goal posts in place, you can start to test for inclusion.
 
 Two methods are available for testing inclusion of a value in a range: `cover?` and `include?` (which is also aliased as `member?`)
+
+#### TESTING RANGE INCLUSION WITH COVER? ####
+The `cover?` method performs a simple test: if the argument to the method is greater than the range's start point and less than its end point (or equal to it, for an inclusive range), then the range is said to *cover* the object. The tests are performed using Boolean comparison tests, with a false result in cases where the comparison makes no sense.
+
+All of the following comparisons make sense; one of them fails because the item isn't in the range:
+
+```irb
+>> r = "a".."z"
+=> "a".."z"
+>> r.cover?("a")      #<--- true: "a" >= "a" & "a" <= "z"
+=> true
+>> r.cover?("abc")    #<--- true: "abc" >= "a" & "abc" <= "z"
+=> true
+>> r.cover?("A")      #<--- false: "A" < "a"
+=> false
+```
+But this next test fails because the item being tested for inclusion isn't comparable with the range's start and end points:
+
+```irb
+>> r.cover?([])
+=> false
+```
+It's meaningless to ask whether an array is greater than the string `"a"`. If you try such a comparison on its own, you'll get a fatal error. Fortunately, ranges take a more conservative approach and tell you that the item isn't covered by the range.
+
+Whereas `cover?` performs start- and end-point comparisons, the other inclusion test `include?` (or `member?`), takes a more collection-based approach.
+
+#### TESTING RANGE INCLUSION WITH INCLUDE? ####
+The `include?` test treats the range as a kind of crypto-array-that is, a collection of values. The `"a..z"` range, for example, is considered to include (as measured by `include?`) only the 26 values that lie inclusively between `"a"` and `"z"`.
+
+Therefore, `include?` produces results that differ from those of `cover?`:
+
+```irb
+>> r. include?("a")
+=> true
+>> r.include?("abc")
+=> false
+```
+In cases where the range can't be interpreted as a finite collection, such as a range of floats, the `include?` method falls back on numerical order and comparison:
+
+```irb
+>> r = 1.0..2.0
+=> 1.0..2.0
+>> r.include?(1.5)
+=> true
+```
+
+#### **Are there backward ranges?** ####
+The anticlimactic answer to the question of backward ranges is this: yes and no. You can create a backward range, but it won't do what you probably want it to:
+
+```irb
+>> r = 100...1
+=> 100...1
+>> r.include?(50)
+=> false
+```
+The range happily performs its usual inclusion test for you. The test calculates whether the candidate for inclusion is greater than the start point of the range and less than the end point. Because 50 is neither greater than 100 nor less than 1, the test fails. And it fails silently; this is a logic error, not a fatal syntax or runtime error.
+
+Backward ranges do show up in one particular set of use cases: as index arguments to strings and arrays. They typically take the form of a positive start point and a negative end point, with the negatic end point counting in from the right:
+
+```irb
+>> "This is a sample string"[10..-5]
+=> "sample st"
+>> ['a', 'b', 'c', 'd'][0..-2]
+=> ["a", "b", "c"]
+```
+You can even use an exclusive backward range:
+
+```irb
+>> ['a', 'b', 'c', 'd'][0...-2]
+=> ["a", "b"]
+```
+In these cases, what doesn't work (at least, in the way you might have expected) in a range on its own does work when applied to a string or an array.
+
+Last basic collection class to examine, the `Set` class, as we'll see more about ranges as quasi-collections in the next chapter.
+
+# *Sets* #
