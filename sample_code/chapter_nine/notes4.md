@@ -151,3 +151,38 @@ In these cases, what doesn't work (at least, in the way you might have expected)
 Last basic collection class to examine, the `Set` class, as we'll see more about ranges as quasi-collections in the next chapter.
 
 # *Sets* #
+`Set` is the one class under discussion in this chapter that isn't, strictly speaking, a RUby core class. It's a standard library class, which means that to use it, you have to do this: 
+
+`require 'set'`
+
+The general rule in this book is that we're looking at the core language rather than the standard library, but the `Set` class makes a worthy exception because it fits in so nicely with the other container and collection classes we've looked at.
+
+A `set` is a unique collection of objects. The objects can be anything-strings, integers, arrays, other sets-but no object can occur more than once in the set. Uniqueness is also also enforced at the commonsense content level: if the set contains the string `"New York"`, you can't add the string `"New York"` to it, even though the two strings may technically be different objects. The same is true of arrays with equivalent content. 
+
+**NOTE** Internally, sets use a hash to enforce the uniqueness of their contents. When an element is added to a set, the internal hash for that set gets a new key. Therefore, any two objects that would count as duplicates if used as hash keys can't occur together in a set. 
+
+### *Set creation* ### 
+To create a set, you use the `Set.new` constructor. You can create an empty set, or you can pass in a collection object (defined as an object that responds to `each` or `each_entry`). In the latter case, all the elements of the collection are placed individually in the set: 
+
+```irb 
+>> new_england = ["Connecticut", "Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont"]
+ => ["Connecticut", "Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont"]
+>> state_set = Set.new(new_england)
+ => #<Set: {"Connecticut", "Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont"}>
+```
+Here we've created an array, `new_england`, and used it as the constructor argument for the creation of the `state_set` set. Note that there's no literal set constructor (no equivalent to `[]` for arrayys or `{}` for hashes). There can't be: sets are part of the standard library, not the core, and the core syntax of the language is already in place before the set library gets loaded. 
+
+You can also provide a code block to the constructor, in which case every item in the collection object you supply is passed through the block (yielded to it) with the resulting value being inserted intot he set. For example, here's a way to initialize a set to a list of uppercased strings:
+
+```irb 
+>> names = ["David", "Yukihiro", "Chad", "Amy"]
+=> ["David", "Yukihiro", "Chad", "Amy"]
+>> name_set = Set.new(names){|name| name.upcase}
+=> #<Set: {"DAVID", "YUKIHIRO", "CHAD", "AMY"}>
+```
+Rather than using the array of names as its initial values, the set constructor yields each name to the block and inserts what it gets back (an uppercase version of the string) into the set. 
+
+Now that we've got a set, we can manipulate it. 
+
+### *Manipulating set elements* ### 
+Like arrays, sets have two modes of adding elements: either inserting a new element into the set or drawing on another collection object as a source for multiple new elements. In the array world, this is the difference between `<<` and `concat`. For sets, the distinction is reflected in a variety of methods, which we'll look at here. 
