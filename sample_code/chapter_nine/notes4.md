@@ -263,4 +263,51 @@ You can extend an existing set using a technique very similar in effect to the `
 What happens when you merge another object into a set depends on what that object's idea of iterating over itself consists of. Here's an array example, including a check on `object_id` to confirm that the original set has been altered in place:
 
 ```irb
+>> tri_state = Set.new(["Connecticut", "New Jersey"])
+=> #<Set: {"Connecticut", "New Jersey"}>
+>> tri_state.object_id
+=> 12148380
+>> tri_state.merge(["New York"])
+=> #<Set: {"Connecticut", "New Jersey", "New York"}>
+>> tri_state.object_id
+=> 12148380
 ```
+Merging a hash into a set results in the addition of two-element, key/value arrays to the set-because that's how hashes break themselves down when you iterate through them. Here's a slightly non-real-world example that demonstrates the technology:
+
+```irb
+>> s = Set.new([1,2,3])
+=> #<Set: {1, 2, 3}>
+>> s.merge({"New Jersey" => "NJ", "Maine" => "ME"})
+=> #<Set: {1, 2, 3, ["New Jersey", "NJ"], ["Maine", "ME"]}>
+```
+
+If you provide a hash argument to `Set.new`, the behavior is the same: you get a new set with two-element arrays based on the has.
+
+You might want to merge just the keys of a hash, rather than the entire hash, into a set. After all, set membership is based on hash key uniqueness, under the hood. You can do that with the `keys` method:
+
+```irb
+>> state_set = Set.new(["New York", "New Jersey"])
+=> #<Set: {"New York", "New Jersey"}>
+>> state_hash = { "Maine" => "ME", "Vermont" => "VT" }
+=> {"Maine"=>"ME", "Vermont"=>"VT"}
+>> state_set.merge(state_hash.keys)
+=> #<Set: {"New York", "New Jersey", "Maine", "Vermont"}>
+```
+Try out some permutations of set merging, and you'll see that it's quite open-ended (just like set creation), as long as the argument is an object with an `each` or `each_entry` method.
+
+Sets wouldn't be sets without subsets and supersets, and Ruby's set objects are sub- and super-aware.
+
+### *Subsets and supersets* ###
+You can test for subset/superset relationships between sets (and arguments have to be sets, not arrays, hashes, or any other kind of enumerable or collection) using the unsurprisingly named `subset` and `superset` methods:
+
+```irb
+>> small_states = Set.new(["Connecticut", "Delaware", "Rhode Island"])
+=> #<Set: {"Connecticut", "Delaware", "Rhode Island"}>
+>> tiny_states = Set.new(["Delaware", "Rhode Island"])
+=> #<Set: {"Delaware", "Rhode Island"}>
+>> tiny_states.subset?(small_states)
+=> true
+>> small_states.superset?(tiny_states)
+=> true
+```
+The `proper_subset` and `proper_superset` methods are also available to you. A *proper subset* is a small subset that's smaller than the parent set by at least one element. If the two sets are equal, they're subsets of each other but not proper subsets. Similarly, a *proper superset* or a set is a second set that contains all the elements of the first set plus at least one element not present in the first set. The "proper" concept is a way of filtering out the case where a set is a superset or subset of itself-because all sets are both.
