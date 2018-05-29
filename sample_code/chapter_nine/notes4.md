@@ -151,38 +151,116 @@ In these cases, what doesn't work (at least, in the way you might have expected)
 Last basic collection class to examine, the `Set` class, as we'll see more about ranges as quasi-collections in the next chapter.
 
 # *Sets* #
-`Set` is the one class under discussion in this chapter that isn't, strictly speaking, a RUby core class. It's a standard library class, which means that to use it, you have to do this: 
+`Set` is the one class under discussion in this chapter that isn't, strictly speaking, a RUby core class. It's a standard library class, which means that to use it, you have to do this:
 
 `require 'set'`
 
 The general rule in this book is that we're looking at the core language rather than the standard library, but the `Set` class makes a worthy exception because it fits in so nicely with the other container and collection classes we've looked at.
 
-A `set` is a unique collection of objects. The objects can be anything-strings, integers, arrays, other sets-but no object can occur more than once in the set. Uniqueness is also also enforced at the commonsense content level: if the set contains the string `"New York"`, you can't add the string `"New York"` to it, even though the two strings may technically be different objects. The same is true of arrays with equivalent content. 
+A `set` is a unique collection of objects. The objects can be anything-strings, integers, arrays, other sets-but no object can occur more than once in the set. Uniqueness is also also enforced at the commonsense content level: if the set contains the string `"New York"`, you can't add the string `"New York"` to it, even though the two strings may technically be different objects. The same is true of arrays with equivalent content.
 
-**NOTE** Internally, sets use a hash to enforce the uniqueness of their contents. When an element is added to a set, the internal hash for that set gets a new key. Therefore, any two objects that would count as duplicates if used as hash keys can't occur together in a set. 
+**NOTE** Internally, sets use a hash to enforce the uniqueness of their contents. When an element is added to a set, the internal hash for that set gets a new key. Therefore, any two objects that would count as duplicates if used as hash keys can't occur together in a set.
 
-### *Set creation* ### 
-To create a set, you use the `Set.new` constructor. You can create an empty set, or you can pass in a collection object (defined as an object that responds to `each` or `each_entry`). In the latter case, all the elements of the collection are placed individually in the set: 
+### *Set creation* ###
+To create a set, you use the `Set.new` constructor. You can create an empty set, or you can pass in a collection object (defined as an object that responds to `each` or `each_entry`). In the latter case, all the elements of the collection are placed individually in the set:
 
-```irb 
+```irb
 >> new_england = ["Connecticut", "Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont"]
  => ["Connecticut", "Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont"]
 >> state_set = Set.new(new_england)
  => #<Set: {"Connecticut", "Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont"}>
 ```
-Here we've created an array, `new_england`, and used it as the constructor argument for the creation of the `state_set` set. Note that there's no literal set constructor (no equivalent to `[]` for arrayys or `{}` for hashes). There can't be: sets are part of the standard library, not the core, and the core syntax of the language is already in place before the set library gets loaded. 
+Here we've created an array, `new_england`, and used it as the constructor argument for the creation of the `state_set` set. Note that there's no literal set constructor (no equivalent to `[]` for arrayys or `{}` for hashes). There can't be: sets are part of the standard library, not the core, and the core syntax of the language is already in place before the set library gets loaded.
 
 You can also provide a code block to the constructor, in which case every item in the collection object you supply is passed through the block (yielded to it) with the resulting value being inserted intot he set. For example, here's a way to initialize a set to a list of uppercased strings:
 
-```irb 
+```irb
 >> names = ["David", "Yukihiro", "Chad", "Amy"]
 => ["David", "Yukihiro", "Chad", "Amy"]
 >> name_set = Set.new(names){|name| name.upcase}
 => #<Set: {"DAVID", "YUKIHIRO", "CHAD", "AMY"}>
 ```
-Rather than using the array of names as its initial values, the set constructor yields each name to the block and inserts what it gets back (an uppercase version of the string) into the set. 
+Rather than using the array of names as its initial values, the set constructor yields each name to the block and inserts what it gets back (an uppercase version of the string) into the set.
 
-Now that we've got a set, we can manipulate it. 
+Now that we've got a set, we can manipulate it.
 
-### *Manipulating set elements* ### 
-Like arrays, sets have two modes of adding elements: either inserting a new element into the set or drawing on another collection object as a source for multiple new elements. In the array world, this is the difference between `<<` and `concat`. For sets, the distinction is reflected in a variety of methods, which we'll look at here. 
+### *Manipulating set elements* ###
+Like arrays, sets have two modes of adding elements: either inserting a new element into the set or drawing on another collection object as a source for multiple new elements. In the array world, this is the difference between `<<` and `concat`. For sets, the distinction is reflected in a variety of methods, which we'll look at here.
+
+#### ADDING/REMOVING ONE OBJECT TO/FROM A SET ####
+To add a single object to a set, you can use the `<<` operator/method:
+
+```irb
+>> tri_state = Set.new(["New Jersey", "New York"])
+=> #<Set: {"New Jersey", "New York"}>       #<----- WHOOPS! Only two!
+>> tri_state << "Connecticut"                   #<----- Adds third
+=> #<Set: {"New Jersey", "New York", "Connecticut"}>
+```
+Here, as with arrays, strings, and other objects, `<<` connotes appending to a collection or mutable object. If you try to add an object that's already in the set (or an object that's content-equal to one that's in the set), nothing happens:
+
+```irb >> tri_state << "Connecticut"              #<----- Second time
+=> #<Set: {"New Jersey", "New York", "Connecticut"}>
+```
+
+To remove an object, use `delete`:
+
+```irb
+>> tri_state << "Pennsylvania"
+=> #<Set: {"New Jersey", "New York", "Connecticut", "Pennsylvania"}>
+>> tri_state.delete("Connecticut")
+=> #<Set: {"New Jersey", "New York", "Pennsylvania"}>
+```
+Deleting an object that isn't in the set doesn't raise an error. As with adding a duplicate object, nothing happens.
+
+The `<<` method is also available as `add`. There's also a method called `add?`, which differs from `add` in that it returns `nil` (rather than returning the set itself) if the set is unchanged after the operation:
+
+```irb
+>> tri_state.add?("Pennsylvania")
+=> nil
+```
+You can test the return value of `add?` to determine whether to take a different conditional branch if the element you've attempted to add was already there.
+
+#### SET INTERSECTION, UNION, AND DIFFERENCE ####
+Sets have  a concept of their own intersection, union, and difference with other sets-and, indeed, with other enumerable objects. The `Set` class comes with the necessary methods to perform these operations.
+
+These methods have English names and symbolic aliases. The names are
+
+• `intersection`, aliased as `&`
+
+• `union` aliased as `+` and `|`
+
+• `difference` aliased as `-`
+
+Each of these methods returns a new set consisting of the original set, plus or minus the appropriate elements from the object provided as the method argument. The original set is unaffected.
+
+Let's shift our tri-state grouping back to the East and look at some set operations:
+
+```irb
+tri_state = Set.new(["Connecticut", "New Jersey", "New York"])
+=> #<Set: {"Connecticut", "New Jersey", "New York"}>
+# Subtraction (difference/-)
+>> state_set - tri_state
+=> #<Set: {"Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont"}>
+# Addition (union/+/|)
+>> state_set + tri_state
+=> #<Set: {"Connecticut", "Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont", "New Jersey", "New York"}>
+# Intersection (&)
+>> state_set & tri_state
+=> #<Set: {"Connecticut"}>
+>> state_set | tri_state
+=> #<Set: {"Connecticut", "Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont", "New Jersey", "New York"}>
+>>
+```
+There's also an exclusive-or operator, `^`, which you can use to take the exclusive union between a set and an enumerable-that is, a set consisting of all elements that occur in either the set or the enumerable but not both:
+
+```irb
+>> state_set ^ tri_state
+=> #<Set: {"New Jersey", "New York", "Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont"}>
+```
+You can extend an existing set using a technique very similar in effect to the `Set.new` technique: the `merge` method, which can take as its argument any object that responds to `each` or `each_entry`. That includes arrays, hashes, and ranges-and, of course, other sets.
+
+#### MERGING A COLLECTION INTO ANOTHER SET ####
+What happens when you merge another object into a set depends on what that object's idea of iterating over itself consists of. Here's an array example, including a check on `object_id` to confirm that the original set has been altered in place:
+
+```irb
+```
