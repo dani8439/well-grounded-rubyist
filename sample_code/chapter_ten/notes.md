@@ -185,5 +185,5 @@ The `Enumerable` module provides several facilities for filtering collections an
 
 We'll start with a one-object search using `find` and then work our way through several techniques for deriving a multiple-object result set from an enumerable query. 
 
-### *Getting the first match with find ###
+### *Getting the first match with find* ###
 
