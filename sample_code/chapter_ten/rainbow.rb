@@ -29,3 +29,12 @@ y_color = r.find {|color| color.start_with?('y')}
 puts "First color starting with 'y' is #{y_color}"
 
 # First color starting with 'y' is yellow
+
+>> r = Rainbow.new
+=> #<Rainbow:0x000000011d4088>
+>> r.select { |color| color.size == 6 }
+=> ["orange", "yellow", "indigo", "violet"]
+>> r.map {|color| color[0,3] }
+=> ["red", "ora", "yel", "gre", "blu", "ind", "vio"]
+>> r.drop_while {|color| color.size < 5 }
+=> ["orange", "yellow", "green", "blue", "indigo", "violet"]
