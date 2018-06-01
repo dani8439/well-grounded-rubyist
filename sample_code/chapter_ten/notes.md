@@ -341,3 +341,30 @@ class Person
   end
 end
 ```
+Now let's generate an array of people:
+
+`people = 10.step(25,3).map {|i| Person.new(:age => i) }`
+
+This code does an iteration from 10 to 25 in steps of 3 (10, 13, 16, 19, 22, 25), passing each of the values to the block in turn. Each time through, a new `Person` is created with the age corresponding to the increment. Thanks to `map`, the person objects are all accumulated into an array, which is assigned to `people`. (The chaining of the iterator `map` to the iterator `step` is made possible by the fact that `step` returns an enumerator. You'll learn more about enumerators presently.)
+
+We've got our six people; now let's partition them into teens and non-teens:
+
+`teens = people.partition {|person| person.teenager? }`
+
+The `teens` array has the following content:
+
+```irb
+[[#<Person:0x0000000101faf8 @age=13>, #<Person:0x0000000101faa8 @age=16>, #<Person:0x0000000101fa58 @age=19>], [#<Person:0x0000000101fb70 @age=10>, #<Person:0x0000000101f9e0 @age=22>, #<Person:0x0000000101f990 @age=25>]]
+```
+
+Note that this is an array containing two subarrays. The first contains those people for whom `person.teenager?` returned true; the second is the non-teens.
+
+We can now use the information, for example, to find out how many teens and non-teens we have:
+
+`puts "#{teens[0].size} teens; #{teens[1].size} non-teens"`
+
+The output from this statement reflects the fact that half of our people are teens and half aren't:
+
+`3 teens; 3 non-teens`
+
+Let's look now at some "element-wise" operations-methods that involve relatively fine-grained manipulation of specific collection elements.
