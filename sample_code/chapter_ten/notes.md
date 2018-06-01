@@ -222,3 +222,122 @@ Although `find` always returns one object, `find_all`, also known as `select`, a
 Arrays serve generically as the containers for most of the results that come back from enumerable selecting and filtering operations, whether or not the object being selected from or filtered is an array. There are some exceptions to this quasi-rule, but it holds true widely.
 
 The plainest way to see it is by creating an enumerable class of your own and watching what you get back from your select queries. Look again at the `Rainbow` class, Now look at what you get back when you perform some queries. 
+
+```irb
+>> r = Rainbow.new
+=> #<Rainbow:0x000000011d4088>
+>> r.select { |color| color.size == 6 }
+=> ["orange", "yellow", "indigo", "violet"]
+>> r.map {|color| color[0,3] }
+=> ["red", "ora", "yel", "gre", "blu", "ind", "vio"]
+>> r.drop_while {|color| color.size < 5 }
+=> ["orange", "yellow", "green", "blue", "indigo", "violet"]
+```
+In every case, the result set comes back in an array.
+
+The array is the most generic container and therefore the logical candidate for the role of universal result format. A few exceptions arise. A hash returns a hash from a `select` or `reject` operation. Sets return arrays from `map`, but you can call `map!` on a set to change the elements of the set in place. For the most part, though, enumerable selection and filtering operations come back to you inside arrays.
+
+### *Getting all matches with find_all (a.k.a. select) and reject* ###
+`find_all` (the same method as `select`) returns a new collection containing all the elements of the original collection that match the criteria in the code block, not just the first such element (as with `find`). If no matching elements are found, `find_all` returns an empty collection object.
+
+In the general sense-for example, when you use `Enumerable` in your own classes-the "collection" returned by `select` will be an array. Ruby makes special arrangements for hashes and sets, though; if you `select` on a hash or set, you get back a hash or set. This is enhanced behavior that isn't strictly part of `Enumerable`.
+
+We'll stick to array examples here:
+
+```irb
+>> a = [1,2,3,4,5,6,7,8,9,10]
+=> [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+>> a.find_all {|item| item > 5 }
+=> [6, 7, 8, 9, 10]                 #<----------1.
+>> a.select {|item| item > 100 }
+=> []                               #<----------2.
+```
+The first `find_all` operation returns an array of all the elements that pass the test in the block: all elements that are greater than 5 (#1). The second operation also returns an array, this time of all the elements in the original array that are greater than 100. There aren't any, so an empty array is returned (#2).
+
+(Arrays, hashes, and sets have a bang version, `select!`, that reduces the collection permanently to only those elements that passed the selection test. There's no `find_all!` synonym; you have to use `select!`.)
+
+Just as you can select items, so you can reject items, meaning that you find out which elements of an array do not return a true value when yielded to the block. Using the `a` array from the previous example, you can do this to get the array minus any and all elements that are greater than 5:
+
+```irb
+>> a.reject {|item| item > 5 }
+=> [1, 2, 3, 4, 5]
+```
+(Once again, there's a bang, in-place version, `reject!`, specifically for arrays, hashes and sets.)
+
+If you've ever used the command-line utility `grep`, the next method will ring a bell. If you haven't, you'll get the hang of it anyway.
+
+### *Selecting on threequal matches with grep* ###
+The `Enumerable#grep` method lets you select from an enumerable object based on the case equality operator, `===`. The most common application of `grep` is the one that corresponds most closely to the common operation of the command-line utility of the same name, pattern matching for strings:
+
+```irb
+>> colors = %w{ red orange yellow green blue indigo violet }
+=> ["red", "orange", "yellow", "green", "blue", "indigo", "violet"]
+>> colors.grep(/o/)
+=> ["orange", "yellow", "indigo", "violet"]
+```
+But the generality of `===` lets you do some fancy things with `grep`:
+
+```irb
+>> miscellany = [75, "hello", 10...20, "goodbye"]
+=> [75, "hello", 10...20, "goodbye"]
+>> miscellany.grep(String)              #<------1.
+=> ["hello", "goodbye"]
+>> miscellany.grep(50..100)             #<------2.
+=> [75]
+```
+
+`String === object` is true for the two strings in the array, so an array of those two strings is what you get back from grepping for `String` (#1). Ranges implement `===` as an inclusion test. The range `50..100` includes 75; hence the result from grepping `miscellany` for that range (#2).
+
+In general, the statement `enumerable.grep(expression)` is functionally equivalent to this:
+
+`enumerable.select {|element| expression === element }`
+
+In other words, it selects for a truth value based on calling `===`. In addition, `grep` can take a block, in which case it yields each element of its result set to the block before returning the results:
+
+```irb
+>> colors = %w{ red orange yellow green blue indigo violet }
+=> ["red", "orange", "yellow", "green", "blue", "indigo", "violet"]
+>> colors.grep(/o/) {|color| color.capitalize }
+=> ["Orange", "Yellow", "Indigo", "Violet"]
+```
+
+The full `grep` syntax:
+
+`enumerable.grep(expression) {|item| ... }`
+
+thus operates in effect like this:
+
+`enumerable.select {|item| expression === item}.map {|item| ... }`
+
+Again, you'll mostly see (and probably mostly use) `grep` as a pattern-based string selector. But keep in mind that grepping is pegged to case equality (`===`) and can be used accordingly in a variety of situations.
+
+Whether carried out as `select` or `grep` or some other operation, selection scenarios often call for grouping of results into clusters or categories. The `Enumerable#group_by` and `#partition` methods make convenient provisions for exactly this kind of grouping.
+
+### *Organizing selection results with group_by and partition* ###
+A `group_by` operation on an enumerable object takes a block and returns a hash. The block is executed for each object. For each unique block return value, the results hash gets a key; the value for that key is an array of all the elements of the enumerable for which the block returned that value.
+
+An example should make the operation clear:
+
+```irb
+>> colors = %w{ red orange yellow green blue indigo violet }
+=> ["red", "orange", "yellow", "green", "blue", "indigo", "violet"]
+>> colors.group_by {|color| color.size }
+=> {3=>["red"], 6=>["orange", "yellow", "indigo", "violet"], 5=>["green"], 4=>["blue"]}
+```
+The block `{|color| color.size}` returns an integer for each color. The hash returned by the entire `group_by` operation is keyed to the various sizes (3,4,5,6), and the values are arrays containing all the strings from the original array that are of the size represented by the respective keys.
+
+The `partition` method is similar to `group_by`, but it splits the elements of the enumerable into two arrays based on whether the code block returns true for the element. There's no hash, just an array of two arrays. The two arrays are always returned in true/false order.
+
+Consider a `Person` class, where every person has an age. The class also defines an instance method `teenager?`, which is true if the person's age is between 13 and 19, inclusive:
+
+```ruby
+class Person
+  attr_accessor :age
+  def initialize(options)
+    self.age = options[:age]
+  end
+  def teenager?
+    (13..19) === age
+  end
+end
+```
