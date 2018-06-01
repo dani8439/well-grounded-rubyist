@@ -186,4 +186,39 @@ The `Enumerable` module provides several facilities for filtering collections an
 We'll start with a one-object search using `find` and then work our way through several techniques for deriving a multiple-object result set from an enumerable query. 
 
 ### *Getting the first match with find* ###
+`find` (also available as the synonymous `detect`) locates the first element in an arary for which the code bloack, when called with that element as an argument, returns true. For example, to find the first number greater than 5 in an array of integers, you can use `find` like this:
 
+```irb 
+>> [1,2,3,4,5,6,7,8,9,10].find {|n| n > 5 }
+=> 6
+```
+`find` iterates through the array, yielding each element in turn to the block. If the block returns anything with the Boolean value of true, the element yielded "wins," and `find` stops iterating. If `find` fails to find an element that passes the code-block test, it returns `nil`. (Try changing `n > 5` to `n > 100` in the example, and you'll see.):
+
+```irb
+>> [1,2,3,4,5,6,7,8,9,10].find {|n| n > 100 }
+=> nil
+```
+
+It's interesting to ponder the case where your array has `nil` as one of its elements, and your code block looks for a
+element equal to `nil`.
+
+```irb
+>> [1,2,3,nil,4,5,6].find {|n| n.nil? }
+=> nil
+```
+In these circumstances, `find` always returns `nil`-whether the search succeeds or fails! That means the test is useless; you can't tell whether it succeeded. You can work around this situation with other techniques, such as the `include?` method, with which you can find out whether an array has `nil` as an element. You can also provide a "nothing found" function-a `Proc` object-as an argument to `find`, in which case that function will be called if the `find` operation fails. We haven't looked at the `Proc` objects in depth yet, although you've seen some examples of them in connection with the handling of code blocks. For future reference, here's an example of how to supply `find` with a failure-handling function:
+
+```irb
+>> failure = lambda { 11 }              #<----1.
+=> #<Proc:0x000000026333a8@(irb):3 (lambda)>
+>> over_ten = [1,2,3,4,5,6].find(failure) {|n| n > 10 }
+=> 11
+```
+In this example, the anonymous function (the `Proc` object) returns `11` (#1), so even if there's no number greater than 10 in the array, you get one anyway. (We'll see lambdas and `Proc` objects up close later on)
+
+Although `find` always returns one object, `find_all`, also known as `select`, always returns an array, as does its negative equivalent `reject`.
+
+**The dominance of the array**
+Arrays serve generically as the containers for most of the results that come back from enumerable selecting and filtering operations, whether or not the object being selected from or filtered is an array. There are some exceptions to this quasi-rule, but it holds true widely.
+
+The plainest way to see it is by creating an enumerable class of your own and watching what you get back from your select queries. Look again at the `Rainbow` class, Now look at what you get back when you perform some queries. 
