@@ -317,72 +317,27 @@ The class example of injecting is the summing up of numbers in an array. Here's 
 ```
 And here's how it works:
 
-  ```irb 
->> [1,2,3,4].inject do |acc,n|
->>  puts "adding #{acc} and #{n}...#{acc+n}"
->>  acc + n
->> end
-adding 1 and 2...3
-adding 3 and 3...6
-adding 6 and 4...10
-=> 10
-```
-The `puts` statement is a pure side effect (and, on its own, evaluates to `nil`), so you still have to end the block with `acc + n` to make sure the block evaluates to the correct value.
-
-We've saved perhaps the most important relative of `each` for last: `Enumerable#map`.1. The accumulator is initialized to 0, courtesy of the 0 argument to `inject`.
-  ```irb 
->> [1,2,3,4].inject do |acc,n|
->>  puts "adding #{acc} and #{n}...#{acc+n}"
->>  acc + n
->> end
-adding 1 and 2...3
-adding 3 and 3...6
-adding 6 and 4...10
-=> 10
-```
-The `puts` statement is a pure side effect (and, on its own, evaluates to `nil`), so you still have to end the block with `acc + n` to make sure the block evaluates to the correct value.
-
-We've saved perhaps the most important relative of `each` for last: `Enumerable#map`.2. The first time through the iteration-the code block-`acc` is 0, and `n` is set to 1 (the first item in the array). The result of the calculation inside the block is 0 + 1, or 1.
-  ```irb 
->> [1,2,3,4].inject do |acc,n|
->>  puts "adding #{acc} and #{n}...#{acc+n}"
->>  acc + n
->> end
-adding 1 and 2...3
-adding 3 and 3...6
-adding 6 and 4...10
-=> 10
-```
-The `puts` statement is a pure side effect (and, on its own, evaluates to `nil`), so you still have to end the block with `acc + n` to make sure the block evaluates to the correct value.
-
-We've saved perhaps the most important relative of `each` for last: `Enumerable#map`.3. The second time through, `acc` is set to 1 (the block's result from the previous time through), and `n` is set to 2 (the second element in the array). The block therefore evaluates to 3.
-  ```irb 
->> [1,2,3,4].inject do |acc,n|
->>  puts "adding #{acc} and #{n}...#{acc+n}"
->>  acc + n
->> end
-adding 1 and 2...3
-adding 3 and 3...6
-adding 6 and 4...10
-=> 10
-```
-The `puts` statement is a pure side effect (and, on its own, evaluates to `nil`), so you still have to end the block with `acc + n` to make sure the block evaluates to the correct value.
-
-We've saved perhaps the most important relative of `each` for last: `Enumerable#map`.4. The third time through, `acc` and `n` are 3 (previous block result) and 3 (next value in the array.) The block evaluates to 6.
-  ```irb 
->> [1,2,3,4].inject do |acc,n|
->>  puts "adding #{acc} and #{n}...#{acc+n}"
->>  acc + n
->> end
-adding 1 and 2...3
-adding 3 and 3...6
-adding 6 and 4...10
-=> 10
-```
-The `puts` statement is a pure side effect (and, on its own, evaluates to `nil`), so you still have to end the block with `acc + n` to make sure the block evaluates to the correct value.
-
-We've saved perhaps the most important relative of `each` for last: `Enumerable#map`.5. The fourth time through, `acc` and `n` are 6 and 4. The block evaluates to 10. Because this is the last time through, the value from the block serves as the return value of the entire call to `inject`. Thus the entire call evaluates to 10, as shown by irb.
+  1. The accumulator is initialized to 0, courtesy of the 0 argument to `inject`.
+  2. The first time through the iteration-the code block-`acc` is 0, and `n` is set to 1 (the first item in the array). The result of the calculation inside the block is 0 + 1, or 1.
+  3. The second time through, `acc` is set to 1 (the block's result from the previous time through), and `n` is set to 2 (the second element in the array). The block therefore evaluates to 3.
+  4. The third time through, `acc` and `n` are 3 (previous block result) and 3 (next value in the array.) The block evaluates to 6.
+  5. The fourth time through, `acc` and `n` are 6 and 4. The block evaluates to 10. Because this is the last time through, the value from the block serves as the return value of the entire call to `inject`. Thus the entire call evaluates to 10, as shown by irb.
 
 If you don't supply an argument to `inject`, it uses the first element in the enumerable object as the initial value for `acc`. In this example, that would produce the same result, because the first iteration added 0 to 1 and set `acc` to 1 anyway.
 
 Here's a souped-up example, with some commentary printed out on each iteration so that you can see what's happening:
+
+```irb 
+>> [1,2,3,4].inject do |acc,n|
+>>  puts "adding #{acc} and #{n}...#{acc+n}"
+>>  acc + n
+>> end
+adding 1 and 2...3
+adding 3 and 3...6
+adding 6 and 4...10
+=> 10
+```
+The `puts` statement is a pure side effect (and, on its own, evaluates to `nil`), so you still have to end the block with `acc + n` to make sure the block evaluates to the correct value.
+
+We've saved perhaps the most important relative of `each` for last: `Enumerable#map`.
+
