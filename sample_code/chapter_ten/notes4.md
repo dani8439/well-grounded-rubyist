@@ -115,4 +115,37 @@ It's not fair to ambush a separate object by removing its elements as a side eff
 ### *Attaching enumerators to other objects* ###
 The other way to endow an enumerator with `each` logic is to hook the enumerator up to another object-specifically, to an iterator (often `each`, but potentially any method that yields one or more values) on another object. This gives the enumerator a basis for its own iteration: when it needs to yield something, it gets the necessary value by triggering the next yield from the object to which it is attached, via the designated method. The enumerator thus acts as part proxy, part parasite, defining its own `each` in terms of another object's iteration.
 
-You create an enumerator with this approach by calling `enum_for` (a.k.a. `to_enum`) on the object from which you want the enumerator to draw its iterations. You provide as the first argument the name of the method onto which the enumerator will attach its `each` method. 
+You create an enumerator with this approach by calling `enum_for` (a.k.a. `to_enum`) on the object from which you want the enumerator to draw its iterations. You provide as the first argument the name of the method onto which the enumerator will attach its `each` method. The argument defaults to `:each`, although it's common to attach the enumerator to a different method, as in this example:
+
+```irb
+>> names = %w{ David Black Yukihiro Matsumoto }
+=> ["David", "Black", "Yukihiro", "Matsumoto"]
+>> e = names.enum_for(:select)
+=> #<Enumerator: ["David", "Black", "Yukihiro", "Matsumoto"]:select>
+```
+Specifying `:select` as the argument means that we want to bind this enumerator to the `select` method of the `names` array. That means the enumerator's `each` will serve as a kind of front end to array's `select`:
+
+`e.each {|n| n.include?('a')}`   <---- Output: ["David", "Black", "Matsumoto"]
+
+You can also provide further arguments to `enum_for`. Any such arguments are passed through to the method to which the enumerator is being attached. For example, here's how to create an enumerator for `inject` so that when `inject` is called on to feed values to the enumerator's `each`, it's called with a starting value of `"Names: "`:
+
+```irb
+>> e = names.enum_for(:inject, "Names: ")
+=> #<Enumerator: ["David", "Black", "Yukihiro", "Matsumoto"]:inject("Names: ")>
+>> e.each {|string, name| string << "#{name}..." }
+=> "Names: David...Black...Yukihiro...Matsumoto..."
+```
+But be careful! That starting string `"Names: "` has had some names added to it, but it's still alive inside the enumerator. That means if you run the same inject operation again, it adds to the same string (the line in the output in the following code is broken across two lines to make it fit):
+
+```irb 
+>> e.each {|string, name| string << "#{name}..." }
+=> "Names: David...Black...Yukihiro...Matsumoto...David...Black...Yukihiro...Matsumoto..."
+```
+
+When you create the enumerator, the arguments you give it for the purpose of supplying its proxied method with arguments are the arguments-the objects-it will use permanently. So watch for side effects. (In this particular case, you can avoid the side effect by adding strings-`string + "#{name}..."`-instead of appending to the string with `<<` because the addition operation creates a new string object. Still, the cautionary tale is generally useful.)
+
+**Note** You can call `Enumerator.new(obj, method_name, arg1, arg2...)` as an equivalent to `obj.enum_for(method_name, arg1, arg2...)`. But using this form of `Enumerator.new` is discouraged. Use `enum_for` for the method attachment scenario and `Enumerator.new` for the block-based scenario described in previous section.
+
+Now you know how to create enumerators of both kinds: the kind whose knowledge of how to iterate is conveyed to it in a code block, and the kind that gets the knowledge from another object. Enumerators are also created implicitly when you make blockless calls to certain iterator methods. 
+
+### *Implicit creation of enumerators by blockless iterator calls* ###
