@@ -111,3 +111,8 @@ Now let's look at the fate of poor `a` in irb:
 The `take` operation produces a result array of two elements (the value of `total` for two successive iterations) and leaves `a` with three elements. Calling `to_a` on `e`, at this point, causes the original code block to be executed again, because the `to_a` call isn't part of the same iteration as the call to `take`. Therefore, `total` starts again at 0, and the `until` loop is executed with the result that three values are yielded and `a` is left empty.
 
 It's not fair to ambush a separate object by removing its elements as a side effect of calling an enumerator. But the example shows you the mechanism-and it also provides a reasonable segue into the other half of the topic of creating enumerators: creating enumerators whose `each` methods are tired to specific methods on existing enumerable objects.
+
+### *Attaching enumerators to other objects* ###
+The other way to endow an enumerator with `each` logic is to hook the enumerator up to another object-specifically, to an iterator (often `each`, but potentially any method that yields one or more values) on another object. This gives the enumerator a basis for its own iteration: when it needs to yield something, it gets the necessary value by triggering the next yield from the object to which it is attached, via the designated method. The enumerator thus acts as part proxy, part parasite, defining its own `each` in terms of another object's iteration.
+
+You create an enumerator with this approach by calling `enum_for` (a.k.a. `to_enum`) on the object from which you want the enumerator to draw its iterations. You provide as the first argument the name of the method onto which the enumerator will attach its `each` method. 
