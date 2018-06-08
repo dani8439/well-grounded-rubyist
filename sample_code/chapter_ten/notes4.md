@@ -178,3 +178,78 @@ The enumerator you get is equivalent to what you would get if you did this:
 ```
 You'll find that lots of methods from `Enumerable` return enumerators when you call then without a block (including `each`, `map`, `select`, and `inject`, and others.) The main use case for these automatically returned enumerators is *chaining*: calling another method immediately on the enumerator. We'll look at chaining as part of the coverage of enumerator semantics in the next section.
 
+# *Enumerator semantics and uses* #
+Now that you know how enumerators are wired and how to create them, we're going to look at how they're used-and why they're used.
+
+Perhaps the hardest thing about enumerators, because it's the most difficult to interpret visually, is how things play out when you call the `each` method. We'll start by looking at that; then, we'll examine the practicalities of enumerators, particularly the ways in which an enumerator can protect an object from change and how you can use an enumerator to do fine-grained, controlled iterations. We'll look then at how enumerators fit into method chains in general and we'll see a couple of important specific cases.
+
+### *How to use an enumerator's each method* ###
+An enumerator's `each` method is hooked up to a method on another object, possibly a method other than `each`. If you use it directly, it behaves like that other method, including with respect to its return value.
+
+This can produce some odd-looking results where calls to `each` return filtered, sorted, or mapped collections:
+
+```irb
+>> array = %w{ cat dog rabbit }
+=> ["cat", "dog", "rabbit"]
+>> e = array.map
+=> #<Enumerator: ["cat", "dog", "rabbit"]:map>
+>> e.each {|animal| animal.capitalize }
+=> ["Cat", "Dog", "Rabbit"]       #<--- Returns mapping
+```
+There's nothing mysterious here. The enumerator isn't the same object as the array; it has its own ideas about what `each` means. Still, the overall effect of connecting an enumerator to the `map` method of an array is that you get an `each` operation with an array mapping as its return value. The usual `each` iteration of an array, as you've seen, exists principally for its side effects and returns its receiver (the array). But an enumerator's `each` serves as a kind of conduit to the method from which it pulls its values and behaves the same way in the matter of return value.
+
+Another characteristic of enumerators that you should be aware of is the fact that they perform a kind of *un-overriding* of methods in `Enumerable`.
+
+#### THE UN-OVERRIDING PHENOMENON ####
+If a class defined `each` and includes `Enumerable`, its instances automatically get `map`, `select`, `inject`, and all the rest of `Enumerable`'s methods. All those methods are defined in terms of `each`.
+
+But sometimes a given class has already overridden `Enumerable`'s version of a method with its own. A good example is `Hash#select`. The standard, out-of-the-box `select` method from `Enumerable` always returns an array, whatever the class of the object using it might be. A `select` operation on a hash, on the other hand, returns a hash:
+
+```irb
+>> h = { "cat" => "feline", "dog" => "canine", "cow" => "bovine" }
+=> {"cat"=>"feline", "dog"=>"canine", "cow"=>"bovine"}
+>> h.select {|key,value| key =~/c/ }
+=> {"cat"=>"feline", "cow"=>"bovine"}
+```
+So far, so good (and nothing new). And if we hook up an enumerator to the `select` method, it gives us an `each` method that works like that method:
+
+```irb
+>> e = h.enum_for(:select)
+=> #<Enumerator: {"cat"=>"feline", "dog"=>"canine", "cow"=>"bovine"}:select>
+>> e.each {|key,value| key =~/c/ }
+=> {"cat"=>"feline", "cow"=>"bovine"}
+```
+
+But what about an enumerator hooked up not to the hash's `select` method but to the hash's `each` method? We can get one by using `to_enum` and letting the target method default to `each`:
+
+```irb
+>> e = h.to_enum
+=> #<Enumerator: {"cat"=>"feline", "dog"=>"canine", "cow"=>"bovine"}:each>
+```
+
+`Hash#each`, called with a block, returns the hash. The same is true of the enumerator's `each`-because it's just a front end to the hash's `each`. The blocks in these examples are empty because we're only concerned with the return values:
+
+```irb
+>> h.each { }
+=> {"cat"=>"feline", "dog"=>"canine", "cow"=>"bovine"}
+>> e.each { }
+=> {"cat"=>"feline", "dog"=>"canine", "cow"=>"bovine"}
+```
+
+So far, it looks like the enumerator's `each` is a stand-in for the hash's `each`. But what happens if we use this `each` to perform a select operation?
+
+```irb
+>> e.select {|key,value| key =~ /c/ }
+=> [["cat", "feline"], ["cow", "bovine"]]
+```
+The answer, as you can see, is that we get back an array, not a hash.
+
+Why? If `e.each` is pegged to `h.each`, how does the return value of `e.select` get unpegged from the return value of `h.select`?
+
+The key is that the call to `select` in the last example is a call to the `select` method of the *enumerator*, not the hash. And the `select` method of the enumerator is built directly on the enumerator's `each` method. In fact, the enumerator's `select` method is `Enumerable#select`, which always returns an array. The fact that `Hash#select` doesn't return an array is of no interest to the enumerator.
+
+In this sense, the enumerator is adding enumerability to the hash, even though the hash is already enumerable. It's also un-overriding `Enumerable#select`; the `select` provided by the enumerator is `Enumerable#select`, even if the hash's `select` wasn't. (Technically, it's not an un-override, but it does produce the sensation that the enumerator is occluding the select logic of the original hash).
+
+The lesson is that it's important to remember that an enumerator is a different object from the collection from which it siphons its iterated objects. Although this difference between objects can give rise to some possibly odd results, like `select` being rerouted through the `Enumerable` module, it's definitely beneficial in at least one important way: accessing a collection through an enumerator, rather than through the collection itself, protects the collection object from change.
+
+
