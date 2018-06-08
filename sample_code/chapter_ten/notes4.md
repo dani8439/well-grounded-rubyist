@@ -149,3 +149,32 @@ When you create the enumerator, the arguments you give it for the purpose of sup
 Now you know how to create enumerators of both kinds: the kind whose knowledge of how to iterate is conveyed to it in a code block, and the kind that gets the knowledge from another object. Enumerators are also created implicitly when you make blockless calls to certain iterator methods. 
 
 ### *Implicit creation of enumerators by blockless iterator calls* ###
+By definition, an iterator is a method that yields one or more values to a block. But what if there's no block?
+
+The answer is that most built-in iterators return an enumerator when they're called without a block. Here's an example from the `String` class: the `each_byte` method (see earlier section). First, here's a classic iterator usage of the method, without an enumerator but with a block:
+
+```irb
+>> str = "Hello"
+=> "Hello"
+>> str.each_byte {|b| puts b }
+72
+101
+108
+108
+111
+=> "Hello"
+```
+`each_byte` iterates over the bytes in the string and returns its receiver (the string). But if you call `each_byte` with no block, you get an enumerator:
+
+```irb
+>> str.each_byte
+=> #<Enumerator: "Hello":each_byte>
+```
+The enumerator you get is equivalent to what you would get if you did this:
+
+```irb
+>> str.enum_for(:each_byte)
+=> #<Enumerator: "Hello":each_byte>
+```
+You'll find that lots of methods from `Enumerable` return enumerators when you call then without a block (including `each`, `map`, `select`, and `inject`, and others.) The main use case for these automatically returned enumerators is *chaining*: calling another method immediately on the enumerator. We'll look at chaining as part of the coverage of enumerator semantics in the next section.
+
