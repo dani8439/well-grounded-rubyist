@@ -252,4 +252,64 @@ In this sense, the enumerator is adding enumerability to the hash, even though t
 
 The lesson is that it's important to remember that an enumerator is a different object from the collection from which it siphons its iterated objects. Although this difference between objects can give rise to some possibly odd results, like `select` being rerouted through the `Enumerable` module, it's definitely beneficial in at least one important way: accessing a collection through an enumerator, rather than through the collection itself, protects the collection object from change.
 
+### *Protecting objects with enumerators* ###
+Consider a method that expects, say, an array as its argument. (Yes, it's a bit un-Rubylike to focus on the object's class, but you'll see that isn't the main point here.)
+
+`def give_me_an_array(array)`
+
+If you pass an array object to this method, the method can alter that object:
+
+`array << "new element"`
+
+If you want to protect the original array from change, you can duplicate it and pass along the duplicate-or you can pass along an enumerator instead:
+
+`give_me_an_array(array.to_enum)`
+
+The enumerator will happily allow for iterations through the array, but it won't absorb changes. (It will respond with a fatal error if you try calling `<<` on it.) In other words, an enumerator can serve as a kind of gateway to a collection object such that it allows iteration and examination of elements but disallows destructive operations.
+
+The deck of cards code from the earlier section provides a nice opportunity for some object protection. In that code, the `Deck` class has a reader attribute `cards`. When a deck is created, its `@cards` instance variable is initialized to an array containing all the cards. There's a vulnerability here. What if someone gets hold of the `@cards` array through the `cards` reader attribute and alters it?
+
+```irb
+deck = PlayingCard::Deck.new
+deck.cards << "JOKER!!"
+```
+Ideally, we'd like to be able to read from the cards array but not alter it. (We could freeze it with the `freeze` method, which prevents further changes to objects, but we'll need to change the deck inside the `Deck` class when it's dealt from.) Enumerators provide a solution. Instead of a reader attribute, let's make the `cards` method return an enumerator:
+
+```ruby
+class PlayingCard
+  SUITS = %w{ clubs diamonds hearts spades }
+  RANKS = %w{ 2 3 4 5 6 7 8 9 10 J Q K A }
+  class Deck
+    def cards
+      @cards.to_enum
+    end
+    def initialize(n=1)
+      @cards = []
+      SUITS.cycle(n) do |s|
+        RANKS.cycle(1) do |r|
+          @cards << "#{r} of #{s}"
+        end
+      end
+    end
+  end
+end
+```
+
+It's still possible to pry into the `@cards` array and mess it up if you're determined. But the enumerator provides a significant amount of protection:
+
+```ruby
+deck = PlayingCard::Deck.new
+deck.cards << "JOKER!!"     #<-- NoMethodError: undefined method `<<' for #<Enumerator:0x00000001dea0c0> 
+```
+Of course, if you want the calling code to be able to address the cards as an array, returning an enumerator may be counterproductive. (And at least one other technique protects objects under circumstances like this: return `@cards.dup`.) But if it's a good fit, the protective qualities of an enumerator can be convenient.
+
+Because enumerators are objects, they have state. Furthermore, they use their state to track their own progress so you can stop and start their iterations. We'll look now at the techniques for controlling enumerators in this way. 
+
+### *Fine-grained iteration with enumerators* ### 
+Enumerators maintain state: they keep track of where they are in their enumeration. 
+
+Several methods make direct use of this information. Consider this example:
+
+
+
 
