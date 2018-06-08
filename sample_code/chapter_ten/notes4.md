@@ -299,17 +299,112 @@ It's still possible to pry into the `@cards` array and mess it up if you're dete
 
 ```ruby
 deck = PlayingCard::Deck.new
-deck.cards << "JOKER!!"     #<-- NoMethodError: undefined method `<<' for #<Enumerator:0x00000001dea0c0> 
+deck.cards << "JOKER!!"     #<-- NoMethodError: undefined method `<<' for #<Enumerator:0x00000001dea0c0>
 ```
 Of course, if you want the calling code to be able to address the cards as an array, returning an enumerator may be counterproductive. (And at least one other technique protects objects under circumstances like this: return `@cards.dup`.) But if it's a good fit, the protective qualities of an enumerator can be convenient.
 
-Because enumerators are objects, they have state. Furthermore, they use their state to track their own progress so you can stop and start their iterations. We'll look now at the techniques for controlling enumerators in this way. 
+Because enumerators are objects, they have state. Furthermore, they use their state to track their own progress so you can stop and start their iterations. We'll look now at the techniques for controlling enumerators in this way.
 
-### *Fine-grained iteration with enumerators* ### 
-Enumerators maintain state: they keep track of where they are in their enumeration. 
+### *Fine-grained iteration with enumerators* ###
+Enumerators maintain state: they keep track of where they are in their enumeration.
 
 Several methods make direct use of this information. Consider this example:
 
+```ruby
+names = %w{ David Yukihiro}
+e = names.to_enum
+puts e.next
+puts e.next
+e.rewind
+puts e.next
+```
+The output from these commands is:
 
+```irb
+David
+=> nil
+Yukihiro
+=> nil
+David
+=> nil
+```
+The enumerator allows you to move in slow motion, so to speak, through the enumeration of the array, stopping and restarting at will. In this respect, it's like one of those editing tables where a film editor cranks the film manually. Unlike a projector, which you switch one and let it do its thing, the editing table allows you to influence the progress of the film as it proceeds.
+
+This point also sheds light on the difference between an enumerator and an iterator. An enumerator is an object, and can therefore maintain state. It remembers where it is in the enumeration. An iterator is a method. When you call it, the call is atomic; the entire call happens, and then it's over. Thanks to code blocks, there is of course a certain useful complexity to Ruby method calls: the method can call back to the block, and decisions can be made that affect the outcome. But it's still a method. An iterator doesn't have state. An enumerator is an enumerable object.
+
+Interestingly, you can use an enumerator on a non-enumerable object. All you need is for your object to have a method that yields something so the enumerator can adopt that method as the basis for its own `each` method. As a result, the non-enumerable object becomes, in effect, enumerable.
+
+### *Adding enumerability with an enumerator* ###
+An enumerator can add enumerability to objects that don't have it. It's a matter of wiring: if you hook up an enumerator's `each` method to any iterator, then you can use the enumerator to perform enumerable operations on the object that owns the iterator, whether that object considers itself enumerable or not.
+
+When you hook up an enumerator to the `String#bytes` method, you're effectively adding enumerability to an object (a string) that doesn't have it, in the sense that `String` doesn't mix in `Enumerable`. You can achieve much the same effect with classes of your own. Consider the following class, which doesn't mix in `Enumerable` but does have one iterator method:
+
+```ruby
+module Music
+  class Scale
+    NOTES = %w{ c c# d d# e e# f f# g a a# b}
+    def play
+      NOTES.each {|note| yield note }
+    end
+  end
+end
+```
+
+Given this class, it's possible to iterate through the notes of a scale:
+
+```ruby
+scale = Music::Scale.new
+scale.play {|note| puts "Next note is #{note}" }
+```
+
+with the result:
+
+```irb
+Next note is c
+Next note is c#
+Next note is d
+Next note is d#
+Next note is e
+```
+and so forth. But the scale isn't technically an enumerable. The standard methods from `Enumerable` won't work because the class `Music::Scale` doesn't mix in `Enumerable` and doesn't define `each`:
+
+`scale.map {|note| note.upcase }`
+
+The result is:
+
+`music.rb:27:in `<main>': undefined method `map' for #<Music::Scale:0x0000000169b698> (NoMethodError)
+Did you mean?  tap`
+
+Now, in practice, if you wanted scales to be fully enumerable, you'd almost certainly mix in `Enumerable` and change the name of `play` to `each`. But you can also make a scale enumerable by hooking it up to an enumerator.
+
+Here's how to create an enumerator for the scale object, tied in to the `play` method:
+
+`enum = scale.enum_for(:play)`  <--- Or `scale.enum(:play)`
+
+The enumerator, `enum`, has an `each` method; that method performs the same iteration that the scale's `play` method performs. Furthermore, unlike the scale, the enumerator *is* an enumerable object; it has `map`, `select`, `inject`, and all the other standard methods from `Enumerable`. If you use the enumerator, you get enumerable operations on a fundamentally non-enumerable object:
+
+```ruby
+p enum.map {|note| note.upcase }
+p enum.select {|note| note.include?('f') }
+```
+The first line's output is:
+
+```irb
+["C", "C#", "D", "D#", "E", "E#", "F", "F#", "G", "A", "A#", "B"]
+```
+
+and the second line's output is:
+
+```irb
+["f", "f#"]
+```
+
+An enumerator, then, attaches itself to a particular method on a particular object and uses that method as the foundation method-the `each`-for the entire enumerable toolset.
+
+Attaching an enumerator to a non-enumerable object like the scale object is a good exercise because it illustrates the difference between the original object and the enumerator so sharply. But in the vast majority of cases, the objects for which enumerators are created are themselves enumerables: arrays, hashes, and so forth. Most of the examples in what follows will involve enumerable objects (the exception being strings). In addition to taking us into the realm of the most common practices, this will allow us to look more broadly at the possible advantages of using enumerators.
+
+Throughout, keep in mind the lesson of the `Music::Scale` object and its enumerator: an enumerator is an enumerable object whose `each` method operates as a kind of siphon, pulling values from an iterator defined on a different object.
+
+We'll conclude our examination of enumerators with a look at techniques that involve chaining enumerators and method calls.
 
 
