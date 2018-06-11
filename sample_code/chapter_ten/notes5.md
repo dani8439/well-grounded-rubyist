@@ -29,3 +29,106 @@ Let's put it another way. Judging by its appearance, you might expect that if yo
 In fact, `string.each_byte` returns an enumerator. The key is that an enumerator *is* a collection. It's an enumerable object as much as an array or a hash is. It just may take a little getting used to
 
 -----
+`Enumerable` methods that take arguments and return enumerators, like `each_slice`, are candidates for this kind of compression or optimization. Even if an enumerable method doesn't return an enumerator, you can create one for it, incorporating the argument so that it's remembered by the enumerator. You've seen an example of this technique already, approached from a slightly different angle:
+
+`e = names.enum_for(:inject, "Names: ")`
+
+The enumerator remembers not only that it's attached to the `inject` method of `names` but also that it represents a call to `inject` with an argument of `"Names"`.
+
+In addition to the general practice of including enumerators in method chains, the specialized method `with_index`-one of the few that the `Enumerator` class implements separately from those in `Enumerable`-adds considerable value to enumerations.
+
+### *Indexing enumerable with with_index* ###
+In the days when Rubyists used the `each_with_index` method, a number of us lobbied for a corresponding `map_with_index` method. We never got it-but we ended up with something even better. Enumerators have a `with_index` method that adds numerical indexing, as a second block parameter, to any enumeration. Here's how you would use `with_index` to do the letter/number mapping:
+
+`('a'..'z').map.with_index {|letter,i| [letter,i] }` <--Output [["a",0], ["b",1], etc.]
+
+Note that it's `map.with_index` (two methods, chained), not `map_with_index` (a composite method name.) And `with_index` can be chained to any enumerator. Remember the musical scale from earlier? Let's say we enumerator-ize the `play` method:
+
+```ruby
+def play
+  NOTES.to_enum
+end
+```
+The original example of walking through the notes will now work without the creation of an intermediate enumerator:
+
+`scale.play {|note| puts "Next note: #{note}" }`
+
+And now this will work too:
+
+`scale.play.with_index(1) {|note,i| puts "Note #{i}: #{note}" }` <-- Provide 1 as the first value for the index
+
+The output will be an numbered list of notes:
+
+```irb
+Note 1: c
+Note 2: c#
+Note 3: d
+Note 4: d#
+Note 5: e
+Note 6: e#
+Note 7: f
+Note 8: f#
+Note 9: g
+Note 10: a
+Note 11: a#
+Note 12: b
+```
+
+Thus the `with_index` method generalizes what would otherwise be a restricted functionality.
+
+We'll look at one more enumerator chaining example, which nicely pulls together several enumerator and iteration techniques and also introduces a couple of new methods you may find handy.
+
+### *Exclusive-or operations on strings with enumerators* ###
+Running an exclusive-or (or *XOR*) operation on a string means XOR-ing each of its bytes with some value. XOR-ing a byte is a bitwise operationL each byte is represented by an integer, and the result of the XOR operation is an exclusive-or-ing of that integer with another number.
+
+If your string is `"a"`, for example, it contains one byte with the value 97. The binary representation of 97 is 1100001. Let's say we want to XOR it with the character `#`, which has an ASCII value of 35, or 100011 in binary. Looking at it purely numerically, and not in terms of strings, we're doing 97^35, or 1100001^100011 in binary terms.
+
+An XOR produces a result that, in binary representation (that is, in terms of its bits) contains a 1 where either of the source numbers, *but not both*, contained a 1, and a 0 where both of the source numbers contained the same value, whether 0 or 1. In the case of our two numbers, the XOR operation produces 1000010 or 66.
+
+A distinguishing property of bitwise XOR operations is that if you perform the same operation twice, you get back the original value. In other words, (a^b)^b == a. Thus if we xor 66 with 35, we get 97. This behavior makes xor-ing strings a useful obfuscation technique, especially if you xor a long string byte for byte against a second string. Say your string is `"This is a string."` If you xor it character for character against, say, `#%.3u` repeating the xor string as necessary to reach the length of the original string, you get the rather daunting results `wMG@UJV\x0ERUPQ\\Z\eD\v`. if you xor that monstrosity against `#%.3u` again, you get back `"This is a string."`
+
+Now let's write a method that will do this. We'll add it to the `String` class-not necessarily the best way to go about changing the functionality of core Ruby objects (as you'll see in chapter 13), but expedient for purposes of illustration. The following listing shows the instance method `String#^`.
+
+```ruby
+class String
+  def ^(key)                                                #1.
+    kenum = key.each_byte.cycle                             #2.
+    each_byte.map {|byte| byte ^ kenum.next }.pack("C*")    #3
+  end
+end
+```
+The method takes one argument: the string that will be used as the basis of the xor operation (the *key*) (#1). We have to deal with cases where the key is shorter than the original string by looping through the key as many times as necessary to provide each enough characters for the whole operation. That's where enumerators come in.
+
+The variable `keynum` is bound to an enumerator based on chaining two methods off the key string: `each_byte`, which itself returns an enumerator traversing the string byte by byte, and `cycle`, which iterates over and over again through a collection, resuming at the beginning when it reaches the end (#2). The enumerator `kenum` embodies both of these operations: each iteration through it provides another bite from the string; and when it's finished providing all the bytes, it goes back to the beginning of the string and iterates over the bytes again. That's exactly the behavior we want, to make sure we've got enough bytes to match whatever string we're xor-ing, even if it's a string that's longer than the key. In effect, we've made the key string infinitely long.
+
+Now comes the actual xor operation (#3). Here, we use `each_byte` to iterate over the bytes of the string that's being xor'ed. The enumerator returned by `each_byte` gets chained to `map`. Inside the `map` block, each byte of the original string is xor'ed with the "next" byte from the enumerator that's cycling infinitely through the bytes of the key string. The whole `map` operation, then, produces an array of xor'ed bytes. All that remains is to put those bytes back into a result string.
+
+Enter the `pack` method. This method turns an array into a string, interpreting each element of the array in a manner specified by the argument. In this case, the argument is `"C*"`, which means *treat each element of the array as an unsigned integer representing a single character* (that's the "C"), *and process all of them* (that's the `"*"`). Packing the array into a string of characters is thus the equivalent of transforming each array element into a character and then doing a join on the whole array.
+
+Now we can xor strings. Here's what the process looks like:
+
+```irb
+>> str = "Nice little string."
+=> "Nice little string."
+>> key = "secret!"
+=> "secret!"
+>> x = str ^ key
+=> "=\f\x00\x17E\x18H\a\x11\x0F\x17E\aU\x01\f\r\x15K"
+>> orig = x ^ key
+=> "Nice little string."
+```
+As you can see, XOR-ing twice with the same key gets you back to the original string. And it's all thanks to a two-line method that uses three enumerators!
+
+**Forcing an encoding**
+The `String#^` as implemented in the previous snipped is vulnerable to encoding issues: if you xor, say, a UTF-8 string against an ASCII string twice, you'll get back a string encoded in ASCII-8BIT. To guard against this, ad a call to `force_encoding`:
+
+`each_byte.map {|byte| byte ^ keynum.next }.pack("C*").force_encoding(self.encoding)`
+
+This will ensure that the byte sequence generated by the mapping gets encoded in the original string's encoding.
+
+----
+
+Enumerators add a completely new tool to the already rich Ruby toolkit for collection management and iteration. They're conceptually and technically different from iterators, but if you try them out on their own terms, you're sure to find uses for them alongside the other collection-related techniques you've seen.
+
+We'll conclude our look at enumerators with a variant called a lazy enumerator. 
+
