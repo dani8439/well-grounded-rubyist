@@ -132,3 +132,88 @@ Enumerators add a completely new tool to the already rich Ruby toolkit for colle
 
 We'll conclude our look at enumerators with a variant called a lazy enumerator. 
 
+## *Lady enumerators* ##
+Lazy enumerators make it easy to enumerate selectively over infinitely large collections. To illustrate what this means, let's start with a case where an operation tries to enumerate over an infinitely large collection and gets stuck. What if you want to know the first 10 multiples of 3? To use an infinite collection we'll create a range that goes from 1 to the special value `Float::INFINITY`. Using such a range, a first approach to the task at hand might be
+
+`(1..Float::INFINITY).select {|n| n % 3 == 0 }.first(10)`
+
+But this line of code runs forever. The `select` operation never finishes, so the chained-on `first` command never gets executed.
+
+You can get a finite result form an infinite collection by using a lazy enumerator. Calling the `lazy` method directly on a range object will produce a lazy enumerator over that range:
+
+```irb
+>> (1..Float::INFINITY).lazy
+=> #<Enumerator::Lazy: 1..Infinity>
+```
+
+You can then wire this lazy enumerator up to `select`, creating a cascade of lazy enumerators:
+
+```irb
+>> (1..Float::INFINITY).lazy.select {|n| n % 3 == 0 }
+=> #<Enumerator::Lazy: #<Enumerator::Lazy: 1..Infinity>:select>
+```
+
+Since we're now lazily enumerating, it's possible to grab result sets from our operations without waiting for the completion of infinite tasks. Specifically, we can now ask for the first 10 results from the select test on the infinite list, and the infinite list is happy to enumerate only as much as is necessary to produce those 10 results:
+
+```irb
+>> (1..Float::INFINITY).lazy.select {|n| n % 3 == 0 }.first(10)
+=> [3, 6, 9, 12, 15, 18, 21, 24, 27, 30]
+```
+
+As a variation on the same theme, you can create the lazy `select` enumerator and then use `take` on it. This allows you to choose how many multiples of 3 you want to see without hard-coding the number. Note that you have to call `force` on the result of `take`; otherwise you'll end up with yet another lazy enumerator, rather than an actual result set:
+
+```irb
+>> my_enum = (1..Float::INFINITY).lazy.select {|n| n % 3 == 0 }
+=> #<Enumerator::Lazy: #<Enumerator::Lazy: 1..Infinity>:select>
+>> my_enum.take(5).force
+=> [3, 6, 9, 12, 15]
+>> my_enum.take(10).force
+=> [3, 6, 9, 12, 15, 18, 21, 24, 27, 30]
+```
+
+Lazy enumerators are a somewhat specialized tool, and you probably won't need them too often. But they're very handy if you have an infinite collection and want to deal only with a finite result set from operations on that collection.
+
+### *FizzBuzz with a lazy enumerator* ###
+The `FizzBuzz` problem, in its classic form, involves printing out the integers from 1 to 100... escept you apply the following rules:
+
+  • If the number is divisible by 15, print `"FizzBuzz"`
+
+  • Else if the number is divisible by 3, print `"Fizz"`.
+
+  • Else if the number is divisible by 5, print `"Buzz"`.
+
+  • Else print the number
+
+You can use a lazy enumerator to write a version of `FizzBuzz` that can handle any range of numbers. HEre's what it might look like:
+
+```ruby
+def fb_calc(i)
+  case 0
+  when i % 15
+    "FizzBuzz"
+  when i % 3
+    "Fizz"
+  when i % 5
+    "Buzz"
+  else
+    i.to_s
+  end
+end
+
+def fb(n)
+  (1..Float::INFINITY).lazy.map {|i| fb_calc(i) }.first(n)
+end
+```
+Now you can examine, say, the `FizzBuzz` output for the first 15 positive integers like this:
+
+`p fb(15)`
+
+The output will be:
+
+```irb
+["1", "2", "Fizz", "4", "Buzz", "Fizz", "7", "8", "Fizz", "Buzz", "11", "Fizz", "13", "14", "FizzBuzz"]
+```
+
+Without creating a lazy enumerator on the range, the map operation would go on forever. Instead, the lazy enumeration ensures that the whole process will stop once we've got what we want.
+
+
