@@ -36,3 +36,12 @@ p enum.select {|note| note.include?('f') }
 
 # ["C", "C#", "D", "D#", "E", "E#", "F", "F#", "G", "A", "A#", "B"]
 # ["f", "f#"]
+
+
+# further section of notes: redefine play:
+
+#    def play
+#      NOTES.to_enum
+#    end
+
+# scale.play.with_index(1) {|note,i| puts "Note #{i}: #{note}" }
