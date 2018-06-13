@@ -70,4 +70,116 @@ puts "Match!" if "The alphabet starts with abc." =~ /abc/   #<-- Match!
 ```
 As you might guess, this pattern-matching "operator" is an instance method of both the `String` and `Regexp` classes. It's one of the many Ruby methods that provide the syntactic sugar of an infix-operator usage style.
 
-The `match` method and the `=~` operator are equally useful when you're after a simple yes/no answer to the question of whether there's a match between a string and a pattern. If there's no match, you get back `nil`. That's handy for conditionals; all four of the previous examples test the results of their match operations with an `if` test. Where `match` and `=~` differ from each other chiefly is in 
+The `match` method and the `=~` operator are equally useful when you're after a simple yes/no answer to the question of whether there's a match between a string and a pattern. If there's no match, you get back `nil`. That's handy for conditionals; all four of the previous examples test the results of their match operations with an `if` test. Where `match` and `=~` differ from each other chiefly is in what they return when there *is* a match: `=~` returns the numerical index of the character in the string where the match started, whereas `match` returns an instance of the class `MatchData`:
+
+```irb
+>> "The alphabet starts with abc" =~ /abc/
+=> 25
+>> /abc/.match("The alphabet starts with abc.")
+=> #<MatchData "abc">
+```
+
+The first example finds a match in position 25 of the string. In the second example, the creation of a `MatchData` object means that a match was found.
+
+We'll examine `MatchData` objects a little further on. For the moment, we'll be concerned mainly with getting a yes/no answer to an attempted match, so any of the techniques shown thus far will work. For the sake of consistency, and because we'll be more concerned with `MatchData` objects than numerical indexes of substrings, most of the examples in this chapter will stick to the `Regexp#match` method.
+
+## *Building a pattern in a regular expression* ##
+When you write a regexp, you put the definition of your pattern between the forward slashes. Remember that what you're putting there isn't a string but a set of predictions and constraints that you want to look for in a string.
+
+The possible components of a regexp include the following:
+
+  • *Literal characters*, meaning "match this character"
+
+  • The *dot wildcard character (.)*, meaning "match any character" (except `\n`, the new-line character)
+
+  • *Character classes*, meaning "match one of these characters"
+
+### *Literal characters in patterns* ###
+Any literal character you put in a regexp matches *itself* in the string. Thus the regexp:
+
+`/a/`
+
+matches any string containing the letter a.
+
+Some characters have special meanings to the regexp parser (as you'll see in detail shortly). When you want to match one of these special characters as itself, you have to escape it with a backslash (`\`). For example, to match the character `?` (question mark), you have to write this:
+
+`/\?/`
+
+The backslash means "don't treat the next character as special, treat it as itself."
+
+The special characters include those listed between the parentheses here: (`^$?./\[]{}()+*`). Among them, as you can see, is the dot, which is a special character in regular expressions.
+
+### *The dot wildcard character (.)* ###
+Sometimes you'll want to match *any character* at some point in your pattern. You do this with the special dot wildcard character (.). A dot matches any character with the exception of a newline. (There's a way to make it match newlines too, which you'll see a little later.)
+
+The pattern in this regexp matches both "dejected" and "rejected":
+
+`/.ejected/`
+
+It also matches "%ejected" and "8ejected"
+
+`puts "Match!" if /.ejected/.match("%ejected")`
+
+The wildcard dot is handy, but sometimes it gives you more matches than you want. You can impose constraints on matches while still allowing for multiple possible strings, using character classes.
+
+### *Character classes* ###
+A *character class* is an explicit list of characters placed inside the regexp in square brackets:
+
+`/[dr]ejected/`
+
+This means "match either *d* or *r* followed by *ejected.*" This new pattern matches either "dejected" or "rejected" but not "&ejected." A character class is a kind of partial or constrained wildcard: it allows for multiple possible characters, but only a limited number of them.
+
+Inside a chracter class, you can also insert a *range* of characters. A common case is this, for lowercase letters:
+
+`/[a-z]/`
+
+To match a hexadecimal digit, you might use several ranges inside a character class:
+
+`/[A-Fa-f0-9]/`
+
+This matches any character *a* through *f* (upper- or lowercase) or any digit.
+
+**Character classes are longer than what they match**
+Even a short character class like `[a]` takes up more than one space in a regexp. But remember, each character class matches *one character* in the string. When you look at a character class like `/[dr]/`, it may look like it's going to match the substring `dr`. But it isn't: it's going to match either `d` or `r`.
+
+----
+
+Sometimes you need to match any character *except* those on a special list. You may, for example, be looking for the first character in a string that is *not* a valid hexadecimal digit.
+
+You perform this kind of negative search by negating a character class. To do so, you put a caret (^) at the beginning of the class. For example, here's a character class that matches any character except a valid hexadecimal digit:
+
+`/[^A-Fa-f0-9]/`
+
+And here's how you might find the index of the first occurrence of a non-hex character in a string:
+
+```irb
+>> string = "ABC3934 is a hex number."
+=> "ABC3934 is a hex number."
+>> string =~ /[^A-Fa-f0-9]/
+=> 7
+```
+
+A character class, positive or negative, can contain any characters. Some character classes are so common that they have special abbreviations.
+
+#### SPECIAL ESCAPE SEQUENCES FOR COMMON CHARACTER CLASSES ####
+To match any digit, you can do this:
+
+`/[0-9]/`
+
+You can also accomplish the same thing more concisely with the special escape sequence `\d`:
+
+`/\d/`
+
+Notice that there are no square brackets here: it's just `\d`. Two other useful escape sequences for predefined character classes are these:
+
+  • `\w` matches any digit, alphabetical character, or underscore (`_`).
+
+  • `\s` matches any whitespace character (space, tab, newline).
+
+Each of these predefined character classes also has a negated form. You can match any character that isn't a digit by doing this:
+
+`/\D/`
+
+Similarly, `\W` matches any character other than an alphanumeric character or underscore, and `\S` matches any non-whitespace character.
+
+A successful call to `match` returns a `MatchData` object. Let's look at `MatchData` objects and their capabilities up close. 
