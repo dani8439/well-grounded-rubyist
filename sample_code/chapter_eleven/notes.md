@@ -66,6 +66,8 @@ In addition to the `match` method, Ruby also features a pattern-matching operato
 
 ```ruby
 puts "Match!" if /abc/ =~ "The alphabet starts with abc."   #<-- Match!
-puts "Match!" if "The alphabet starts wtih abc." =~ /abc/   #<-- Match!
+puts "Match!" if "The alphabet starts with abc." =~ /abc/   #<-- Match!
 ```
+As you might guess, this pattern-matching "operator" is an instance method of both the `String` and `Regexp` classes. It's one of the many Ruby methods that provide the syntactic sugar of an infix-operator usage style.
 
+The `match` method and the `=~` operator are equally useful when you're after a simple yes/no answer to the question of whether there's a match between a string and a pattern. If there's no match, you get back `nil`. That's handy for conditionals; all four of the previous examples test the results of their match operations with an `if` test. Where `match` and `=~` differ from each other chiefly is in 
