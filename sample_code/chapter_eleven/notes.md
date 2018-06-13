@@ -183,3 +183,78 @@ Each of these predefined character classes also has a negated form. You can matc
 Similarly, `\W` matches any character other than an alphanumeric character or underscore, and `\S` matches any non-whitespace character.
 
 A successful call to `match` returns a `MatchData` object. Let's look at `MatchData` objects and their capabilities up close. 
+
+## *Matching, substring captures, and MatchData* ##
+So far, we've looked at basic match operations:
+
+```ruby
+regex.match(string)
+string.match(regex)
+```
+These are essentially true/false tests: either there's a match or there isn't. Now we'll examine what happens on successful and unsuccessful matches and what a match operation can do for you beyond the yes/no answer.
+
+### *Capturing submatches with parentheses* ###
+One of the most important techniques of regexp construction is the use of parentheses to specify *captures.*
+
+The idea is this. When you test for a match between a string-say, a line from a file-and a pattern, it's usually because you want to do something with the string or, more commonly, with part of the string. The capture notation allows you to isolate and save substrings of the string that match particular subpatterns.
+
+For example, ket's say we have a string containing information about a person:
+
+`Peel,Emma,Mrs.,talented amateur`
+
+From this string, we need to harvest the person's last name and title. We know the fields are comma separated, and we know what order they come in: last name, first name, title, occupation.
+
+To construct a pattern that matches such a string, we might think in English alongside the following lines:
+
+*First* `some alphabetical characters,`
+
+*then* `a comma,`
+
+*then* `some alphabetical characters,`
+
+*then* `a comma,`
+
+*then* `either 'Mr.' or 'Mrs.'`
+
+We're keeping it simple: no hyphenated names, no doctors or professors, no leaving off the final period on Mr. and Mrs. (which would be done in British usage). The regexp, then, might look like this:
+
+`/[A-Za-z]+,[A-Za-z]+,Mrs?\./`
+
+The question mark after the *s* means *match zero or one s.* Expressing it that way lets us match either "Mr." and "Mrs." concisely. The pattern matches the string, as irb attests:
+
+```irb
+>> /[A-Za-z]+,[A-Za-z]+,Mrs?\./.match("Peel,Emma,Mrs.,talented amateur")
+=> #<MatchData "Peel,Emma,Mrs.">
+```
+We got a `MatchData` object rather than `nil`; there was a match.
+
+But now what? How do we isolate the substrings we're interested in (`"Peel"` and `"Mrs."`)?
+
+This is where parenthetical groupings come in. We want two such groupings: one around the subpattern that matches the last name, and one around the subpattern that matches the title:
+
+`/([A-Za-z]+),([A-Za-z]+),(Mrs?\.)/`
+
+Now, when we perform the match
+
+`/([A-Za-z]+),([A-Za-z]+),(Mrs?\.)/.match("Peel,Emma,Mrs.,talented amateur")`
+
+two things happen:
+
+• We get a `MatchData` object that gives us access to the submatches (discussed in a moment)
+
+• Ruby automatically populates a series of variables for us, which also give us access to those submatches.
+
+The variables that Ruby populates are global variables, and their names are based on numbers: `$1`, `$2`, and so forth. `$1` contains the substring matched by the subpattern inside the *first* set of parentheses from the left in the regexp. Examining `$1` after the previous match (for example, with `puts $1`) displays `Peel`. `$2` contains the substring matched by the *second* subpattern; and so forth. In general, the rule is this: after a successful match operation, the variable *$n* (where *n* is a number) contains the substring matched by the subpattern inside the *n* the set of parentheses from the left in the regexp.
+
+**NOTE** If you've used Perl, you may have seen the variable `$0`, which represents not a specific captured subpattern but the entire substring that has been successfully matched. Ruby uses `$0` for something else: it contains the name of the Ruby program file for which the current program or script was initially started up. Instead of `$0` for pattern matches, Ruby provides a method; you call `string` on the `MatchData` object returned by the match. You'll see an example of the `string` method in next section.
+
+---
+
+We can combine these techniques with string interpolation to generate a salutation for a letter, based on performing the match and grabbing the `$1` and `$2` variables:
+
+```ruby
+line_from_file = "Peel,Emma,Mrs.,talented amateur"
+/([A-Za-z]+),[A-Za-z]+,(Mrs?\.)/.match(line_from_file)
+puts "Dear #{$2} #{$1},"   #Output: Dear Mrs. Peel,
+```
+The *$n*-style variables are handy for grabbing submatches. But you can accomplish the same thing in a more structured, programmatic way by querying the `MatchData` object returned by your match operation.
