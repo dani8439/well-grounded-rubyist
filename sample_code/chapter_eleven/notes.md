@@ -320,3 +320,52 @@ m[2]
 The first line will show the first capture (the first set of parentheses from the left), the second line will show the second capture, and so on.
 
 As the previous example shows - and index of 0 gives you the entire string that was matched. From 1 onward, an index of *n* gives you the *n*-th capture, based on counting opening parentheses from the left. (And *n*, where *n* > 0, always corresponds to the number in the global $n variable.)
+
+The other technique for getting the parenthetical captures from a `MatchData` object is the `captures` method, which returns all the captured substrings in a single array. Because this is a regular array, the first item in it-essentially, the same as the global variable `$1`-is item 0, not item 1. In other words, the following equivalencies apply:
+
+```ruby
+m[1] == m.captures[0]
+m[2] == m.captures[1]
+```
+and so forth.
+
+A word about this recurrent "counting parentheses from the left" thing. Some regular expressions can be confusing as to their capture parentheses if you don't know the rule. Take this one, for example:
+
+`/((a)((b)c))/.match("abc")`
+
+What will be in the various captures? Well, just count the opening parentheses from the left. For each opening parenthesis, find its counterpart on the right. Everything inside that pair will be capture number *n*, for whatever *n* you've gotten up to.
+
+That means the first capture will be `"abc"`, because that's the part of the string that matches the pattern between the outermost parentheses. The next parentheses surround `"a"`; that will be the second capture. Next comes `"bc"`, followed by `"b"`. And that's the last of the opening parentheses.
+
+The string representation of the `MatchData` object you get from this match will obligingly show you the captures:
+
+```irb
+>> /((a)((b)c))/.match("abc")
+=> #<MatchData "abc" 1:"abc" 2:"a" 3:"bc" 4:"b">
+```
+Sure enough, they correspond rigorously to what was matched between the pairs of parentheses counted off from the left.
+
+#### NAMED CAPTURES ####
+Capturing subexpressions indexed by number is certainly handy, but there's another, sometimes more reader-friendly way, that you can label subexpressions: named captures.
+
+Here's an example. This regular expression will match a name of the form "David A. Black" or, equally, "David Black" (with no middle initial):
+
+`>> re = /(?<first>\w+)\s+((?<middle>\w\.)\s+)?(?<last>\w+)/`
+
+What are the words `first`, `middle`, and `last` doing there? They're providing named captures: parenthetical captures that you can recover from the `MatchData` object using words instead of numbers.
+
+If you perform a match using this regular expression, you'll see evidence of the named captures in the screen output representing the `MatchData` object:
+
+```irb
+>> m = re.match("David A. Black")
+=> #<MatchData "David A. Black" first:"David" middle:"A." last:"Black">
+```
+Now you can query the object for its named captures:
+
+```irb
+>> m[:first]
+=> "David"
+```
+Named captures can bulk up your regular expressions, but with the payback that the semantics of retrieving captures from the match become word-based rather than number-based, and therefore potentially clearer and more self-documenting. You also don't have to count pairs of parentheses to derive a reference to your captured substrings.
+
+`MatchData` objects provide information beyond the parenthetical captures, information you can take and use if you need it.
