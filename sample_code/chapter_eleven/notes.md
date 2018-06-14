@@ -258,3 +258,65 @@ line_from_file = "Peel,Emma,Mrs.,talented amateur"
 puts "Dear #{$2} #{$1},"   #Output: Dear Mrs. Peel,
 ```
 The *$n*-style variables are handy for grabbing submatches. But you can accomplish the same thing in a more structured, programmatic way by querying the `MatchData` object returned by your match operation.
+
+### *Match success and failure* ###
+Every match operation either succeeds or fails. Let's start with the simpler case: failure. When you try to match a string to a pattern and the string doesn't match, the result is always `nil`:
+
+```irb
+>> /a/.match("b")
+=> nil
+```
+
+Unlike `nil`, the `MatchData` object returned by a successful match has a Boolean value of true, which makes it handy for simple match/no-match tests. Beyond this, it also stores information about the match, which you can pry out with the appropriate methods: where the match began (at what character in the string), how much of the string it covered, what was captured in the parenthetical groups, and so forth.
+
+To use the `MatchData` object, you must first save it. Consider an example where you want to pluck a phone number from a string and save the various parts of it (area code, exchange, number) in groupings. The following listing shows how you might do this. It's also written as a clinic on how to use some of `MatchData`'s more common methods.
+
+```ruby
+string = "My phone number is (123) 555-1234."
+phone_re = /\((\d{3})\)\s+(\d{3})-(\d{4})/
+m = phone_re.match(string)
+unless m
+  puts "There was no match-sorry"
+  exit
+end                 #<---- Terminates program
+print "The whole string we started with: "
+puts m.string                                 #<----1.
+print "The entire part of the string that matched: "
+puts m[0]                                         #<----2.
+puts "The three captures: "
+3.times do |index|                                    #<----3.
+  puts "Capture ##{index + 1}: #{m.captures[index]}"
+end
+puts "Here's another way to get at the first capture: "
+print "Capture #1: "
+puts m[1]                                                 #<----4.
+```
+
+In this code, we've used the `string` method of `MatchData` (#1), which returns the entire string on which the match operation was performed. To get the part of the string that matched our pattern, we address the `MatchData` object with square brackets, with an index of 0 (#2). We also use the nifty `times` method (#3) to iterate exactly three times through the code block and print out the submatches (the parenthetical captures) in succession. Inside that code block, a method called `captures` fishes out the substrings that matched the parenthesized parts of the pattern. Finally, we take another look at the first capture, this time through a different technique (#4): indexing the `MatchData` object directly with square brackets and positive integers, each integer corresponding to a capture.
+
+Here's the output of the listing:
+
+```irb
+The whole string we started with: My phone number is (123) 555-1234.
+The entire part of the string that matched: (123) 555-1234
+The three captures:
+Capture #1: 123
+Capture #2: 555
+Capture #3: 1234
+Here's another way to get at the first capture:
+Capture #1: 123
+```
+
+This gives you a taste of the kinds of match data you can extract from a `MatchData` object. You can see that there are two ways of retrieving captures. Let's zoom in on those techniques.
+
+### *Two ways of getting the captures* ##
+One way to get the parenthetical captures from a `MatchData` object is by directly indexing the object, array-style:
+
+```ruby
+m[1]
+m[2]
+#etc.
+```
+The first line will show the first capture (the first set of parentheses from the left), the second line will show the second capture, and so on.
+
+As the previous example shows - and index of 0 gives you the entire string that was matched. From 1 onward, an index of *n* gives you the *n*-th capture, based on counting opening parentheses from the left. (And *n*, where *n* > 0, always corresponds to the number in the global $n variable.)
