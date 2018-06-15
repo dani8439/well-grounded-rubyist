@@ -369,3 +369,36 @@ Now you can query the object for its named captures:
 Named captures can bulk up your regular expressions, but with the payback that the semantics of retrieving captures from the match become word-based rather than number-based, and therefore potentially clearer and more self-documenting. You also don't have to count pairs of parentheses to derive a reference to your captured substrings.
 
 `MatchData` objects provide information beyond the parenthetical captures, information you can take and use if you need it.
+
+### *Other MatchData Information* ###
+The code in the following listing, which is designed to be grafted onto earlier phone number example, gives some quick examples of several further `MatchData` methods.
+
+```ruby
+print "The part of the string before the part that matched was: "
+puts m.pre_match
+print "The part of the string after the part that matched was: "
+puts m.post_match
+print "The second capture began at character "
+puts m.begin(2)
+print "The third capture ended at character "
+puts m.end(3)
+```
+
+The output from this supplemental code is as follows:
+
+```irb
+The part of the string before the part that matched was: My phone number is
+The part of the string after the part that matched was: .
+The second capture began at character 25
+The third capture ended at character 33
+```
+
+The `pre_match` and `post_match` methods you see in this listing depend on the fact that when you successfully match a string, the string can then be thought of as being made up of three parts: the part before the part that matched the pattern; the part that matched the pattern; and the part after the part that matched the pattern. Any or all of these can be an empty string. In this listing, they're not: the `pre_match` and `post_match` strings both contain characters (albeit only one character in the case of `post_match`).
+
+You can also see the `begin` and `end` methods in this listing. These methods tell you where the various parenthetical captures, if any, begin and end. To get the information for capture *n*, you provide *n* as the argument to `begin` and/or `end`.
+
+The `MatchData` object is a kind of clearinghouse for information about what happened when the pattern met the string. With that knowledge in place, let's continue looking at techniques you can use to build and use regular expressions. We'll start with a fistful of important regexp components: quantifiers, anchors, and modifiers. Learning about these components will help you both with the writing of your own regular expressions and with your regexp literacy. If matching `/abc/` makes sense to you now, matching `/^x?[yz]{2}.*\z/i/` will make sense to you shortly.
+
+**The global `MatchData` object `$`**
+Whenever you perform a successful match operation, using either `match` or `=~`, Ruby sets the global variable `$~` to a `MatchData` object representing the match. On an unsuccessful match, `$~` gets set to `nil`. Thus you can always get at a `MatchData` object, for analytical purposes, even if you use `=~`.
+
