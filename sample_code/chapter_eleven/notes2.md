@@ -225,4 +225,70 @@ Let's say you want to match a sequence of numbers only if it ends with a period.
 
 One way to do this is with a *lookahead assertion*-or, to be complete, a zero-width, positive lookahead assertion. Here, followed by further explanation, is how you do it:
 
+```ruby
+str = "123 456. 789"
+m = /\d+(?=\.)/.match(str)
+```
+At this point, `m[0]` (representing the entire stretch of the string that the pattern matched) contains `456`-the one sequence of numbers that's followed by a period.
+
+Here's a little more commentary on some of the terminology:
+
+• *Zero-width* means it doesn't consume any characters in the string. The presence of the period is noted, but you can still match the period if your pattern continues.
+
+• *Positive* means you want to stipulate that the period be present. There are also *negative* lookaheads; they use (`?!....`) rather than (`?=....`).
+
+• *Lookahead assertion* means you want to know that you're specifying what *would* be next, without matching it.
+
+When you use a lookahead assertion, the parentheses in which you place the lookahead part of the match don't count; `$1` won't be set by the match operation in the example. And the dot after the 6 won't be consumed by the match. (Keep this last point in mind if you're ever puzzled by lookahead behavior; the puzzlement often comes from forgetting that looking ahead isn't the same as moving ahead.)
+
+#### LOOKBEHIND ASSERTIONS ####
+The lookahead assertions have lookbehind equivalents. Here's a regexp that matches the string `BLACK` only when it's preceded by "David":
+
+`re = /(?<=David )BLACK/`
+
+Conversely, here's one that matches it only when it isn't preceded by "David":
+
+`re = /(?<!David )BLACK/`
+
+Once again, keep in mind that these are zero-width assertions. They represent constraints on the string (*"David" has to be before it, or this "BLACK" doesn't count as a match)*, but they don't match or consume any characters.
+
+**Non-capturing parentheses**
+If you want to match something-not just assert that it's next, but actually match it-using parentheses, but you don't want it to count as one of the numbered parenthetical captures resulting from the match, use the (`?:...`) construct. Anything inside a (`?:`) grouping will be matched based on the grouping, but not saved to a capture. Note that the `MatchData` object resulting from the following match only has two captures; the `def` grouping doesn't count because of the `?:` notation:
+
+```irb
+>> str = "abc def ghi"
+=> "abc def ghi"
+>> m = /(abc) (?:def) (ghi)/.match(str)
+=> #<MatchData "abc def ghi" 1:"abc" 2:"ghi">
+```
+Unlike a zero-width assertion, a (`?:`) group does consume characters. It just doesn't save them as a capture.
+
+----
+
+There's also such a thing as a *conditional match*
+
+#### CONDITIONAL MATCHES ####
+While it probably won't be among your everyday regular expression practices, it's interesting to note the existence of conditional matches in Ruby 2.0's regular expression engine (project name Onigmo). A conditional match tests for a particular capture (by number or name), and matches one of two subexpressions based on whether or not the capture was found.
+
+Here's a simple example. The conditional expression (`?(1)b|c`) matches `b` if capture number `1` is matched; otherwise it matches `c`:
+
+```irb
+>> re = /(a)?(?(1)b|c)/
+=> /(a)?(?(1)b|c)/
+>> re.match("ab")
+=> #<MatchData "ab" 1:"a">    #<---1.
+>> re.match("b")
+=> nil                             #<---2.
+>> re.match("c")
+=> #<MatchData "c" 1:nil>                #<---3.
+```
+The regular expression `re` matches the string `"ab"` (#1.) with `"a"` as the first parenthetical capture and the conditional subexpression matching `"a"`. However, `re` doesn't match the string `"b"` (#2.). Because there's no first parenthetical capture, the conditional subexpression tries to match `"c"`, and fails (#3). THat's also why `re` *does* match the string `"c"`: the condition `(?(1)...)` isn't met, so the expression tries to match the "else" part of itself, which is the subexpression `/c/`.
+
+You can also write conditional regular expressions using named captures. The preceding example would look like this:
+
+`/(?<first>a)?(?(<first>)b|c)/`
+
+and the results of the various matches would be the same.
+
+Anchors, assertions, and conditional matches add richness and granularity to the pattern language with which you express the matches you're looking for. Also in the language-enrichment category are regexp modifiers.
 
