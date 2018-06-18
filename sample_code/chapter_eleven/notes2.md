@@ -85,3 +85,103 @@ The output here is:
 Here's a question, though. The job of the pattern `\d+` is to match one or more digits. That means as soon as the regexp engine (the part of the interpreter that's doing all this pattern matching) sees that the string has the digit 2 in it, it has enough information to conclude that yes, there's a match. Yet it clearly keeps going; it doesn't stop matching the string until it gets all the way up to 5. You can deduce this from the value of `$1`: the fact that `$1` is `2345` means that the subexpression `\d+`, which is what's in the first set of parentheses, is considered to have matched that substring of four digits.
 
 But why match four digits when all you need to prove you're right is one digit? The answer, as so often is in the life as well as regexp analysis, is greed.
+
+### *Greedy (and non-greedy) quantifiers* ###
+The `*` (zero-or-more) and `+` (one-or-more) quantifiers are *greedy.* This means they match as many characters as possible, consistent with allowing the rest of the pattern to match.
+
+Look at what `.*` matches in this snippet:
+
+```ruby
+string = "abc!def!ghi!"
+match = /.+!/.match(string)
+puts match[0]  
+
+# Output: abc!def!ghi!
+```
+We've asked for one or more characters (using the wildcard dot) followed by an exclamation point. You might expect to get back the substring `"abc!"`, which fits that description.
+
+Instead we get `"abc!def!ghi!"`. The `+` quantifier greedily eats up as much of the string as it can and only stops at the *last* exclamation point, not the first.
+
+We can make `+` as well as `*` into non-greedy quantifiers by putting a question mark after them. Watch what happens when we do that with the last example:
+
+```ruby
+string = "abc!def!ghi!"
+match = /.+?!/.match(string)
+puts match[0]
+# Output: abc!
+```
+This version says, "Give me one or more wildcard characters, but only as many as you see up to the *first* exclamation point, which should also be included." Sure enough, this time we get `"abc!"`.
+
+If we add the question mark to the quantifier in the digits example, it will stop after it sees the `2`:
+
+```ruby
+/(\d+?)/.match("Digits-R-Us 2345")
+puts $1
+# Output: 2
+```
+In this case, the output is `2`.
+
+What does it mean to say that greedy quantifiers give you as many characters as they can, "consistent with allowing the rest of the pattern to match"?
+
+Consider this match:
+
+`/\d+5/.match("Digits-R-US 2345")`
+
+If the one-or-more quantifier's greediness were absolute, the `\d+` would match all four digits-and then the `5` in the pattern wouldn't match anything, so the whole match would fail. But greediness always subordinates itself to ensuring a successful match. What happens, in this case, is that after the match fails, the regexp engine backtracks: it unmatches the `5` and tries the pattern again. This time, it succeeds: it has satisfied both the `\d+` requirement (with `234`) and hte requirement that `5` follow the digits that `\d+` matched.
+
+Once again, you can get an informative X-ray of the proceedings by capturing parts of the matched string and examining what you've captured. Let's let irb and the `MatchData` object show us the relevant captures:
+
+```ruby
+>> /(\d+)(5)/.match("Digits-R-Us 2345")
+=> #<MatchData "2345" 1:"234" 2:"5">
+```
+The first capture is `"234"` and the second is `"5"`. The one-or-more quantifier, although greedy, has settled for getting only three digits, instead of four, in the interest of allowing the regexp engine to find a way to make the whole pattern match the string.
+
+In addition to using the zero-/one-or-more-style modifiers, you can also require an exact number or number range of repetitions of a given subpattern.
+
+#### SPECIFIC NUMBERS OF REPETITIONS ####
+To specify exactly how many repetitions of a part of your pattern you want unmatched, put the number in curly braces (`{}`) right after the relevant subexpressions, as this example shoes:
+
+`/\d{3}-\d{4}/`
+
+This example matches exactly three digits, a hyphen, and then four digits: 555-1212 and other phone number-like sequences.
+
+You can also specify a range inside the braces:
+
+`/\d{1,10}/`
+
+This example matches any string containing 1-10 consecutive digits. A single number followed by a comma is interpreted as a minimum (*n* or more repetitions). You can therefore match "three or more digits" like this:
+
+`/\d{3,}/`
+
+Ruby's regexp engine is smart enough to let you know if your range is impossible; you'll get a fatal error if you try to match, say, `{10,2}` (at least 10 but no more than 2) occurrences of a subpattern.
+
+You can specify that a repetition count not only for the single characters or character classes but also for any regexp *atom*-the more technical term for "part of your pattern." Atoms include parenthetical subpatterns and character classes as well as individual characters. Thus you can do this, to match five consecutive uppercase letters:
+
+`/([A-Z]){5}/.match("David BLACK")`
+
+But there's an important potential pitfall to be aware of in cases like this.
+
+#### THE LIMITATION ON PARENTHESES ####
+If you run that last line of code and look at what the `MatchData` object tells you about the first capture, you may expect to see `"BLACK"`. But you don't:
+
+```irb
+>> /([A-Z]){5}/.match("David BLACK")
+=> #<MatchData "BLACK" 1:"K">
+```
+It's just `"K"`. Why isn't `"BLACK"` captured in its entirety?
+
+The reason is that the parentheses don't "know" that they're being repeated five times. They just know that they're the first parentheses from the left (in this particular case) and that what they've captured should be stashed in the first capture slot (`$1`, or `captures[1]` of the `MatchData` object). The expression inside the parentheses `[A-Z]`, can only match one character. If it matches one character five times in a row, it's still only matched one at a time-and it will only "remember" the last one.
+
+In other words, matching one character five times isn't the same as matching five characters one time.
+
+If you want to capture all five characters, you need to move the parentheses so they enclose the entire five-part match:
+
+```irb
+>> /([A-Z]{5})/.match("David BLACK")
+=> #<MatchData "BLACK" 1:"BLACK">
+```
+Be careful and literal-minded when it comes to figuring out what will be captured.
+
+We'll look next at ways in which you can specify conditions under which you want matches to occur, rather than the content you expect the string to have.
+
