@@ -292,3 +292,47 @@ and the results of the various matches would be the same.
 
 Anchors, assertions, and conditional matches add richness and granularity to the pattern language with which you express the matches you're looking for. Also in the language-enrichment category are regexp modifiers.
 
+### *Modifiers* ###
+A regexp *modifier* is a letter placed after the final, closing forward slash of the regex literal:
+
+`/abc/i`
+
+The `i` modifier shown here causes match operations involving this regexp to be case-sensitive. The other most common modifier is `m`. The `m` (multiline) modifier has the effect that the wildcard dot character, which normally matches *any character except newline*, will match *any character, including newline.* This is useful when you want to capture everything that lies between, say, an opening parenthesis and a closing one, and you don't know (or care) whether they're on the same line.
+
+Here's an example; note the embedded newline characters (`\n`) in the string:
+
+```ruby
+str = "This (including\nwhat's in the parens\n) takes up three lines."
+m = /\(.*?\)/m.match(str)
+```
+The non-greedy wildcard subpattern `.*?` matches:
+
+`=> #<MatchData "(including\nwhat's in the parens\n)">`
+
+Without the `m` modifier, the dot in the subpattern wouldn't match the newline characters. The match operation would hit the first newline and, not finding a `)` character by that point, would fail. (returns `nil`.)
+
+Another often-used regexp modifier is `x`. The `x` modifier changes the way the regexp parser treats whitespace. Instead of including it literally in the pattern, it ignores it unless it's escaped with a backslash. The point of the `x` modifier is to let you add comments to your regular expressions:
+
+```ruby
+/
+\((\d{3})\)   # 3 digits inside literal parens (area code)
+  \s          # One space character
+(\d{3})       # 3 digits (exchange)
+   -          # Hyphen
+(\d{4})       # 4 digits (second part of number)
+/x
+```
+The previous regexp is exactly the same as this one but with expanded syntax and comments:
+
+`/\((\d{3})\)\s(\d{3})-(\d{4})/`
+
+Be careful with the `x` modifier. When you first discover it, it's tempting to bust all your patterns wide open:
+
+`/    (?<=    David\ )      BLACK     /x`
+
+(Note the backslash-escaped literal space character, the only such character that will be considered part of the pattern.) But remember that a lot of programmers have trained themselves to understand regular expressions without a lot of ostensibly user-friendly extra whitespace thrown in. It's not easy to un-`x` a regexp as you read it, if you're used to the standard syntax.
+
+For the most part, the `x` modifier is best saved for cases where you want to break the regexp out onto multiple lines for the sake of adding comments, as in the telephone number example. DOn't assume that whitespace automatically makes regular expressions more readable.
+
+We'll look next at techniques for converting back and forth between two different but closely connected classes: `String` and `Regexp`
+
