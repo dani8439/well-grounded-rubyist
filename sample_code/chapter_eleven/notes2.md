@@ -185,3 +185,44 @@ Be careful and literal-minded when it comes to figuring out what will be capture
 
 We'll look next at ways in which you can specify conditions under which you want matches to occur, rather than the content you expect the string to have.
 
+### *Regular expression anchors and assertions* ###
+Assertions and anchors are different types of creatures from characters. When you match a character (even based on a character class or wildcard), you're said to be *consuming* a character in the string you're matching. An assertion or an anchor, on the other hand, doesn't consume any characters. Instead, it expresses a *constraint*: a condition that must be met before the matching of characters is allowed to proceed.
+
+The most common anchors are *beginning of line* (`^`) and *end of line* (`$`). You might use the beginning-of-line anchor for a task like removing all the comment lines from a Ruby program file. You'd accomplish this by going through all the lines in the file and printing out only those that did *not* start with a hash mark (`#`) or with whitespace followed by a hash mark. To determine which lines are comment lines, you can use this regexp:
+
+`/^\s*#/`
+
+The `^` (caret) in this pattern *anchors* the match at the beginning of a line. If the rest of the pattern matches, but *not* at the beginning of the line, that doesn't count-as you can see with a couple of tests:
+
+```irb
+>> comment_regexp = /^\s*#/
+=> /^\s*#/
+>> comment_regexp.match("  # Pure comment!")
+=> #<MatchData "  #">
+>> comment_regexp.match(" x = 1 # Code plus comment!")
+=> nil
+```
+Only the line that starts with some whitespace and the hash character is a match for the comment pattern. The other line doesn't match the pattern and therefore wouldn't be deleted if you used this regexp to filter comments out of a file.
+
+Table below shows a number of anchors, including start and end of line and start and end of string
+
+##### Regular expression anchors #####
+| Notation|     Description          |       Example        |       Sample matching string                  |
+|---------|--------------------------|----------------------|-----------------------------------------------|
+| `^`     | Beginning of line        | `/^\s*#/`            | `" # A Ruby comment line with leading spaces"`|
+| `$`     | End of line              | `/\.$/`              | `"one\ntwo\nthree.\nfour"`                    |
+| `\A`    | Beginning of string      | `/\AFour score/`     | `"Four score"`                                |
+| `\z`    | End of string            | `/from the earth.\z/`| "From the earth."                             |
+| `\Z`    |End of string (except for final newline)| `/from the earth.\Z/`| `"from the earth\n"`            |
+| `\b`    | Word boundary            | `/\b\w+\b/`          | `"!!!word***"` (matches "word")               |
+
+Note that `\z` matches the absolute end of the string, whereas `\Z` matches the end of the string except for an optional trailing newline. `\Z` is useful in cases where you're not sure whether your string has a newline character at the end-perhaps the last line read out of a text file-and you don't want to have to worry about it.
+
+Hand-in-hand with anchors go *assertions*, which, similarly, tell the regexp processor that you want a match to count only under certain conditions.
+
+#### LOOKAHEAD ASSERTIONS ####
+Let's say you want to match a sequence of numbers only if it ends with a period. But you don't want the period itself to count as part of the match.
+
+One way to do this is with a *lookahead assertion*-or, to be complete, a zero-width, positive lookahead assertion. Here, followed by further explanation, is how you do it:
+
+
