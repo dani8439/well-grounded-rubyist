@@ -205,4 +205,45 @@ Here are some examples of the methods in `StringScanner`:
 ---
 
 ### *String#split* ###
+In keeping with its name, `split` splits a string into multiple substrings, returning those substrings as an array. `split` can take either a regexp or a plain string as the separator for the split operation. It's commonly used to get an array consisting of all the characters in a string. To do this, you use an empty regexp:
 
+```irb
+>> "Ruby".split(//)
+=> ["R", "u", "b", "y"]
+```
+
+`split` is often used in the course of converting flat, text-based configuration files to Ruby data structures. Typically, this involves going through a file line by line and converting each line. A single-line conversion might look like this:
+
+```irb
+>> line = "first_name=david;last_name=black;country=usa"
+=> "first_name=david;last_name=black;country=usa"
+>> record = line.split(/=|;/)
+=> ["first_name", "david", "last_name", "black", "country", "usa"]
+```
+
+This leaves `record` containing an array:
+
+`["first_name", "david", "last_name", "black", "country", "usa"]`
+
+With a little more work, you can populate a hash with entries of this kind:
+
+```irb
+data= []
+record = Hash[*line.split(/=|;/)]
+data.push(record)                 #<--- Uses * to turn array into bare list to feed to Hash[]
+
+# {"First_name"=>"David", "last_name"=>"black", "country"=>"usa"}
+# [{"First_name"=>"David", "last_name"=>"black", "country"=>"usa"}]
+```
+If you do this for every line in a file, you'll have an array of hashes representing all the records. That array of hashes, in turn, can be used as the pivot point to a further operation-perhaps embedding the information in a report or feeding it to a library routing that can save it to a database table as a sequence of column/value pairs.
+
+You can provide a second argument to `split`; this argument limits the number of items returned. In this example:
+
+```irb
+>> "a,b,c,d,e".split(/,/,3)
+=> ["a", "b", "c,d,e"] 
+```
+
+`split` stops splitting once it has three elements to return and puts everything that's left (commas and all) in the third string. 
+
+In addition to breaking a string into parts by scanning and splitting, you can also change parts of a string with substitution operations, as you'll see next.
