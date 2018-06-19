@@ -247,3 +247,68 @@ You can provide a second argument to `split`; this argument limits the number of
 `split` stops splitting once it has three elements to return and puts everything that's left (commas and all) in the third string. 
 
 In addition to breaking a string into parts by scanning and splitting, you can also change parts of a string with substitution operations, as you'll see next.
+
+### *sub/sub!/gsub/gsub!* ###
+`sub` and `gsub` (along with their bang, in-place equivalents) are the most common tools for changing the contents of strings in Ruby. The difference between them is that `gsub`, (*global substitutions*) makes changes throughout a string, whereas `sub` makes at most one substitution.
+
+#### SINGLE SUBSTITUTIONS WITH SUB ####
+`sub` takes two arguments: a regexp (or string) and a replacement string. Whatever part of the string matches the regexp, if any, is removed from the string and replaced with the replacement string:
+
+```irb
+>> "typigraphical error".sub(/i/,"o")
+=> "typographical error"
+```
+
+You can use a code block *instead of* the replacement-string argument. The block is called (yielded to) if there's a match. The call passes in the string being replaced as an argument:
+
+```irb
+>> "capitalize the first vowel".sub(/[aeiou]/) {|s| s.upcase }
+=> "cApitalize the first vowel"
+```
+
+If you've done any parenthetical grouping, the global `$n` variables are set and available for use inside the block.
+
+
+### GLOBAL SUBSTITUTIONS WITH GSUB ####
+`gsub` is like `sub`, except it keeps substituting as long as the pattern matches anywhere in the string. For example, here's how you can replace the first letter of every word in a string with the corresponding capital letter:
+
+```irb
+>> "capitalize every word".gsub(/\b\w/) {|s| s.upcase }
+=> "Capitalize Every Word"
+```
+
+As with `sub`, `gsub` gives you access to the `$n` parenthetical capture variables in the code block.
+
+
+#### USING THE CAPTURES IN A REPLACEMENT STRING ####
+You can access the parenthetical captures by using a special notation consisting of backslash-escaped numbers. For example, you can correct an occurrence of a lowercase letter followed by an uppercase letter (assuming you're dealing with a situation where this is a mistake) like this:
+
+```irb
+>> "aDvid".sub(/([a-z])([A-Z])/, '\2\1')
+=> "David"
+```
+
+Note the use of single quotation marks for the replacement string. With double quotes, you'd have to double the backslashes to escape the backslash character.
+
+To double every word in a string, you can do something similiar, but using `gsub`:
+
+```irb
+>> "double every word".gsub(/\b(\w+)/, '\1 \1')
+=> "double double every every word word"
+```
+
+**A global capture variable pitfall**
+Beware: You can use the global capture variables (`$1`, etc.) in your substitution string, but they may not do what you think they will. Specifically, you'll be vulnerable to leftover values for those variables. Consider this example:
+
+```irb
+>> /(abc)/.match("abc")
+=> #<MatchData "abc" 1:"abc">
+>> "aDvid".sub(/([a-z])([A-Z])/, "#{$2}#{$1}")
+=> "abcvid"
+```
+Here `$1` from the previous match (`"abc"`) ended up infiltrating the substitution string in the second match. In general, sticking to the `\l`-style references to your captures is safer than using the global capture variables in `sub` and `gsub` substitution strings.
+
+We'll conclude our look at regexp-based tools with two techniques having in common their dependence on the case equality operator (`===`): case statements (which aren't method calls but which do incorporate calls to the threequal operator) and `Enumerable#grep`.
+
+### *Case equality and grep* ### 
+
