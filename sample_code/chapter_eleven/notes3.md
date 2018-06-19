@@ -106,3 +106,103 @@ You can play with `puts`ing regular expressions in irb, and you'll see more abou
 Going from regular expressions to strings is useful primarily when you're studying and/or troubleshooting regular expressions. It's a good way to make sure your regular expressions are what you think they are.
 
 At this point, we'll bring regular expressions full circle by examining the roles they play in some important methods of other classes. We've gotten this far using the `match` method almost exclusively, but `match` is just the beginning.
+
+## *Common methods that use regular expressions* ##
+The payoff for gaining facility with regular expressions in Ruby is the ability to use the methods that take regular expressions as arguments and do something with them.
+
+To begin with, you can always use a `match` operation as a test in, say, a `find` or `find_all` operation on a collection. For example, to find all strings longer than 10 characters and containing at least 1 digit, from an array of strings called `array`, you can do this:
+
+`array.find_all {|e| e.size > 10 and /\d/.match(e) }`
+
+But a number of methods, mostly pertaining to strings, are based more directly on the use of regular expressions. We'll look at several of them in this section.
+
+### *String#scan* ###
+The `scan` method goes from left to right through a string, testing repeatedly for a match with the pattern you specify. The results are returned in an array.
+
+For example, if you want to harvest all the digits in a string, you can do this:
+
+```irb
+>> "testing 1 2 3 testing 4 5 6".scan(/\d/)
+=> ["1", "2", "3", "4", "5", "6"]
+```
+
+Note that `scan` jumps over things that don't match its pattern and looks for a match later in the string. This behavior is different from that of `match`, which stops for good when it finishes matching the pattern completely once.
+
+If you use parenthetical groupings in the regexp you give to `scan`, the operation returns an array of arrays. Each inner array contains the results of one scan through the string:
+
+```irb
+>> str = "Leopold Auer was the teacher of Jascha Heifetz."
+=> "Leopold Auer was the teacher of Jascha Heifetz."
+>> violinists = str.scan(/([A-Z]\w+)\s+([A-Z]\w+)/)
+=> [["Leopold", "Auer"], ["Jascha", "Heifetz"]]
+```
+
+This example nets you an array of arrays, where each inner array contains the first name and the last name of a person. Having each complete name stored in its own array makes it easy to iterate over the whole list of names, which we've conveniently stashed in the variable `violinists`:
+
+```ruby
+violinists.each do |fname, lname|
+  puts "#{lname}'s first name was #{fname}."
+end
+```
+
+The output from this snippet is as follows:
+
+```irb
+Auer's first name was Leopold.
+Heifetz's first name was Jascha.
+```
+The regexp used for names in this example is, of course, overly simple: it neglects hyphens, middle names, and so forth. But it's a good illustration of how to use captures with `scan`.
+
+`String#scan` can also take a code block-and that technique can, at times, save you a step. `scan` yields its results to the block, and the details of the yielding depend on whether you're using parenthetical captures. Here's a scan-block-based rewrite of the previous code:
+
+```ruby
+str.scan(/([A-Z]\w+)\s+([A-Z]\w+)/) do |fname, lname|
+  puts "#{lname}'s first name was #{fname}."
+end
+```
+Each time through the string, the block receives the captures in an array. If you're not doing any capturing, the block receives the matched substrings successively. Scanning for clumps of `\w` characters (`\w` is the character class consisting of letters, numbers, and underscore) might look like this:
+
+`"one two three".scan(/\w+/) {|n| puts "Next number: #{n}" }`
+
+which would produce this output:
+
+```irb
+Next number: one
+Next number: two
+Next number: three
+=> "one two three"
+```
+Note that if you provide a block, `scan` doesn't store the results up an array and return them; it sends each result to the block and then discards it. That way, you can scan through long strings, doing something with the results a long the way, and avoid taking up memory with the substrings you've already seen and used.
+
+Another common regexp-based string operation is `split`.
+
+**Even more string scanning with the `StringScanner` class**
+The standard library includes an extension called `strscan`, which provides the `StringScanner` class. `StringScanner` objects extend the available toolkit for scanning and examining strings. A `StringScanner` object maintains a pointer into the string, allowing for back-and-forth movement through the string using position and pointer semantics.
+
+Here are some examples of the methods in `StringScanner`:
+
+```irb
+>> require 'strscan'                #<--- Loads scanner library
+=> true
+>> ss = StringScanner.new("Testing string scanning")  #<--- Creates scanner
+=> #<StringScanner 0/23 @ "Testi...">
+>> ss.scan_until(/ing/)             #<--- Scans string until regexp matches
+=> "Testing"
+>> ss.pos                     #<--- Examines new pointer position
+=> 7  
+>> ss.peek(7)           #<--- Looks at next 7 bytes (but doesn't advance pointer)
+=> " string"
+>> ss.unscan                  #<---- Undoes the previous scan
+=> #<StringScanner 0/23 @ "Testi...">
+>> ss.pos                           #<--- Moves pointer past regexp
+=> 0
+>> ss.skip(/Test/)                        #<---- Examines part of string to right of pointer
+=> 4
+>> ss.rest
+=> "ing string scanning"
+```
+
+---
+
+### *String#split* ###
+
