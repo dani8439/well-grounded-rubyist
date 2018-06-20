@@ -311,4 +311,62 @@ Here `$1` from the previous match (`"abc"`) ended up infiltrating the substituti
 We'll conclude our look at regexp-based tools with two techniques having in common their dependence on the case equality operator (`===`): case statements (which aren't method calls but which do incorporate calls to the threequal operator) and `Enumerable#grep`.
 
 ### *Case equality and grep* ### 
+As you know, all Ruby objects understand the `===` message. If it hasn't been overridden in a given class for a given object, it's a synonym for `==`. If it has been overridden, it's whatever the new version makes it be.
 
+Case equality for regular expressions is a match test: for any given *regexp* and *string*, *regexp === string* is true if *string* matches *regexp.* You can use `===` explicitly as a match test:
+
+```ruby
+puts "Match!" if re.match(string)
+puts "Match!" if string =~ re
+puts "Match!" if re === string
+```
+ANd of course, you have to use whichever test will give you what you need: `nil` or `MatchData` object for `match`; `nil` or integer offset for `=~`; `true`, or `false` for `===`.
+
+In case statements, `===` is used implicitly. To test for various pattern matches in a case statement, proceed along the following lines:
+
+```ruby
+print "Continue? (y/n) "
+answer = gets
+case answer
+when /^y/i
+  puts "Great!"
+when /^n/i
+  puts "Bye!"
+  exit
+else
+  puts "Huh?"
+end
+```
+Each `when` clause is a call to `===: /^y/i === answer`, and so forth.
+
+The other technique you've seen that uses the `===` method/operator, also implicitly is `Enumerable#grep`. You can refer back to chapter 10. Here, we'll put the spotlight on a couple of aspects of how it handles strings and regular expressions.
+
+`grep` does a filtering operation from an enumerable object based on the case equality operator (`===`), returning all the elements in the enumerable that return a true value when threequaled against `grep`'s argument. Thus if the argument to `grep` is a regexp, the selection is based on pattern matches, as per the behavior of `Regexp#===`:
+
+```irb 
+>> ["USA", "UK", "France", "Germany"].grep(/[a-z]/)
+=> ["France", "Germany"]
+```
+
+You can accomplish the same thing with `select` but it's a bit wordier:
+
+```irb 
+>> ["USA", "UK", "France", "Germany"].select {|c| /[a-z]/ === c }
+=> ["France", "Germany"]
+```
+
+`grep` uses the generalized threequal technique to make specialized `select` operations, including but not limited to those involving strings, concise and convenient.
+
+You can also supply a code block to `grep`, in which case you get a combined `select/map` operation: the results of the filtering operation are yielded one at a time to the block, and the return value of the whole `grep` call is the cumulative result of those yields. For example, to select countries and then collect them in uppercase, you can do this:
+
+```irb 
+>> ["USA", "UK", "France", "Germany"].grep(/[a-z]/) {|c| c.upcase }
+=> ["FRANCE", "GERMANY"]
+```
+Keep in mind that `grep` selects based on the case equality operator (`===`), so it won't select anything other than strings when you give it a regexp as an argument-and there's no automatic conversion between numbers and strings. Thus if you try this:
+
+`[1,2,3].grep(/1/)`
+
+You get back an empty array the array has no string element that matches the regexp `/1/`, no element for which it's true that `/1/ === element`.
+
+This brings us to the end of our survey of regular expressions and some of the methods that use them. There's more to learn; pattern matching is a sprawling subject. But this chapter has introduced you to much of what you're likely to need and see as you proceed with your study and use of Ruby.
