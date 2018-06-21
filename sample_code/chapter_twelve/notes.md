@@ -27,7 +27,7 @@ The constants `STDERR`, `STDIN`, and `STDOUT` (all of which will be covered in d
 
 In addition to `puts`, `IO` objects have the `print` method and a `write` method. If you `write` to an `IO` object, there's no automatic newline output (`write` is like `print` rather than `puts` in that respect), and the return value is the number of bytes written (#3).
 
-`IO` is a RUby class, and as a class it's entitled to mix in modules. And so it does. In particular, `IO` objects are enumerable.
+`IO` is a Ruby class, and as a class it's entitled to mix in modules. And so it does. In particular, `IO` objects are enumerable.
 
 ### *IO objects as enumerables* ###
 An enumerable, as you know, must have an `each` method so that it can iterate. `IO` objects iterate based on the global input record separator, which, as you say in connection with strings and their `each_line` method in chapter 10, is stored in the global variable `$/`.
@@ -76,8 +76,44 @@ terces a niatnoc
 We'll come back to the enumerable behaviors of `IO` objects in the context of file handling later on. Meanwhile, the three basic `IO` objects-`STDIN`, `STDOUT`, and `STDERR`-are worth a closer look.
 
 ### *STDIN, STDOUT, STDERR* ### 
+If you've written programs and/or shell scripts that used any kind of I/O piping, then you're probably familiar with the concept of the *standard* input, output, and error streams. They're basically defaults: unless told otherwise, Ruby assumes that all input will come from the keyboard, and all normal output will go to the terminal. *Assuming,* in this context, means that the unadorned, procedural I/O methods, like `puts` and `gets`, operate on `STDOUT` and `STDIN` respectively.
+
+Error messages and `STDERR` are a little more involved. Nothing goes to `STDERR` unless someone tells it to. So if you want to use `STDERR` for outpu, you have to name it explicitly:
+
+```ruby 
+if broken?
+  STDERR.puts "There's a problem!"
+end
+```
+In addition to the three constants, Ruby also gives you three global variables: `$stdin`, `$stdout`, and `$stderr`.
 
 #### THE STANDARD I/O GLOBAL VARIABLES #### 
+The main difference between `STDIN` and `$stdin` (and the other pairs likewise) is that you're not supposed to reassign to the constant but you can reassign to the variable. The variables give you a way to modify default standard I/O stream behaviors without losing the original streams.
+
+For example, perhaps you want all output going to a file, including standard out and standard error. You can achieve this with some assignments to the global variables. Save this code in outputs.rb:
+
+```ruby
+record = File.open("/tmp/record", "w")
+old_stdout = $stdout
+$stdout = record
+$stderr = $stdout
+puts "This is a record"
+z = 10/0
+```
+The first step is to open the file to which you want to write. (If you don't have a /tmp directory on your system, you can change the filename so that it points to a different path, as long as you have write permission to it.) Next, save the current `$stdout` to a variable, in case you want to switch back to it later.
+
+Now comes the little dance of the I/O handles. First, `$stdout` is redefined as the output handle `record`. Next, `$stderr` is set equivalent to `$stdout`. At this point, any plain old `puts` statement results in output being written to the file /tmp/record, because plain `puts` statements output to `$stdout`-and that's where `$stdout` is now pointing. `$stderr` output (like the error message resulting from a division by zero) also goes to the file, because `$stderr`, too, has been reassigned that file handle. 
+
+The result is that when you run the program, you see nothing on your screen; but /tmp/record looks like this:
+
+```
+This is a record
+outputs.rb:6:in `/': divided by 0 (ZeroDivisionError)
+  from outputs.rb:6:in `<main>'
+```
+Of course, you can also send standard output to one file and standard error ot another. The global variables let you manipulate the streams any way you need to.
+
+We'll move on to files soon, but while we're talking about I/O in general and the standard streams in particular, let's look more closely at the keyboard.
 
 ### *A litte more about keyboard input* ###
 
