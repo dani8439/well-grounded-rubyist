@@ -116,14 +116,67 @@ Of course, you can also send standard output to one file and standard error ot a
 We'll move on to files soon, but while we're talking about I/O in general and the standard streams in particular, let's look more closely at the keyboard.
 
 ### *A litte more about keyboard input* ###
+Keyboard input is accomplished, for the most part, with `gets` and `getc`. As you've seen, `gets` returns a single line of input, `getc` returns one character.
+
+One difference between these two methods is that in the case of `getc`, you need to name your input stream explicitly:
+
+```ruby
+line = gets
+char = STDIN.getc
+```
+In both cases, input is buffered: you have to press Enter before anything happens. It's possible to make `getc` behave in an unbuffered manner so that it takes its input as soon as the character i struck, but there's no portable way to do this across Ruby platforms. (On UNIX-ish platforms, you can set the terminal to "raw" mode with the `stty` command. You need to use the `system` method, described in chapt 14, to do this from inside Ruby.)
+
+If for some reason you've got `$stdin` set to osmething other than the keyboard, you can still read keyboard input by using `STDIN` explicitly as the receiver of `gets`:
+
+`line = STDIN.gets` 
+
+Assuming you've followed the advice in the previous section and done all your standard I/O stream juggling through the use of global variables rather than the constants, `STDIN` will still be the keyboard input stream, even if `$stdin` isn't.
+
+At this point, we're going to turn to Ruby's facilities for reading, writing, and manipulating files.
 
 ## *Basic file operations* ## 
+THe built-in class `File` provides the facilities for manipulating files in Ruby. `File` is a subclass of `IO`, so `File` objects share certain properties with `IO` objects, although the `File` class adds and changes certain behaviors.
+
+We'll look first at basic file operations, including opening, reading, writing, and closing files in various modes. Then, we'll look at a  more "Rubyish" way to handle file reading and writing: with code blocks. After that, we'll go more deeply into the enumerability of files, and then end the section with an overview of osme of the common exceptions and error messages you may get in the course of manipulating files. 
 
 ### *The basics of reading from files* ###
+Reading from a file can be performed one byte at a time, a specified number of bytes at a time, or one line at a time (where *line* is defined by the `$/` delimiter). You can also change the position of the next read operation in the file by moving forward or backward a certain number of bytes or by advancing the `File` object's internal pointer to a specified byte offset in the file.
+
+All of these operations are performed courtesy of `File` objects. So, the first step is to create a `File` object. The simplest way to do this is with `File.new`. Pass a filename to this constructor, and assuming the file exists, you'll get back a file handle opened for reading. The following examples involve a file called ticket2.rb that contains the code from chapter 3, and that's stored in a directory called code:
+
+```irb 
+>> f = File.new("code/ticket2.rb")
+=> #<File:code/ticket2.rb>
+```
+(If the file doesn't exist, an exception will be raised.) At this point, you can use the file instance to read from the file. A number of methods are at your disposal. The absolute simplest is the `read` method; it reads in the entire file as a single string:
+
+```irb 
+>> file.read
+=> "class Ticket\n def initialized(venue, date)\n
+          @venue - venue\n    @date = date\n  end\n\n etc.
+```
+Although using `read` is tempting in many situations and appropriate in some, it can be inefficient and a bit sledgehammer-like when you need more granularity in your data reading and processing.
+
+We'll look here at a large selection of Ruby's file-reading methods, handling them in groups: first line-based read methods and hten byte-based read methods.
 
 **Close your file handles** 
+When you've finished reading and/or writing to a file, you need to close it. `File` objects have a `close` method (for example, `f.close`) for this purpose. You'll learn about a way to open files so that Ruby handles the file closing for you, by scoping the whole file operation to a code block. But if you're doing it the old-fashioned way, as in the examples involving `File.new` in this part of the chapter, you should close your files explicitly. (They'll get closed when you exit irb too, but it's good practice to close the ones you've opened.)
 
 ### *Line-based file reading* ###
+The easiest way to read the next line from a file is with `gets`:
+
+```irb
+>> f.gets
+=> "class Ticket\n
+>> f.gets 
+=> "  def initialize(venue, date)\n"
+>> f.gets 
+=> "    @venue = venue\n"
+```
+The `readline` method does much of what `gets` does: it reads one line from the file. The difference lies in how the two methods behave when you try to read beyond the end of a file: `gets` returns `nil`, and `readline` raises a fatal error. You can see the difference if you do a `read` on a `File` object to get to the end of the file and then try the two methods on the object:
+
+```irb 
+```
 
 ### *Byte- and character-based file reading* ### 
 
