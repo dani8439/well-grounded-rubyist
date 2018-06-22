@@ -241,12 +241,78 @@ EOFError: end of file reached
 During all these operations, the `File` object (like any `IO` object) has a sense of where it is in the input stream. As you've seen, you can easily rewind this internal pointer to the beginning of the file. You can also manipulate the pointer in some more fine-grained ways.
 
 ### *Seeking and querying file position* ###
+The `File` object has a sense of where in the file it has left off reading. You can both read and change this internal pointer explicitly, using the `File` object's `pos` (position) attribute and/or the `seek` method.
+
+With `pos`, you can tell where in the file the pointer is currently pointing:
+
+```irb
+>> f.rewind
+=> 0
+>> f.pos
+=> 0
+>> f.gets
+=> "class Ticket\n"
+>> f.pos
+=> 13
+```
+Here, the position is `0` after a rewind and `13` after a reading of one 13-byte line. You can assign to the position value, which moves the pointer to a speicific location in the file:
+
+```irb
+>> f.pos = 10
+=> 10
+>> f.gets
+=> "et\n"
+```
+The string returned is where the `File` object considers a "line" as of byte 10: everything from that position onward until the next occurrence of newline (or, strictly speaking, of `$/`).
+
+The `seek` method lets you move around in a file by moving the position pointer to a new location. The location can be a specific offset into the file, or it can be relative to either the current pointer position or the end of the file. You specify what you want using special constants from the `IO` class:
+
+```ruby
+f.seek(20, IO::SEEK_SET)
+f.seek(15, IO::SEEK_CUR)
+f.seek(-10, IO::SEEK_END)
+```
+In this example, the first line seeks to byte 20. The second line advances the pointer 15 bytes from its current position, and the last line seeks to 10 bytes before the end of the file. Using `IO::SEEK_SET` is optional; a plain `f.seek(20)` does the same thing (as does `f.pos = 20`).
+
+We've looked at several ways to read files, starting with the all-at-once read method, progressing through the line-by-line approach, and winding up with the most fine-grained reads based on character and position. All of these file-reading techniques involve `File` objects-that is, instances of the `File` class. That class itself also offers some reading techniques.
 
 ### *Reading files with File class methods* ### 
+A little later, you'll see more of the facilities available as class methods of `File`. For now, we'll look at two methods that handle file reading at the class level: `File.read` and `File.readlines`.
+
+These two methods do the same thing their same-named instance-method counterparts do; but instead of creating an instance, you use the `File` class, the method name, and the name of the file:
+
+```ruby
+full_text = File.read("myfile.txt")
+lines_of_text = File.readlines("myfile.txt")
+```
+In the first case, you get a string containing the entire contents of the file. In the second case, you get an array of lines. 
+
+These two class methods exist purely for convenience. They take care of opening and closing the file handle for you; you don't have to do any system-level housekeeping. Most of the time, you'll want to do something more complex and/or more efficient than reading the entire contents of a file into a string or an array at one time. Given that even the `read` and `readlines` instance methods are relatively coarsegrained tools, if you decide to read a file in all at once, you may as well go all the way and use the class-method versions.
+
+You now have a good toolkit for reading files and dealing with the results. At this point, we'll turn to the other side of the equation: writing to files.
 
 **Low-level I/O methods** 
+In addition to the various I/O and `File` methods we'll look at closely here, the `IO` class gives you a toolkit of system-level methods with which you can do low-level I/O operations. These include `sysseek`, `sysread`, and `syswrite`. These methods correspond to the system calls on which some of the higher-level methods are built.
+
+The `sys`- methods perform raw, unbuffered data operations and shouldn't be mixed with higher-level methods. Here's an example of what *not* to do:
+
+```ruby
+File.open("output.txt", "w") do |f|
+  f.print("Hello")
+  f.syswrite(" there!")
+end
+puts File.read("output.txt")
+```
+If you run this little program, here's what you'll see:
+
+```irb
+syswrite.rb:3: warning: syswrite for buffered IO 
+  there!Hello
+```
+In addition to a warning, you get the second string (the one written with `syswrite`) stuck in the file before the first string. That's because `syswrite` and `print` don't operate according to the same rules and don't play nicely together. It's best to stick with the higher-level methods unless you have a particular reason to use the others.
 
 ### *Writing to files* ###
+Writing to files involves using `puts`, `print`, or `write`, on a `File` object that's opened in write or append mode.
 
 ### *Using blocks to scope file operations* ### 
 Using `File.new` to create a `File` object has the disadvantage that you end up having toc lose the file yourself. Ruby provides an alternate way to open files that puts the housekeeping task of closing the file in the hands of Ruby: `File.open` with a code block.
