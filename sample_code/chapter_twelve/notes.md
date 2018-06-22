@@ -312,7 +312,34 @@ syswrite.rb:3: warning: syswrite for buffered IO
 In addition to a warning, you get the second string (the one written with `syswrite`) stuck in the file before the first string. That's because `syswrite` and `print` don't operate according to the same rules and don't play nicely together. It's best to stick with the higher-level methods unless you have a particular reason to use the others.
 
 ### *Writing to files* ###
-Writing to files involves using `puts`, `print`, or `write`, on a `File` object that's opened in write or append mode.
+Writing to files involves using `puts`, `print`, or `write`, on a `File` object that's opened in write or append mode. Write mode is indicated by `w` as the second argument to `new`. In this mode, the file is created (assuming you have permission to create it); if it existed already, the old version is overwritten. In append mode (indicated by `a`), whatever you write to the file is appended to what's already there. If the file doesn't exist yet, opening it in append mode creates it.
+
+This example performs some simple write and append operations, pausing along hte way to use the mighty `File.read` to check the contents of the file:
+
+```irb
+>> f = File.new("data.out", "w")
+=> #<File:data.out>
+>> f.puts "David A. Black, Rubyist"
+=> nil
+>> f.close
+=> nil
+>> puts File.read("data.out")
+David A. Black, Rubyist
+=> nil
+>> f = File.new("data.out", "a")
+=> #<File:data.out>
+>> f.puts "Yukihiro Matsumoto, Ruby creator"
+=> nil
+>> f.close
+=> nil
+>> puts File.read("data.out")
+David A. Black, Rubyist
+Yukihiro Matsumoto, Ruby creator
+=> nil
+```
+The return value of a call to `puts` on a `File` object is the same as the return value of any call to `puts:nil`. The same is true of `print`. If you use the lower-level `write` method, which is an instance method of the `IO` class (and therefore available to `File` objects, because `File` inherits from `IO`), the return value is the number of bytes written to the file.
+
+Ruby lets you economize on explicit closing of `File` objects-and enables you to keep your code nicely encapsulated-by providing a way to perform file operations inside a code block. We'll look at this elegant and common technique next.
 
 ### *Using blocks to scope file operations* ### 
 Using `File.new` to create a `File` object has the disadvantage that you end up having toc lose the file yourself. Ruby provides an alternate way to open files that puts the housekeeping task of closing the file in the hands of Ruby: `File.open` with a code block.
