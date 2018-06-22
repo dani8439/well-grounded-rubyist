@@ -176,9 +176,69 @@ The easiest way to read the next line from a file is with `gets`:
 The `readline` method does much of what `gets` does: it reads one line from the file. The difference lies in how the two methods behave when you try to read beyond the end of a file: `gets` returns `nil`, and `readline` raises a fatal error. You can see the difference if you do a `read` on a `File` object to get to the end of the file and then try the two methods on the object:
 
 ```irb 
+>> f.read
+=> "  def initialized(venue, date)\n    @venue = venue\m
+    @date = date\n  end\n\n
+    etc.
+>> f.gets
+=> nil
+>> f.readline
+EOFError: end of file reached
 ```
+If you want to get the entire file at once as an array of lines, use `readlines` (a close relative of `read`). Note also the `rewind` operation, which moves the `File` object's internal position pointer back to the beginning of the file:
+
+```irb
+>> f.rewind
+=> 0
+>> f.readlines
+=> ["class Ticket\n", " def initialize(venue, date)\n",
+    "   @venue = venue\n",  "   @date = date\n" etc.
+```
+Keep in mind that `File` objects are enumerable. That means you can iterate through the lines one at a time rather than reading the whole file into memory. The `each` method of `File` objects (also known by the synonym `each_line`) serves this purpose:
+
+```irb
+>> f.each {|line| puts "Next line: #{line}" }
+Next line: class Ticket
+Next line:    def intialized(venue, date)
+Next line:        @venue = venue
+etc
+```
+**Note** In the previous example and several that follow, a rewind of the `File` object is assumed. If you're following along in irb, you'll want to type `f.rewind` to get back to the beginning of the file.
+
+The enumerability of `File` objects merits a discussion of its own, and we'll look at it shortly. Meanwhile, let's look at byte-wise simple read operations.
 
 ### *Byte- and character-based file reading* ### 
+If an entire line is too much, how about one character? The `getc` method reads and returns one character from the file:
+
+```irb
+>> f.getc
+=> "c"
+```
+You can also "un-get" a character-that is, put a specific character back onto the file-input stream so it's the first character read on the next read:
+
+```irb
+>> f.getc
+=> "c"
+>> f.ungetc("X")
+=> nil
+>> g.gets
+=>  "Xlass Ticket\n"
+```
+Every character is represented by one or more bytes. How bytes map to charactersdepends on the encoding. Whatever the encoding, you can move byte-wise as well as character-wise through a file, using `getbyte`. Depending on the encoding, the number of bytes and the number of bytes and the number of characters in yuor file may or may not be equal, and `getc` and `getbyte`, at a given position in the file, may or may not return the same thing.
+
+Just as `readline` differs from `gets` in that `readline` raises a fatal aerror if you use it at the end of a file, the methods `readchar` and `readbyte` differ from `getc` and `getbyte`, respectively, in the same way. Assuming you've already read to the end of the `File` object `f`, you get the following results:
+
+```irb
+>> f.getc
+=> nil
+>> f.reachchar
+EOFError: end of file reached
+>> f.getbyte
+=> nil
+>> f.readbyte
+EOFError: end of file reached
+```
+During all these operations, the `File` object (like any `IO` object) has a sense of where it is in the input stream. As you've seen, you can easily rewind this internal pointer to the beginning of the file. You can also manipulate the pointer in some more fine-grained ways.
 
 ### *Seeking and querying file position* ###
 
