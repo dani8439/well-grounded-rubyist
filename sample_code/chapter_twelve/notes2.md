@@ -145,16 +145,75 @@ Other common test characters include `?d` (the test is true if the second argume
 In addition to the query and Boolean methods available through `FileTest` (and `File`), you can also consult objects of the `File::Stat` class for file information.
 
 ### *Deriving file information with File::Stat* ### 
+`File::Stat` objects have attributes corresponding to the stat structure in the standard C library. You can create a `File::Stat` object in either of two ways: with the `new` method or with the `stat` method on an existing `File` object:
 
+```irb 
+>> File::Stat.new("code/ticket2.rb")
+=> #<File::Stat dev=0x1000002, ino=11531534, mode=0100644, nlink=1, uid=501, gid=20, rdev=0x0, size=219, blksize=4096, blocks=8, atime=2014-03-23 08:31:49 -0400, mtime=2014-02-25 06:24:43 -0500, ctime=2014-02-25 06:24:43 -0500>
+>> File.open("code/ticket2.rb") {|f| f.stat } #<--- Same output
+```
+The screen output from the `File::Stat.new` method shows you the attributes of the object, including its times of creating (`ctime`), last modification (`mtime`), and last access (`atime`). 
+
+**TIP** The code block given to `File.open` in the example, `{|f| f.stat }`, evaluates to the last expression inside it. Because the last (indeed, only) expression is `f.stat`, the value of the block is a `File::Stat` object. In general, when you use `File.open` with a code block, the call to `File.open` returns the last value from the block. Called without a block, `File.open` (like `File.new`) returns the newly created `File` object. 
+--
+Much of the information available from `File::Stat` is built off of UNIX-like metrics, such as inode number, access mode (permissions), and user and group ID. The relevance of this information depends upon your operating system. We won't go into details here because it's not cross-platform; but whatever information your system maintains about files is available if you need it.
+
+Manipulating and querying files often involves doing likewise to directories. Ruby provides facilities for directory operations in the `Dir` class. You'll also see such operation in some of the standard library tools we'll discuss a little later. First let's look at `Dir`.
 
 ## *Directory manipulation with the Dir class* ##
+Like `File`, the `Dir` class provides useful class and instance methods. To create a `Dir` instance, you pass a directory path to `new`:
 
+```irb 
+>> d = Dir.new("/usr/local/src/ruby/lib/minitest")      #<---Adjust path as needed for your system.
+=> #<Dir:/usr/local/src/ruby/lib/minitest> 
+```
+The most common and useful `Dir`-related technique is iteration through the entires (files, links, other directories) in a directory.
 
 ### *Reading a directory's entries* ### 
-
+You can get hold of the entries in one of two ways: using the `entries` method or using the `glob` technique. The main difference is that *globbing* the directory doesn't return hidden entires, which on many operating systems (including all UNIX-like systems) means entires whose names start with a period. Globbing also allows for wildcard matching and for recursive matching in subdirectories. 
 
 #### THE ENTRIES METHODS #### 
+Both the `Dir` class itself and instances of the `Dir` class can give you a directory's entires. Given the instance of `Dir` created earlier, you can do this:
 
+```irb 
+>> d.entries
+=> [".", "..", ".document", "autorun.rb", "benchmark.rb", "hell.rb", "mock.rb", "parallel_each.rb", "pride.rb", "README.txt", "spec.rb", "unit.rb"]
+```
+Or you can use the class-method approach:
+
+```irb 
+>> Dir.entries("/usr/local/src/ruby/lib/minitest") 
+=> [".", "..", ".document", "autorun.rb", "benchmark.rb", "hell.rb", "mock.rb", "parallel_each.rb", "pride.rb", "README.txt", "spec.rb", "unit.rb"]
+>> Dir.entries("/home/dani8439/temporary")
+=> ["..", "sandbox", "."]
+```
+Note that the single- and double-dot entries (current directory and parent directory, respectively) are present, as is the hidden `.document` entry. If you want to iterate through the entries, only processing files, you need to make sure you filter out the names starting with dots.
+
+Let's say we want to add up the sizes of all non-hidden regular files in a directory. Here's a first iteration (we'll develop a shorter one later):
+
+```irb
+>> d = Dir.new("/home/dani8439/temporary")
+=> #<Dir:/home/dani8439/temporary>
+>> entries = d.entries
+=> ["..", "sandbox", "."]
+>> entries.delete_if {|entry| entry =~ /*\./ }
+SyntaxError: (irb):4: target of repeat operator is not specified: /*\./
+        from /usr/local/rvm/rubies/ruby-2.3.1/bin/irb:11:in `<main>'
+>> entries.map! {|entry| File.join(d.path, entry) }
+=> ["/home/dani8439/temporary/..", "/home/dani8439/temporary/sandbox", "/home/dani8439/temporary/."]
+>> entries.delete_if {|entry| !File.file?(entry) }
+=> ["/home/dani8439/temporary/sandbox"]
+>> print "Total bytes: "
+Total bytes: => nil
+>> puts entries.inject(0) {|total, entry| total + File.size(entry) }
+403
+=> nil
+```
+First, we create a `Dir` object for the target directory and grab its entries. NExt comes a sequence of manipulations on the array of entries. Using the `delete_if` array method, we remove all that begin with a dot. Then, we do an in-place mapping of the entry array so that each entry includes the full path to the file. This is accomplished wtih two useful methods: the instance method `Dir#path`, which returns the original directory path underlying this particular `Dir` instance (/home/dani8439/temporary/sandbox); and `File.join` which joins the path to the filename with the correct separator (usually/, but it's somewhat system-dependent).
+
+Now that the entries have been massaged to represent full pathnames, we do another `delete_if` operation to delete all entries that aren't regular files, as measured by the `File.file?` test method. The entries array now contains full pathnames of all the regular files in the original directory. THe last step is to add up their sizes, a task for which `inject` is perfectly suited.
+
+Among other ways to shorten this code, you can use directory globbing instead of the `entries` method. 
 
 #### DIRECTORY GLOBBING #### 
 
