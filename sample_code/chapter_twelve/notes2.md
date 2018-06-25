@@ -80,37 +80,110 @@ You'll rarely, if ever, have to concern yourself with the mapping of Ruby's `Err
 Let's go back to what you can do when things go right. We'll look next at some ways in which you can ask `IO` and `File` objects for information about themselves and their state.
 
 ## *Querying IO and File objects* ##
+`IO` and `File` objects can be queried on numerous criteria. The `IO` class includes some wuery methods; the `File` class adds more. 
+
+One class and one module closely related to `File` also get into the act: `File::Stat` and `FileTest`. `File::Stat` returns objects whose attributes correspond to the fields of the stat structure defined by the C library call `stat(2)`. Some of these fields are system specific and not meaningful on all platforms. The `FileTest` module offers numerous methods for getting status information about files.
+
+The `File` class also has some query methods. In some cases, you can get the same information about a file several ways:
+
+```irb 
+>> File.size("code/ticket2.rb")
+=> 219
+>> FileTest.size("code/ticket2.rb")
+=> 2019
+>> File::Stat.new("code/ticket2.rb").size 
+=> 219
+```
+In what follows, we'll look at a large selection of query methods. In some cases, they're available in more than one way.
 
 ### *Getting information from the File class and the FileTest module* ###
+`File` and `FileTest` offer numerous query methods that can give you lost of information about a file. These are the main categories of query: *What is it? What can it do? How big is it?*
+
+The methods available as class methods of `File` and `FileTest` are almost identical; they're mostly aliases of each other. The examples will only use `FileTest`, but you can use `File` too. 
+
+Here are some questions you might want to ask about a given file, along with the techniques for asking them. All of these methods return either true or false except `size`, which returns an integer. Keep in mind that these file-testing methods are happy to take directories, links, and other filelike entities as their arguments. They're not restricted to regular files:
+
+• *Does a file exist?* 
+
+`FileTest.exist?("/usr/local/src/ruby/README")`
+
+• *Is the file a directory? A regular file? A symbolic link? 
+
+```irb 
+File.test.directory?("/home/users/dblack/info")
+FileTest.file?("/home/users/dblack/info")
+FileTest.symlink?("/home/users/dblack/info")
+```
+This family of query methods also includes `blockdev?`, `pipe?`, `chardev?`, and `socket?`. 
+
+• *Is a file readable? Writable? Executable?
+
+```irb 
+FileTest.readable?("/tmp")
+FileTest.writable?("/tmp")
+FileTest.executable?("/home/users/dblack/setup")
+```
+This family of query methods includes `world_readable?` and `world_writable?`, which test for more permissive permissions. It also includes variants of the basic three methods with `_real` appended. These test the permissions of the scrip's actual runtime ID as opposed to its effective user ID. 
+
+• *What is the size of this file? Is the file empty (zero bytes)?* 
+
+```irb 
+FileTest.size("/home/users/dblack/setup")
+FileTest.zero?("/tmp/tempfile")
+```
 
 **Getting file information with Kernel#test** 
+Among the top-level methods at your disposal (that is, private methods of the `Kernel` module, which you can call anywhere without a receiver, like `puts`) is a method called `test`. You use `test` by passing it two arguments; the first represents the test, and the second is a file or directory. The choice of test is indicated by a character. Yuo can represent the value using the `?c` notation, where `c` is the character, or as a one-character string. 
+
+Here's an example that finds out whether `/tmp` exists:
+
+`test ?e, "/tmp"`
+
+Other common test characters include `?d` (the test is true if the second argument is a directory), `?f` (true of the second argument is a regular file), and `?z` (true if the second argument is a zero-length file). For every test available through `Kernel#test`, there's usually a way to get the result by calling a method of one of the classes discussed in this section. But `Kernel#test` notation is shorter and can be handy for that reason.
+---
+
+In addition to the query and Boolean methods available through `FileTest` (and `File`), you can also consult objects of the `File::Stat` class for file information.
 
 ### *Deriving file information with File::Stat* ### 
 
+
 ## *Directory manipulation with the Dir class* ##
+
 
 ### *Reading a directory's entries* ### 
 
+
 #### THE ENTRIES METHODS #### 
+
 
 #### DIRECTORY GLOBBING #### 
 
+
 **NOTE** 
+
 
 ### *Directory manipulation and querying* ### 
 
+
 ## *File tools from the standard library* ##
+
 
 ### *The FileUtils module* ### 
 
+
 #### COPYING, MOVING, AND DELETING FILES ####
+
 
 #### THE DRYRUN AND NOWRITE MODULES #### 
 
+
 ### *The Pathname class* ### 
+
 
 ### *The StringIO class* ###
 
+
 **Testing using real files**
+
 
 ### *The open-uri library* ###
