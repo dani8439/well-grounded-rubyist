@@ -140,6 +140,7 @@ Here's an example that finds out whether `/tmp` exists:
 `test ?e, "/tmp"`
 
 Other common test characters include `?d` (the test is true if the second argument is a directory), `?f` (true of the second argument is a regular file), and `?z` (true if the second argument is a zero-length file). For every test available through `Kernel#test`, there's usually a way to get the result by calling a method of one of the classes discussed in this section. But `Kernel#test` notation is shorter and can be handy for that reason.
+
 ---
 
 In addition to the query and Boolean methods available through `FileTest` (and `File`), you can also consult objects of the `File::Stat` class for file information.
@@ -155,6 +156,7 @@ In addition to the query and Boolean methods available through `FileTest` (and `
 The screen output from the `File::Stat.new` method shows you the attributes of the object, including its times of creating (`ctime`), last modification (`mtime`), and last access (`atime`). 
 
 **TIP** The code block given to `File.open` in the example, `{|f| f.stat }`, evaluates to the last expression inside it. Because the last (indeed, only) expression is `f.stat`, the value of the block is a `File::Stat` object. In general, when you use `File.open` with a code block, the call to `File.open` returns the last value from the block. Called without a block, `File.open` (like `File.new`) returns the newly created `File` object. 
+
 --
 Much of the information available from `File::Stat` is built off of UNIX-like metrics, such as inode number, access mode (permissions), and user and group ID. The relevance of this information depends upon your operating system. We won't go into details here because it's not cross-platform; but whatever information your system maintains about files is available if you need it.
 
