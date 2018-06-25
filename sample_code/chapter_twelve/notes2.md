@@ -257,7 +257,7 @@ The flags are, literally, numbers. The value of `File_FNM_DOTMATCH`, for example
 
 --
 
-Globbing with square brackets is the same as globbing wtihout providing any flags. In other words, doing this:
+Globbing with square brackets is the same as globbing without providing any flags. In other words, doing this:
 
 `Dir["*info*"]`
 
@@ -271,9 +271,55 @@ which, because the default is that none of the flags is in effect, is like doing
 
 The square-bracket method of `Dir` gives you a kind of shorthand for the most common case. If you need more granularity, use `Dir.glob`.
 
+By default, globbing doesn't include filenames that start with dots. Also, as you can see, globbing returns full pathnames, not just filenames. Together, these facts let us trim down the file-size totaling example:
+
+```irb 
+dir = "/usr/local/src/ruby/lib/minitest"
+entries = Dir["#{dir}/*"].select {|entry| File.file?(entry) }
+print "Total bytes: "
+puts entries.inject(0) {|total, entry| total + File.size(entry) }
+```
+With their exclusion of dot files and their inclusion of full paths, glob results often correspond more closely than `Dir.entries` results to the ways that many of us deal with files and directories on a day-to-day basis.
+
+There's more to directory management than just seeing what's there. We'll look next at some techniques that let you go more deeply into the process. 
 
 ### *Directory manipulation and querying* ### 
+The `Dir` class includes several query methods for getting information about a directory or about the current directory, as well as methods for creating and removing directories. These methods are, like so many, best illustrated by example.
 
+Here, we'll create a new directory (`mkdir`), navigate to it (`chdir`), add and examine a file, and delete the directory (`rmdir`):
+
+```irb 
+>> newdir = "/temporary/newdir"           #<---- 1.
+=> "/temporary/newdir"
+>> newfile = "newfile"
+=> "newfile"
+>> Dir.mkdir(newdir)
+>> Dir.chdir(newdir) do                       #<---- 2.
+>>  File.open(newfile, "w") do |f|
+>>    f.puts "Sample file in new directory"        #<---- 3.
+>>  end
+>>  puts "Current directory: #{Dir.pwd}"                #<---- 4.
+>>  puts "Directory listing: "
+>>  p Dir.entries(".")
+>>  File.unlink(newfile)                            #<---- 5.
+>> end
+>> Dir.rmdir(newdir)                           #<---- 6.
+>> print "Does #{newdir} still exist?"
+Does /temporary/newdir still exist?=> nil
+>> if File.exist?(newdir)                 #<---- 7.
+>>  puts "Yes"
+>> else
+>>  puts "No"
+>> end
+No
+```
+After initializing a couple of convenience variables (#1), we create the new directory with `mkdir`. With `Dir.chdir`, we change to that direcory; also, using a block with `chdir` means that after the block exits, we're back in the previous directory (#2). (Using `chdir` without a block changes the current directory until it's explicitly changed back.)
+
+As a kind of token directory-populating step, we create a single file iwth a single line in it (#3). We then examine the current directory name using `Dir.pwd` and look at a listing of the entries in the directory (#4). Next, we unlink (delete) the recently created file (#5), at which point the `chdir` block is finished.
+
+Back in whatever directory we started in, we remove the sample directory using `Dir.rmdir` (also callable as `unlink` or `delete`) (#6). Finally, we test for the existence of `newdir`, fully expecting an answer of `No` (because `rmdir` would have raised a fatal error if it hadn't found the directory and successfully removed it) (#7).
+
+As promised in the introduction to the chapter, we'll now look at some standard library facilities for manipulating and handling files.
 
 ## *File tools from the standard library* ##
 
