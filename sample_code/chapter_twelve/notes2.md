@@ -209,16 +209,65 @@ Total bytes: => nil
 403
 => nil
 ```
-First, we create a `Dir` object for the target directory and grab its entries. NExt comes a sequence of manipulations on the array of entries. Using the `delete_if` array method, we remove all that begin with a dot. Then, we do an in-place mapping of the entry array so that each entry includes the full path to the file. This is accomplished wtih two useful methods: the instance method `Dir#path`, which returns the original directory path underlying this particular `Dir` instance (/home/dani8439/temporary/sandbox); and `File.join` which joins the path to the filename with the correct separator (usually/, but it's somewhat system-dependent).
+First, we create a `Dir` object for the target directory and grab its entries. NExt comes a sequence of manipulations on the array of entries. Using the `delete_if` array method, we remove all that begin with a dot. Then, we do an in-place mapping of the entry array so that each entry includes the full path to the file. This is accomplished wtih two useful methods: the instance method `Dir#path`, which returns the original directory path underlying this particular `Dir` instance (/home/dani8439/temporary); and `File.join` which joins the path to the filename with the correct separator (usually/, but it's somewhat system-dependent).
 
 Now that the entries have been massaged to represent full pathnames, we do another `delete_if` operation to delete all entries that aren't regular files, as measured by the `File.file?` test method. The entries array now contains full pathnames of all the regular files in the original directory. THe last step is to add up their sizes, a task for which `inject` is perfectly suited.
 
 Among other ways to shorten this code, you can use directory globbing instead of the `entries` method. 
 
 #### DIRECTORY GLOBBING #### 
+Globbing in Ruby takes its semantics largely from shell globbing, the syntax that lets you do things like this in the shell:
 
+```irb 
+$ ls * .rb
+$ rm *.?xt
+$ for f in [A-Z]*   #etc
+```
+The details differ from one shell to another, of course; but the point is that this whole family of name-expansion techniques is where Ruby gets its globbing syntax. An asterisk represents a wildcard match on any number of characters; a question mark represents one wildcard character. Regexp-style character classes are available for matching. 
 
-**NOTE** 
+To glob a directory you can use the `Dir.glob` method on `Dir.[]` (square brackets). The square-bracket version of the method allows you to use index-style syntax as you would with the square-bracket method on an array or hash. You get back an array containing the result set:
+
+```irb
+>> Dir["/usr/local/src/ruby/onclude/ruby/r*.h"]
+=> ["/usr/local/src/ruby/include/ruby/re.h", "/usr/local/src/ruby/include/ruby/regex.h", "/usr/local/src/ruby/include/ruby/ruby.h"]
+```
+The `glob` method is largely equivalent to the [] method but a little more versatile: you can give it not only a glob pattern but also one or more flag arguments that control its behavior. For example, if you want to do a case-insensitive glob, you can pass the `File::FNM_CASEFOLD` flag:
+
+```irb
+Dir.glob("info*")     #[]
+Dir.glob("info", File::FNM_CASEFOLD     #["Info", "INFORMATION"]
+```
+Another useful flag is `FNM_DONMATCH`, which includes hidden dot files in the results.
+
+If you want to use two flags, you combine them with the bitwise OR operator, which consists of a single pipe character. In this example, progressively more files are found as the more permissive flags are added:
+
+```irb 
+>> Dir.glob("*info*")
+=> []
+>> Dir.glob("*info*", File::FNM_DOTMATCH)
+=> [".information:]
+>> Dir.glob("*info*", File::FNM_DOTMATCH | File::FNM_CASEFOLD)
+=> [".information", ".INFO", "Info"]
+```
+The flags are, literally, numbers. The value of `File_FNM_DOTMATCH`, for example, is 4. The specific numbers don't matter (they derive ultimately from the flags in the systen library function `fnmatch`). What does matter is the fact that they're exponents of two accounts for the use of the OR operation to combine them. 
+
+**NOTE** As you can see from teh first two lines of the previous example, a `glob` operation on a directory can find nothing and still not complain. If gives you an empty array. Not finding anything isn't considered a failure when you're globbing.
+
+--
+
+Globbing with square brackets is the same as globbing wtihout providing any flags. In other words, doing this:
+
+`Dir["*info*"]`
+
+is like doing this
+
+`Dir.glob["*info*", 0]` 
+
+which, because the default is that none of the flags is in effect, is like doing this:
+
+`Dir.glob("*info*")`
+
+The square-bracket method of `Dir` gives you a kind of shorthand for the most common case. If you need more granularity, use `Dir.glob`.
 
 
 ### *Directory manipulation and querying* ### 
