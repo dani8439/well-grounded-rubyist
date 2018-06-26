@@ -321,25 +321,3 @@ Back in whatever directory we started in, we remove the sample directory using `
 
 As promised in the introduction to the chapter, we'll now look at some standard library facilities for manipulating and handling files.
 
-## *File tools from the standard library* ##
-
-
-### *The FileUtils module* ### 
-
-
-#### COPYING, MOVING, AND DELETING FILES ####
-
-
-#### THE DRYRUN AND NOWRITE MODULES #### 
-
-
-### *The Pathname class* ### 
-
-
-### *The StringIO class* ###
-
-
-**Testing using real files**
-
-
-### *The open-uri library* ###
