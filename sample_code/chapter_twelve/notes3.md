@@ -161,9 +161,77 @@ The fact that `dir` is always a `Pathname` object means that it's possible to ca
 We'll look next at a different and powerful standard library class: `StringIO`.
 
 ### *The StringIO class* ###
+The `StringIO` class allows you to treat strings like `IO` objects. You can seek through them, rewind them, and so forth.
 
+The advantage conferred by `StringIO` is that you can write methods that use an `IO` object API, and those methods will be able to handle strings. That can be useful for testing, as well as in a number of real runtime situations.
+
+Let's say, for example, that you have a module that decomments a file: it reads from one file and writes everything that isn't a comment to another file. Here's what such a module might look like:
+
+```ruby
+module DeCommenter
+  def self.decomment(infile, outfile, comment_re = /\A\s*#/)
+    infile.each do |inline|
+      outfile.print inline unless inline =~ comment_re
+    end
+  end
+end
+```
+The `Decommenter.decomment` method expects two open file handles: one it can read from and one it can write to. It also takes a regular expression, which has a default value. That regular expression determines whether each line in the input is a comment. Every line that does *not* match the regular expression is printed to the output file.
+
+A typical use case for the `DeCommenter` module would look like this:
+
+```ruby
+File.open("myprogram.rb") do |inf| 
+  File.open("myprogram.rb.out", "w") do |outf|
+    Decommenter.decomment(inf, outf)
+  end 
+end 
+```
+In this example, we're taking the comments out of the hypothetical program file myprogram.rb 
+
+What if you want to write a test for the `DeCommenter` module? Testing file transformations can be difficult because you need to maintain the input file as part of the test and also make sure you can write to the output file-which you then have to read back in. `StringIO` makes it easier by allowing all of the code to stay in one place without the need to read or write actual files.
 
 **Testing using real files**
+If you want to run tests on file input and output using real files, Ruby's `tempfile` class can help you. It's a standard-library feature, so you have to `require 'tempfile'`. Then, you create temporary files with the constructor, passing in a name that Ruby munges into a unique filename. For example:
 
+`cf = Tempfile.new("my_temp_file")`
+
+You can then write to and read from the file using the `File` object `tf`.
+
+--- 
+
+To use the decommenter with `StringIO`, save the module to decommenter.rb. Then, create a second file, decomment-demo.rb, in the same directory with the following contents:
+
+```ruby
+require 'stringio'                                  
+require_relative 'decommenter'                    #<----1.
+string = << EOM
+# This is a comment.  
+This isnt a comment.                                   #<----2.
+# This is.
+  # So is this.
+This is also not a comment.
+EOM
+infile = StringIO.new(string)                               #<----3.
+outfile = StringIO.new("")                                   
+DeCommenter.decomment(infile, outfile)                          #<----4.
+puts "Test succeed" if outfile.string == << EOM                      #<----5.
+This isnt a comment.
+This is also not a comment
+EOM
+```
+After loading both the `stringio` library and the decommenter code (#1), the program sets `string` to a five-line string (created using a here-document) containing a mix of comment lines and non-comment lines (#2). Next, two `StringIO` objects are created: one that uses the contents of `string` as its contents, and one that's empty (#3). The empty one represents the output file.
+
+Next comes the call to `DeCommenter.decomment` (#4). The module treats its two arguments as `File` or `IO` objects, reading from one and printing to the other. `StringIO` objects happily behave like `IO` objects, and the filtering takes place between them. When the filtering is done, you can check explicitly to make sure that what was written to the output "file" is what you expected (#5). The original and changed contents are both physically present in the same file, which makes it easier to see what the test  is doing and also easier to change it.
+
+Another useful standard library feature is the `open-uri` library.
 
 ### *The open-uri library* ###
+The `open-uri` standard library package lets you retrieve information from the network using the HTTP and HTTPS protocols as easily as if you were reading local files. All you do is require the library (`require 'open-uri'`) and use the `Kernel#open` method with a URI as the argument. You get back a `StringIO` object containing the results of your request:
+
+```ruby
+require 'open-uri'
+rubypage = open("http://rubycentral.org")
+puts rubypage.gets
+```
+You get the `doctype` declaration from Ruby Central homepage-not the most scintillating reading, but it demonstrates the ease with which `open-uri` lets you import networked materials. 
