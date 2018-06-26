@@ -85,7 +85,80 @@ You'll almost certainly find `FileUtils` useful in many situations. Even if you'
 Next we'll look at another file-related offering form the standard library: the pathname extension.
 
 ### *The Pathname class* ### 
+The `Pathname` class lets you create `Pathname` objects and query and manipulate them so you can determine, for example, the basename and extension of a pathname, or iterate through the path as it ascends the directory structure.
 
+`Pathnam` objects also have a large number of methods that are proxied from `File`, `Dir`, and `IO`, and other classes. We won't look at those methods here; we'll stick to the ones that are uniquely `Pathname`'s. 
+
+First, start with a `Pathname` object:
+
+```irb 
+>> require 'pathname'
+=> true
+>> path = Pathname.new("/Users/dblack/hacking/test1.rb")
+=> #<Pathname:/Users/dblack/hacking/test1.rb>
+```
+When you call methods on a `Pathname` object, you often get back another `Pathname` object. But the new object always has its string representation visible in its own `inspect` string. If you want to see the string on its own, you can use `to_s` or do a `puts` on teh pathname. 
+
+Here are two ways to examine the basename of the path:
+
+```irb 
+>> path.basename
+=> #<Pathname:test1.rb>
+>> puts path.basename
+test1.rb
+=> nil
+```
+You can also examine the directory that contains the file or directory represented by the pathname:
+
+```irb 
+>> path.dirname
+=> #<Pathname:/Users/dblack/hacking>
+```
+If the last segment of the path has an extension, you can get the extension from the `Pathname` object:
+
+```irb 
+>> path.extname
+=> ".rb"
+```
+The `Pathname` object can also walk up its file and directory structure, truncating itself from the right on each iteration, using the `ascend` method and a code block:
+
+```irb
+>> path.ascend do |dir|
+>>    puts "Next level up: #{dir}"
+>> end
+```
+Here's the output:
+
+```irb
+Next level up: /Users/dblack/hacking/test1.rb
+Next level up: /Users/dblack/hacking
+Next level up: /Users/dblack
+Next level up: /Users
+Next level up: /
+=> nil
+```
+The key behavioral trait of `Pathname` objects is that they return other `Pathname` objects. That means you can extend the logic of your pathname operations without having to convert back and forth from pure strings. By way of illustration, here's the last example again, but altered to take advantage of the fact that what's coming through in the block parameter `dir` on each iteration isn't a string (even though it prints out like one) but a `Pathname` object:
+
+```irb 
+>> path = Pathname.new("/Users/dblack/hacking/test1.rb")
+=> #<Pathname:/Users/dblack/hacking/test1.rb>
+>> path.ascend do |dir|
+>>    puts "Ascended to #{dir.basename}"
+>> end
+```
+The output is:
+
+```irb 
+Ascended to test1.rb
+Ascended to hacking
+Ascended to dblack
+Ascended to Users
+Ascended to /
+=> nil
+```
+The fact that `dir` is always a `Pathname` object means that it's possible to call the `basename` method on it. It's true that you can always call `File.basename(string)` on any string. But the `Pathname` class pinpoints the particular knowledge that a path might be assumed to encapsulate about itself and makes it available to you via simple method calls.
+
+We'll look next at a different and powerful standard library class: `StringIO`.
 
 ### *The StringIO class* ###
 
