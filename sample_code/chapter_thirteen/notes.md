@@ -292,6 +292,73 @@ What happened in Ruby's case? We sent the message "name" to the object `ruby`. T
 Given an understanding of the order in which objects search their lookip paths for methods, you can work out which version of a method (thiat is, which class or module's version of the method) an object will find first. Examples help, too, especially to illustrate the difference between including a module in a singleton class and in a regular class.
 
 #### SINGLETONE MODULE INCLUSION VS. ORIGINAL-CLASS MODULE INCLUSION #### 
+WHen you mix a module into an object's singleton class, you're dealing with that object specifically; the methods it learns from the module take precedence over any methods of the same name in its original class. The following listing shows the mechanics and outcomes of doing this kind of `include` operation.
+
+```ruby 
+class C
+  def talk
+    puts 'Hi from original class!'
+  end
+end
+
+module M
+  def talk
+    puts "Hello from module!"
+  end
+end
+
+c = C.new
+c.talk            #<----- 1.
+
+class << c
+  include M         #<------ 2. 
+end
+c.talk                  #<------ 3.
+```
+The output from this listing is as follows:
+
+```irb 
+Hi from original class!
+Hello from module!
+```
+The first call to `talk` (#1) executes the `talk` instance method defined in `c`'s class, `C`. Then, we mix the module `M`, which also defines a method called `talk`, into `c`'s singleton class (#2). As a result, the next time we call `talk` on `c` (#3), the `talk` that gets executed (the one that `c` sees first) is the one defined in `M`.
+
+It's all a matter of how the classes and modules on the object's method lookip path are stacked. Modules included in the singleton class are encountered before the original class and before any modules included in the original class. 
+
+You can see this graphically by using the `ancestors` method, which gives you a list of the classes and modules in the inheritance and inclusion hierarchy of any class or module. Starting from after the class and module definitions in the previous example try using `ancestors` to see what the hierarchy looks like:
+
+```ruby 
+c = C.new
+class << c
+  include M
+  p ancestors
+end
+```
+You get an array of ancestors-essentially, the method-lookup path for instances of this class. Because this is the singleton class of `c`, looking at its ancestors means looking at the method lookup path for `c`. Note that `c`'s singleton class comes first in the ancestor list:
+
+```irb 
+[#<Class:Object>, #<Class:BasicObject>, Class, Module, Object, M, Kernel, BasicObject]
+```
+Now look what happens when you not only mix `M` into the singleton class of `c` but also mix it into `c`'s class (`C`). Picking up after the previous example:
+
+```ruby 
+class C
+  include M
+end
+class << c
+  p ancestors
+end
+```
+This time you see the following result:
+
+```irb 
+[#<Class:#<C:0x000000026e2ce0>>, C, M, Object, Kernel, BasicObject]
+```
+The module `M` appears twice! Two different classes-the singleton class of `c` and the class `C`-have mixed it in. Each mix-in is a separate transaction. It's the private business of each class; the classes don't consult with each other. (You could even mix `M` into `Object` and you'd get it three times in the ancestors list.)
+
+You're encouraged to take these examples, modify them, turn them this way and that, and examine the results. Classes are objects, too-so see what happens when you take the singleton class of an object's singleton class. What about mixing modules into other modules? Try some examples with `prepend` too. Many permutations are possible; you can learn a lot through experimentation, using what we've covered here as a starting point.
+
+The main lesson is that per-object behavior in Ruby is based on teh same principles as regular, class-derived object behavior: the definition of instance methods in classes and modules, the mixing in of modules to classes, and the following of a method-lookip path consisting of classes and modules. If you master these concepts and revert to them whenever something seems fuzzy, your understanding will scale upward successfully.
 
 ### *The singleton_class method* ###
 
