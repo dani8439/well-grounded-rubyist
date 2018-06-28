@@ -192,8 +192,104 @@ THe fact that `class << self` shows up frequently in connection with the creatio
 In chapter 4, we looked at hte steps an object takes as it looks for a method among those defined in its class, its class's class, and so forth. Now we have a new item on the radar: the singleton class. What's the effect of this extra class on the method lookup process?
 
 ### *Singletone classes on the method-lookup path* ### 
+Recall that method searching goes up the class-inheritance chain, with detours for any modules that have been mixed in or prepended. When we first discussed this process, we hadn't talked about singleton classes and methods, and they weren't present in the diagram. Now we can revise the diagram to encompass them, as shown in the figure. (see book p 395). 
+
+The box containing `class << object` represents the singleton class of `object`. In its search for the method `x`, `object` looks first for any modules prepended to its singleton class; then it looks in the singleton class itself. It then looks in any modules that the singleton class has included. (In the diagram, there's one: the module `N`.) Next the search proceeds up to the object's original class (class `D`), and so forth. 
+
+Note in particular that it's possible for a singleton class to prepend or include a module. After all, it's a class.
+
+```ruby
+# See book for diagram - this isn't quite right
+class BasicObject
+  module Kernel
+  class Object
+    include Kernel
+    class C
+      module N
+      end
+      class D < C
+        module M
+          module Y
+        end
+        prepend M
+        include N
+        class << object
+          module X
+          prepend X
+          include Y
+        end
+      end
+    end
+  end
+end
+
+object = D.new 
+object.x
+```
 
 #### INCLUDING A MODULE IN A SINGLETON CLASS ####
+Let's build a little program that illustrates the effect of including a module ina singleton class. We'll start with a simple `Person` class and a couple of instances of that class:
+
+```ruby 
+class Person
+  attr_accessor :name
+end
+david = Person.new
+david.name = "David"
+matz = Person.new 
+matz.name = "Matz"
+ruby = Person.new
+ruby.name = "Ruby"
+```
+Now let's say that osme persons-that is, some `Person` objects-don't like to reveal their names. A logical way to add this kind of secrecy to individual objects is to add a singleton version of the `name` method to each of those objects:
+
+```ruby
+def david.name
+  "[not available]"
+end
+```
+At this point, Matz and Ruby reveal their names, but David is being secretive. When we do a roll call:
+
+```ruby
+puts "We've got one person named #{matz.name}, "
+puts "one named #{david.name}, "
+puts "and one named #{ruby.name}"
+```
+we get only two names:
+
+```irb
+We've got one person named Matz,
+one named [not available],
+and one named Ruby
+```
+So far, so good. But what if more than one person decides to be secretive? It would be a nuisance to have to write `def person.name`... for every such person.
+
+The way around this is to use a module. Here's what the module looks like:
+
+```ruby
+module Secretive
+  def name
+    "[not available]"
+  end
+end
+```
+Now, let's make Ruby secretive. Instead of using `def` to define a new version of the `name` method, we'll include the module in Ruby's singleton class:
+
+```ruby
+class << Ruby 
+  include Secretive
+end
+```
+The roll call now shows that Ruby has gone over to the secretive camp; running the previous `puts` statements again produces the following output:
+
+```irb
+We've got one person named Matz,
+one named [not available],
+and one named [not available]
+```
+What happened in Ruby's case? We sent the message "name" to the object `ruby`. The object set out to find the method. First it looked in its own singleton class, where it didn't find the `name` method. Then it looked in the modules mixed into its singleton class. The singleton class of `ruby` mixed in the `Secretive` module, and, sure enough, that module contains an instance method called `name`. At that point, the method gets executed.
+
+Given an understanding of the order in which objects search their lookip paths for methods, you can work out which version of a method (thiat is, which class or module's version of the method) an object will find first. Examples help, too, especially to illustrate the difference between including a module in a singleton class and in a regular class.
 
 #### SINGLETONE MODULE INCLUSION VS. ORIGINAL-CLASS MODULE INCLUSION #### 
 
