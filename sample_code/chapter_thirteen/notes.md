@@ -104,11 +104,92 @@ The *<< object* notation means the anonymous, singleton class of `object`. When 
 Consider this program, for example:
 
 ```ruby 
+str = "I am a string"
+class << str 
+  def twice
+    self + " " + self 
+  end
+end
+puts str.twice
 ```
+The output is
+
+`I am a string I am a string`
+
+The method `twice` is a singleton method of the string `str`. It's exactly was if we had done this:
+
+```ruby 
+def str.twice 
+  self + " " + self
+end
+```
+The difference is that we've pried open the singleton class of `str` and defined the method there. 
 
 **The difference between def obj.meth and class << obj; def meth** 
+This question often arises: Is there any difference between defining a method directly on an object (using the `def obj.some_method` notation) and adding a method to an object's singleton class explicitly (by doing `class << obj; def some_method`)? The answer is that there's one difference: constants are resolved differently.
+
+If you have a top-level constant `N`, you can also define an `N` inside an object's singleton class:
+
+```ruby 
+N = 1
+obj = Object.new
+class << obj
+  N = 2
+end
+```
+Given this sequence of instructions, the two ways of adding a singleton method to `obj` differ in which `N` is visible from within the method definition body:
+
+```ruby
+def obj.a_method
+  puts N
+end
+class << obj
+  def another_method
+    puts N
+  end
+end
+
+obj.a_method            #<--- Output: 1 (outer-level N)
+obj.another_method      #<--- Output: 2 (N belonging to obj's singleton class)
+```
+It's relatively unusual for this difference in the visibility of constants to affect your code; in most circumstances, you can regard the two notations for singleton-method definition as interchangeable. But it's worth knowing about the difference, because it may matter in some situations and it may also explain unexpected results.
+
+---
+The `class << object` notation has a bit of a reputaiton as cryptic or confusing. It needn't be either. Think of it this way: it's the `class` keyword, and it's willing to accept either a constant or a `<< object` expression. What's new here is the ocncept of the singleton class. When you're comfortable with the idea that objects have singleton classes, it makes sense for you to be able to open those classes with the `class` keyword. The `<< object` notation is the way the concept "singleton class of object" is expressed when `class` requires it.
+
+By far the most frequent use of the `class << object` notation for entering a singleton method class is in connection with class-method definitions.
 
 #### DEFINING CLASS METHODS WITH CLASS << ####
+Here's an idiom you'll see often:
+
+```ruby 
+class Ticket 
+  class << self 
+    def most_expensive(*tickets)
+      tickets.may_by(&:price)
+    end 
+  end
+end
+```
+This code results in the creation of the class method `Ticket.most_expensive`-much the same method as the one defined in chapter 3, but that time around we did this:
+
+`def Ticket.most_expensive(*tickets)` # etc.
+
+In the current version, we're using the `class << object` idiom, opening the singleton class of the object; and in this particular case, the object involved is the class object `Ticket`, which is the value of `self` at the point in the code where `class << self` is invoked. The result of defining the method `most_expensive` inside the class-definition block is that it gets defined as a singleton method on `Ticket`-which is to say, a class method.
+
+The same class method could also be defined like this (assuming this code comes at a point in the program where the `Ticket` class already exists):
+
+```ruby 
+class << Ticket 
+  def most_expensive(tickets)
+  # etc.
+end
+```
+Because `self` is `Ticket` inside the `class Ticket` definition body, `class << self` *inside* the body is the same as `class << Ticket` *outside* the body. (Technically, you could even do `class << Ticket` inside the body of class `Ticket`, but in practice you'll usually see `class << self` whenever the object whose singleton class needs opening is `self`.)
+
+THe fact that `class << self` shows up frequently in connection with the creation of class methods sometimes leads to the false impression that the `class << object` notation can only be used to create class methods, or that the only expression you can legally put on the right is `self`. In fact, `class << self` inside a class-definition block is just one particular use case for `class << object`. The technique is general: it puts you in a definition block for the singleton class of `object`, whatever `object` may be.
+
+In chapter 4, we looked at hte steps an object takes as it looks for a method among those defined in its class, its class's class, and so forth. Now we have a new item on the radar: the singleton class. What's the effect of this extra class on the method lookup process?
 
 ### *Singletone classes on the method-lookup path* ### 
 
