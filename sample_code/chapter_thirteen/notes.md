@@ -23,12 +23,88 @@ object techniques can help you get the most out of Ruby's sometimes surprisingly
 Finally, we'll renew an earlier acquaintance: the `BasicObject` class. `BasicObject` instances provide about the purest laboratory imaginable for creating individual objects, and we'll consider how that class and object individuation complement each other.
 
 ## *Where the singleton methods are: The singleton class* ## 
+Most of what happens in Ruby involves classes and modules, containing definitions of instance methods:
+
+```ruby
+class C
+  def talk 
+    puts "Hi!"
+  end
+end
+```
+and subsequently, the instantiation of classes and the calling of those instance methods:
+
+```ruby 
+c = C.new 
+c.talk   #<---Output: Hi!
+```
+But as you saw earlier (even earlier than you saw instance methods inside classes), you can also define singleton methods directly onto individual objects:
+
+```ruby 
+obj = Object.new 
+def obj.talk 
+  puts "Hi!"
+end
+obj.talk  #<---- Output: Hi!
+```
+And you've also seen that the most common type of singleton method is the class method-a method added to a `Class` object on an individual basis:
+
+```ruby 
+class Car 
+  def self.makes 
+    %w{ Honda Ford Toyota Chevrolet Volvo }
+  end
+end
+```
+But any object can have singleton methods added to it. (Almost any object; see side-bar.) The ability to define behavior on a per-object basis is one of the hallmarks of Ruby's design.
 
 **Some objects are more individualizable than others** 
+Almost every object in Rby can have methods added to it. The exceptions are instances of certain `Numeric` subclasses, including integer classes and floats, and symbols. If you try this:
+
+`def 10.some_method; end` 
+
+you'll get a syntax error. If you try this:
+
+`class << 10; end`
+
+you'll get a type error and a message saying "Can't define singleton." The same is true, in both cases, of floating-point numbers and symbols.
+
+--
+Instance methods-those available to any and all instances of a given class-live inside a class or module, where thy can be found by the objects that are able to call them. But what about isngleton methods? Where does a method live, if that method exists only to be called by a single object?
 
 ### *Dual determination through singleton class* ###
+Ruby, true to character, has a simple answer to this tricky question: an object's singleton methods live in the object's *singletong class.* Every object ultimately has two classes:
+
+• The class of which it's an instance 
+
+• Its singleton class
+
+An object can call instance methods from its original class, and it can also call methods from its singleton class. It has both. The method-calling capabilities of the object account, all together, to the sum of all the instance methods defined in these two classes, along with methods available through ancestral classes (the superclass of the object's class, that class's superclass, and so forth) or through any modules that have been mixed in or prepended to any of these classes. You can think of an object's singleton class as an exclusive stash of methods, tailor-made for that object and not shared with other object's-not even with other instances of the object's class. 
 
 ### *Examining and modifying a singleton class directly* ### 
+Singleton classes are anonymous although they're class objects (instances of the class `Class`), they spring up automatically without being given a name. Nonetheless, you can open the class-definition body of a singleton class and add instance methods, class methods, and constants to it, as you would with a regular class.
+
+You do this with a special form of the `class` keyword. Usually, a constant follows that keyword:
+
+```ruby
+class C
+  # method and constant definitions here
+end
+```
+But to get inside the definition body of a singleton class, you use a special notation:
+
+```ruby
+class << object
+  # method and constant definitions here
+end
+```
+
+The *<< object* notation means the anonymous, singleton class of `object`. When you're inside the singleton class-definition boyd, you can define methods-and these methods will be singleton methods of the object whose singleton class you're in.
+
+Consider this program, for example:
+
+```ruby 
+```
 
 **The difference between def obj.meth and class << obj; def meth** 
 
