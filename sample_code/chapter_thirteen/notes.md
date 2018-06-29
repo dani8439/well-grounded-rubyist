@@ -361,43 +361,12 @@ You're encouraged to take these examples, modify them, turn them this way and th
 The main lesson is that per-object behavior in Ruby is based on teh same principles as regular, class-derived object behavior: the definition of instance methods in classes and modules, the mixing in of modules to classes, and the following of a method-lookip path consisting of classes and modules. If you master these concepts and revert to them whenever something seems fuzzy, your understanding will scale upward successfully.
 
 ### *The singleton_class method* ###
+To refer directly to the singleton class of an object, use the `singleton_class` method. This method can save you some `class << object` roundtrips. 
 
-### *Class methods in (even more) depth* ###
+Here's how you'd use this method to get the ancestors of an object's singleton class:
 
-**SINGLETONE CLASSES AND THE SINGLETON PATTERN** 
-
-## *Modifying Ruby's core classes and modules* ## 
-
-### *The risks of changing core functionality* ### 
-
-#### CHANGING REGEXP#MATCH (AND WHY NOT TO) ####
-
-**NOTE**
-
-#### THE RETURN VALUE OF STRING#GSUB! AND WHY IT SHOULD STAY THAT WAY ####
-
-**The tap method**
-
-### *Additive changes* ### 
-
-### *Pass-through overrides* ### 
-
-**Aliasing and its aliases** 
-
-#### ADDITIVE/PASS-THROUGH HYBRIDS #### 
-
-### *Per-object changes with extend* ###
-
-#### ADDING TO AN OBJECT'S FUNCTIONALITY WITH EXTEND ####
-
-#### ADDING CLASS METHODS WITH EXTEND ####
-
-#### MODIFYING CORE BEHAVIOR WITH EXTEND ####
-
-### *Using refinements to affect core behavior* ###
-
-## *BasicObject as ancestor and class* ##
-
-### *Using BasicObject* ###
-
-### *Implementing a subclass of BasicObject* ###
+```ruby 
+string = "a string"
+p string.singleton_class.ancestors
+```
+Now let's go back and look at a special case in the world of singleton methods 9special, because it's common and useful): class methods. 
