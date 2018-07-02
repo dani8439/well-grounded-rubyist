@@ -71,9 +71,9 @@ It may be tempting to do something like this to avoid the error:
 
 ```ruby
 class Regexp
-   alias_old_match_ match          #<--- 1.
+   alias __old_match__ match          #<--- 1.
    def match(string)
-       _old_match_(string) || []
+       __old_match__(string) || []
    end 
 end
 ```
@@ -119,7 +119,88 @@ As you can see, the return value of the call to `gsub!` is the string object wit
 
 Interestingly, though, something different happens when the `gsub!` operation doesn't result in any changes to the string:
 
+```irb
+>> string = "Hello there!"
+=> "Hello there!"
+>> string.gsub!(/zzz/, "xxx")
+=> nil
+>> string
+=> "Hello there!"
+```
+There's no match on /zzz/, so the string isn't changed-and the return value of the call to `gsub!` is `nil`. 
+
+Like the `nil` return from a match operation, the `nil` return from `gsub!` has the potential to make things blow up when you'd rather they didn't. Specifically, it means you can't use `gsub!` reliably in a chain of methods:
+
+```irb 
+>> string = "Hello there!"
+=> "Hello there!"
+>> string.gsub!(/e/, "E").reverse!           #<---1.
+=> "!ErEht ollEH"                                 #<---2.
+>> string = "Hello there!"
+=> "Hello there!"
+>> string.gsub!(/zzz/, "xxx").reverse!
+NoMethodError: undefined method `reverse!' for nil:NilClass       #<---3.
+        from (irb):10
+        from /usr/local/rvm/rubies/ruby-2.3.1/bin/irb:11:in `<main>'
+```
+This example does something similar (but not quite the same) twice. The first time through, the chained calls to `gsub!` and `reverse!` (#1) return the newly `gsub!`'d and reversed string (#2). But the second time, the chain of calls results in a fatal error (#3): the `gsub!` call didn't change the string, so it returned `nil`-which means we called `reverse!` on `nil` rather than on a string.
+
 **The tap method**
+The `tap` method (callable on any object) performs the somewhat odd but potentially useful task of executing a code block, yielding the receiver to the block, and returning the receiver. It's easier to show this than to describe it:
+
+```irb 
+>> "Hello".tap {|string| puts string.upcase }.reverse
+HELLO
+=> "olleH"
+```
+Called on the receiver `"Hello"`, the `tap` method yields that string back to its code block, as confirmed by the printing out of the uppercased version of the string. Then `tap` returns the entire string-so the reverse operation is performed on the string. If you call `gsub!` on a string inside a `tap` block, it doesn't matter whether it returns `nil`, because `tap` returns the string. Be careful though. Using `tap` to circumvent the `nil` return of `gsub!` (or of other similarly behaving bang methods) can introduce complexities of its own, especially if you do multiple chaining where some methods perform in-place operations and others return object copies.
+
+--
+One possible way of handling the inconvenience of having to work around the `nil` return from `gsub!` is to take the view that it's not usually appropriate to chain method calls together too much anyway. And you can always avoid chain-related problems if you don't chain:
+
+```irb 
+>> string = "Hello there!"
+=> "Hello there!"
+>> string.gsub!(/zzz/, "xxx")
+=> nil
+>> string.reverse!
+=> "!ereht olleH"
+```
+Still, a number of Ruby users have been bitten by the `nil` return value, either because they expected `gsub!` to behave like `gsub` (the non-bang version, which always returns its receiver, whether there's been a change or not) or because they didn't anticipate a case where the string wouldn't change. So `gsub!` and its `nil` return value becomes a popular candidate for change.
+
+The change can be accomplished like this:
+
+```ruby 
+class String
+  alias __old_gsub_bang__ gsub!
+  def gsub!(*args, &block)
+    __old_gsub_bang__(*args, &block)
+    self
+  end
+end
+```
+First the original `gsub` gets an alias; that will enable us to call the original version from inside the new version. The new `gsub!` takes any number of arguments (the arguments themselves don't matter; we'll pass them along to the old `gsub!`) and a code block, which will be captures in the variable `block`. If no block is supplied-and `gsub!` can be called with or without a block-`block` is `nil`.
+
+Now we call the old version of `gsub!`, passing it the arguments and reusing the code block. Finally, the new `gsub!` does the thing it's been written to do: it returns `self` (the string), regardless of whether the call to `__old_gsub_bang__` returned the string or `nil`.
+
+And now, the reasons not to do this.
+
+Changing `gsub!` this way is probably less likely, as a matter of statistics, to get you in trouble than changing `Regexp#match` is. Still, it's possible that someone might write code that depends on teh documented behavior of `gsub!`, in particular on the returning of `nil` when the string doesn't change. Here's an example-and although it's contrived (as most examples of this scenario are bound to be), it's valid Ruby and dependent on the documented behavior of `gsub!`:
+
+```irb 
+>> states = { "NY" => "New York", "NJ" => "New Jersey", "ME" => "Maine" }
+=> {"NY"=>"New York", "NJ"=>"New Jersey", "ME"=>"Maine"}      #<--- 1.
+>> string = "Eastern states include NY, NJ, and ME."              #<--- 2.
+=> "Eastern states include NY, NJ, and ME."
+>> if string.gsub!(/\b([A-Z]{2})\b/) { states[$1] }                    #<--- 3.
+>> puts "Substitution occurred"
+>>   else
+>> puts "String unchanged"
+>>   end
+Substitution occurred                                                 #<--- 4.
+=> nil
+```
+We start with a hash of state abbreviations and full names (#1). Then comes a string that uses state abbreviations (#2). The goal is to replace the abbreviations with the full names, using a `gsub!` operation that captures any two consecutive uppercase letters surrounding by word boundaries (`\b`) and replaces them with the value from the hash corresponding to the two-letter substring (#3). Along the way, we take note of whether any such replacements are made. If any are, `gsub!` retruns the new version of `string`. If no sustitutions are made, `gsub!` returns `nil`. The result of the process is printed out at the end (#4).
 
 ### *Additive changes* ### 
 
