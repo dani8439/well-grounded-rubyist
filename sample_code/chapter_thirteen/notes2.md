@@ -54,12 +54,70 @@ In this section, we'll look at the landscape of core changes: the how, the what,
 We'll start with a couple of cautionary tales. 
 
 ### *The risks of changing core functionality* ### 
+The problem with making changes to the Ruby core classes is that those changes are global: as long as your program is running, the changes you've made will be in effect. If you change how a method works and that method is used somewhere else (inside Ruby itself or in a library you load), you've destabilized the whole interpreter by changing the rules of the game in midstream.
+
+It's tempting, nonetheless, to customize Ruby to your liking by changing core methods globally. After all, you can. But this is the least safe and least advisable approach to customizing core-object behaviors. We're only looking at it so you can get a sense of the nature of the problem.
+
+One commonly cited candidate for the ad hoc change is the `Regexp` class. 
 
 #### CHANGING REGEXP#MATCH (AND WHY NOT TO) ####
+As you'll recall from chapter 11, when a match operation using the `match` method fails, you get back `nil`; when it succeeds, you get back a `MatchData` object. This result is irritating because you can't do the same things witl `nil` that you can with a `MatchData` object.
 
-**NOTE**
+This code, for example, succeeds if a first capture is created by the match:
+
+`some_regexp.match(some_string)[1]`  <-- NoMethodError: undefined method[] for nil:NilClass
+
+It may be tempting to do something like this to avoid the error:
+
+```ruby
+class Regexp
+   alias_old_match_ match          #<--- 1.
+   def match(string)
+       _old_match_(string) || []
+   end 
+end
+```
+This code first sets up an alias for `match`, courtesy of the `alias` keyword (#1). Then the code redefines `match`. The new `match` hooks intot he original version of `match` (through the alias) and then returns either the result of calling the original version or (if that call returns `nil`) an empty array.
+
+**NOTE** An *alias* is a synonym for a method name. Calling a method by an alias doesn't involve any change of behavior or any alteration of the method-lookup process. The choice of alias name in the previous example is based on a fairly conventional formula: the addition of the word *old* plust the leading and trailing underscores. (A case could be made that the formula is too conventional and that you should create names that are less likely to be chosen by other overriders who also know the convention!)
+
+-- 
+
+You can now do this:
+
+`/abc/.match("X")[1]`
+
+Even though the match fails, the program won't blow up, because the failed match now returns an empty array rather than `nil`. The worst you can do with the new `match` is try to index an empty array, which is legal. (The result of the index operation will be `nil`, but at least you're not trying to index `nil`.)
+
+The problem is that the person using your code may depend on the match operation to return `nil` on failure:
+
+```ruby 
+if regexp.match(string)
+  do something 
+else 
+  do something else 
+end
+```
+Because an array (even an empty one) is true, whereas `nil` is false, returning an array for a failed match operaiton means that the true/false test (as embodied in an `if/else` statement) always returns true. 
+
+Maybe changing `Regexp#match` so as not to return `nil` on failure is something your instincts would tell you not to do anyway. And no one advocates doing it; it's more that some new Ruby users don't connect the dots and therefore don't see that changing a core method in one place it changes it everywhere. 
+
+Another common example, and one that's a little more subtle (both as to what it does and as to why it's not a good idea) involves the `String#gsub!` method.
 
 #### THE RETURN VALUE OF STRING#GSUB! AND WHY IT SHOULD STAY THAT WAY ####
+As you'll recall, `String#gsub!` does a global replace operation on its receiver, saving the changes in the original object:
+
+```irb 
+>> string = "Hello there!"
+=> "Hello there!"
+>> string.gsub!(/e/, "E")
+=> "HEllo thErE!"             #<---1.
+>> string
+=> "HEllo thErE!"                #<---2.
+```
+As you can see, the return value of the call to `gsub!` is the string object with the changes made (#1). (And examining the object again via the variable `string` confirms that the changes are indeed permanent (#2).)
+
+Interestingly, though, something different happens when the `gsub!` operation doesn't result in any changes to the string:
 
 **The tap method**
 
