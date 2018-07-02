@@ -319,19 +319,3 @@ The various formats add to `Time#to_s` work by using `strftime`, which wraps the
 As with pure method addition (such as `String#pluralize`), the kind of supersetdriven override of core methods represented by these examples entails some risk: specifically, the risk of collision. It is likely that you'll end up loading two libraries that both add an optional `:db` argument to `Time#to_s`? No, it's unlikely-but it's possible. Once again, a library like Active Support is protected by its high profile: if you load it, you're probably familiar with what it does and will know not to override the overrides. Still, it's remotely possible that another library you load might class with `Active Support`. As always, it's difficult or impossible to reduce the risk of collision to zero. You need to protect yourself by familiarizing yourself with what every library does and by testing your code sufficiently.
 
 The last major approach to overriding core Ruby behavior we'll look at-and the safest way to do it-is the addition of functionality on a strictly per-object basis, using `Object#extend`.
-
-### *Per-object changes with extend* ###
-
-#### ADDING TO AN OBJECT'S FUNCTIONALITY WITH EXTEND ####
-
-#### ADDING CLASS METHODS WITH EXTEND ####
-
-#### MODIFYING CORE BEHAVIOR WITH EXTEND ####
-
-### *Using refinements to affect core behavior* ###
-
-## *BasicObject as ancestor and class* ##
-
-### *Using BasicObject* ###
-
-### *Implementing a subclass of BasicObject* ###
