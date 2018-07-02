@@ -202,9 +202,50 @@ Substitution occurred                                                 #<--- 4.
 ```
 We start with a hash of state abbreviations and full names (#1). Then comes a string that uses state abbreviations (#2). The goal is to replace the abbreviations with the full names, using a `gsub!` operation that captures any two consecutive uppercase letters surrounding by word boundaries (`\b`) and replaces them with the value from the hash corresponding to the two-letter substring (#3). Along the way, we take note of whether any such replacements are made. If any are, `gsub!` retruns the new version of `string`. If no sustitutions are made, `gsub!` returns `nil`. The result of the process is printed out at the end (#4).
 
+The damage here is relatively light, but the lesson is clear: don't change the documented behavior of core Ruby methods. Here's another version of the state-hash example, using `sub!` rather than `gsub!`. In this version, failure to return `nil` when the string doesn't change triggers an infinite loop. Assuming we have the states hash and the original version of `strin`, we can do a one-at-a-time substitution where each substitution is reported:
+
+```irb 
+>> string = "Eastern states include NJ, NJ, and ME."
+=> "Eastern states include NJ, NJ, and ME."
+>> while string.sub!(/\b([A-Z]{2})\b/) { states[$1] }
+>>   puts "Replacing #{$1} with #{states[$1]}..."
+>> end
+Replacing NJ with New Jersey...
+Replacing NJ with New Jersey...
+Replacing ME with Maine...
+=> nil
+```
+If `string.sub!` always returns a non-`nil` value (a string), then the `while` condition will never fail, and the loop will execute forever.
+
+What you should *not* do, then, is rewrite core methods so that they don't do what others expect them to do. There's no exception to this. It's something you should never do, even though you can.
+
+That leaves us with the question of how to change Ruby core functionality safely. We'll look at four techniques that you can consider. The first are additive change, hook, or pass-through change, and per-object change. Only one of them is truly safe, although all three are safe enough to use in many circumstances. The fourth technique is *refinements*, which are module-scoped changes to classes and which can help you pinpoint your core Ruby changes so that they don't overflow into surrounding code and into Ruby itself.
+
+Along the way, we'll look at custom-made examples as well as some examples from the Active Support library, which is typically used as part of the Rails web application development framework. Active Support provides good examples of the first two kinds of core change: additive and pass-through. We'll start with additive.
+
 ### *Additive changes* ### 
+The most common category of changes to built-in Ruby classes is the *additive change*: adding a method that doesn't exist. The benefit of additive change is that it doesn't clobber existing Ruby methods. The danger inherent in it is that if two programmers write added methods with the same name, and both get included into the interpreter during execution of a particular library or program, one of the two will clobber the other. There's no way to reduce that risk to zero.
+
+Added methods often serve the purpose of providing functionality that a large number of people want. In other words, they're not all written for specialized use in one program. There's safety in numbers: if people have been discussing a given method for years, and if a de facto implementation of the method is floating around the Ruby world, the chances are good that if you write the method or use an existing implementation, you won't collide with anything that someone else may have written.
+
+The Active Support library, and specifically its core extension sublibrary, adds lots of methods to core Ruby classes. The addition to the `String` class provide some good examples. Active Support comes with a set of "inflections" on `String`, with methods like `pluralize` and `titleize`. Here are some examples (you'll need to run `gem install activesupport` to run them, if you don't have the gem installed already):
+
+```irb 
+>> require 'active_support'
+=> true
+>> require 'active_support/core_ext'
+=> true
+>> "person".pluralize
+=> "people"
+>> "little_dorrit".titleize
+=> "Little Dorrit"
+```
+Any time you add new methods to Ruby core classes, you run the risk that someone else will add a method with the same name that behaves somewhat differently. A library like Active Support depends on the good faith of its users and on its own reputation: if you're using Active Support, you presumably know that you're entering into a kind of unwritten contract not to override its methods or load other libraries that do so. In that sense, Active Support is protected by its own reputation and breadth of usage. You can certainly use Active Support if it gives you something you want or need, but don't take it as a signal that it's generally okay to add methods to core classes. You need to be quite circumspect about doing so.
+
+Another way to add functionality to existing Ruby classes and modules is with a passive hook or pass-through technique.
 
 ### *Pass-through overrides* ### 
+A *pass-through* method change involves overriding an existing method in such a way that the original version of the method ends up getting called along with the new version.
 
 **Aliasing and its aliases** 
 
