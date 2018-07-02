@@ -5,7 +5,7 @@ Class methods are singleton methods defined on objects of class `Class`. In many
 class C 
 end
 def C.a_class_method 
-puts "Singleton method defined on C"
+   puts "Singleton method defined on C"
 end 
 C.a_class_method   #<---Output: Singleton method defined on C
 ```
@@ -245,11 +245,80 @@ Any time you add new methods to Ruby core classes, you run the risk that someone
 Another way to add functionality to existing Ruby classes and modules is with a passive hook or pass-through technique.
 
 ### *Pass-through overrides* ### 
-A *pass-through* method change involves overriding an existing method in such a way that the original version of the method ends up getting called along with the new version.
+A *pass-through* method change involves overriding an existing method in such a way that the original version of the method ends up getting called along with the new version. The new version does whatever it needs to do and then passes its arguments along to the original version of the method. It relies on the original method to provide a return value. (As you know from the `match` and `gsub!` override examples, calling the original version of a method isn't enough if you're going to change the basic interface of the method by changing its return value.)
+
+You can use pass-through overrides for a number of purposes, including logging and debugging:
+
+```ruby
+class String
+  alias __old_reverse__ reverse
+  def reverse
+    $stderr.puts "Reversing a string!"
+    __old_reverse__
+  end
+end
+puts "David".reverse 
+```
+The output of this snippet is as follows:
+
+```irb 
+Reversing a string!
+divaD
+```
+The first line is printed to `STDERR`, and the second line is printed to `STDOUT`. The example depends on creating an alias for the original `reverse` and then calling that alias at the end of the new `reverse`. 
 
 **Aliasing and its aliases** 
+In addition to the `alias` keyword, Ruby has a method called `alias_method`, which is a private instance method of `Module`. The upshot is that you can create an alias for a method either like this:
+
+```ruby
+class String 
+  alias __old_reverse__ reverse
+end
+```
+Or like this:
+
+```ruby 
+class String 
+  alias_method :__old_reverse__, :reverse 
+end
+```
+Because it's a method and not a keyword, `alias_method` needs objects rather than bare method names as its arguments. It can take symbols or strings. Note also that the arguments to `alias` don't have a comma between them. Keywords get to do things like that, but methods don't.
+
+--
+It's possible to write methods that combine the additive and pass-through philosophies. Some examples from Active Support demonstrate how to do this.
 
 #### ADDITIVE/PASS-THROUGH HYBRIDS #### 
+An *additive/pass-through hybrid* is a method that has the same name as an existing core method, calls the old version of the method (so it's not an out-and-out replacement), and adds something to the method's interface. In other words, it's an override that offers a superset of the functionality of the original method.
+
+Active Support features a number of additive/pass-through hybrid methods. A good example is the `to_s` method of the `Time` class. Unchanged, `Time#to_s` provides a nice humna-readable string representing the time:
+
+```irb 
+>> Time.now.to_s
+=> "2018-07-02 17:29:59 +0000"
+```
+Active Support adds to the method so that it can take an argument indicating a specific kind of formatting. For example (assuming have you required `active_support`) you can format a `Time` object in a manner suitable for database insertion like this:
+
+```irb 
+>> Time.now.to_s(:db)
+=> "2018-07-02 17:31:10"
+```
+If you want the date represented as a number, as for the `:number` format:
+
+```irb 
+>> Time.now.to_s(:number)
+=> "20180702173158"
+```
+The `:rfc822` argument nets a time formatted in RFC822 style, the standard date format for dates in email headers. It's similar to the `Time#rfc822` method:
+
+```irb 
+>> Time.now.to_s(:rfc822)
+=> "Mon, 02 Jul 2018 17:33:07 +0000"
+```
+The various formats add to `Time#to_s` work by using `strftime`, which wraps the system call of the same name and lets you format times in a large number of ways. So there's nothing in the modified `Time#to_s` that you couldn't do yourself. The optional argument is added for your convenience (and of course the database-friendly `:db` format is of interest mainly if you're using Active Support in conjunction with an object-relational library, such as `ActiveRecord`). The result is a superset of `Time#to_s`. You can ignore the add-ons, and the method will work like it always did.
+
+As with pure method addition (such as `String#pluralize`), the kind of supersetdriven override of core methods represented by these examples entails some risk: specifically, the risk of collision. It is likely that you'll end up loading two libraries that both add an optional `:db` argument to `Time#to_s`? No, it's unlikely-but it's possible. Once again, a library like Active Support is protected by its high profile: if you load it, you're probably familiar with what it does and will know not to override the overrides. Still, it's remotely possible that another library you load might class with `Active Support`. As always, it's difficult or impossible to reduce the risk of collision to zero. You need to protect yourself by familiarizing yourself with what every library does and by testing your code sufficiently.
+
+The last major approach to overriding core Ruby behavior we'll look at-and the safest way to do it-is the addition of functionality on a strictly per-object basis, using `Object#extend`.
 
 ### *Per-object changes with extend* ###
 
