@@ -89,8 +89,70 @@ Remember too that subclasses have access to their superclass's class methods. If
 Our original purpose in looking at `extend` was to explore a way to add to Ruby's core functionality. Let's turn now to that purpose.
 
 #### MODIFYING CORE BEHAVIOR WITH EXTEND ####
+You've probably put the pieces together by this point. Modules let you define self-contained reusable collections of methods. `Kernel#extend` lets you give individual objects access to modules, courtesy of the singleton class and the mix-in mechanism. Put it all together, and you have a compact, safe way of adding functionality to core objects.
+
+Let's take another look at the `String#gsub!` conundrum-namely, that it returns `nil` when the string doesn't change. By defining a module and using `extend`, it's possible to change `gsub!`'s behavior in a limited way, making only the changes you need and no more. Here's how:
+
+```ruby 
+module GsubBangModifier
+  def gsub!(*args, &block)
+    super || self             #<----1.
+  end
+end
+str = "Hello there!"
+str.extend(GsubBangModifier)      #<----2.
+str.gsub!(/zzz/, "abc").reverse!      #<----3.
+puts str
+
+# Output: !ereht olleH
+```
+On the module `GsubBangModifier`, we define `gsub!`. Instead of the alias-and-call technique, we call `super`, returning either the value returned by that call or `self`-the latter if the call to `super` returns `nil` (#1). (You'll recall that `super` triggers execution of the next version of the current method up the method-lookup path. Hold that thought....)
+
+Next, we create a string `stri` and extend it with `GsubBangModifier` (#2). Calling `str.gsub!` (#3) executes the `gsub!` in `GsubBangModifier`, becauuse `str` encounters `GsubBangModifier` in its method-lookup path before it encounters the class `String`- which, of course, also contains a `gsub!` definition. The call to `super` inside `GsubBangModifier#gsub!` jumps up the path and executes the original method, `String#gsub!` passing it the original arguments and code block, if any. (That's the effect of calling `super` with no arguments and no empty argument list.) And the result of the call to `super` is either the string itself or `nil`, depending on whether any changes were made to the string.
+
+Thus you can change the behavior of core objects-strings, arrays, hashes, and so forth-without reopening their classes and without introducing changes on a global level. Having calls to `extend` in your code helps show what's going on. CHanging a method like `gsub!` inside the `String` class itself has the disadvantage not only of being global but also of being likely to be stashes away in a library file somewhere, making bugs hard to track down for people who get bitten by the global change.
+
+There's one more important piece of the puzzle of how to change core objects behaviors: a new feature called *refinements*. 
 
 ### *Using refinements to affect core behavior* ###
+Refinements were added to Ruby 2.0, but were considered "experimental" until the 2.1 release. The idea of a refinement is to make a temporary, limited-scope change to a class (which can, though needn't, be a core class).
+
+Here's an example, in which a `shout` method is introduced to the `String` class but withou only a limited basis:
+
+```ruby 
+module Shout
+  refine String do        #<---1.
+    def shout
+      self.upcase + "!!!"
+    end
+  end
+end
+
+class Person
+  attr_accessor :name
+
+  using Shout           #<----2.
+
+  def announce
+    puts "Announcing #{name.shout}"
+  end
+end
+
+david = Person.new
+david.name = "David"
+david.announce
+
+#Output:  Announcing DAVID!!!
+```
+Two different methods appear here, and they work hand in hand: `refine` (#1) and `using` (#2). The `refine` method takes a class name and a code block. Inside the code block you define the behaviors you want the class you're refining to adopt. In our example, we're refining the `String` class, adding a `shout` method that returns an upcased version of the string followed by three exclamation points.
+
+The `using` method flips the switch: once you "use" the module in which you've defined the refinement you want, the target class adopts the new behaviors. In the example, we use the `Shout` module inside the `Person` class. That means that for the duration of that class (from the `using` statement to the end of the class definition), strings will be "refined" so that they have the `shout` method.
+
+The effect of "using" a refinement comes to an end with the end of the class (or module) definition in which you declare you're using the refinement. You can actually use `using` outside of a class or module definition, in which case the effect of the refinement persists to the end of the file in which the call to `using` occurs. 
+
+Refinements can help you make temporary changes to core classes in a relatively safe way. Other program files and libraries your program uses at runtime will not be affected by your refinements.
+
+We'll end this chapter with a look at a slightly oddball topic: the `BasicObject` class. `BasicObject` isn't exclusitvely an object-individuation topic (as you know from having read the introductory material about it in chapter 3). But it pertains to the ancestroy of all objects-including those whose behavior branches away from their original classes-and can play an important role in the kind of dynamism that Ruby makes possible. 
 
 ## *BasicObject as ancestor and class* ##
 
