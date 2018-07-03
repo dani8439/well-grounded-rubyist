@@ -155,7 +155,162 @@ Refinements can help you make temporary changes to core classes in a relatively 
 We'll end this chapter with a look at a slightly oddball topic: the `BasicObject` class. `BasicObject` isn't exclusitvely an object-individuation topic (as you know from having read the introductory material about it in chapter 3). But it pertains to the ancestroy of all objects-including those whose behavior branches away from their original classes-and can play an important role in the kind of dynamism that Ruby makes possible. 
 
 ## *BasicObject as ancestor and class* ##
+`BasicObject` sits at the top of Ruby's class tree. For any Ruby object *obj*, the following is true:
+
+`obj.class.ancestors.last == BasicObject` 
+
+In other words, the highest-up ancestor of every class is `BasicObject`. (Unless you mix a module into `BasicObject`-but that's a far-fetched scenario.)
+
+As you'll recall from chapter 3, instances of `BasicObject` have few methods-just a survival kit, so to speak, so they can participate in object-related activities. You'll find it difficult to get a `BasicObject` instances tot ell you what it can do:
+
+```irb 
+>> BasicObject.new.methods.sort
+NoMethodError: undefined method `methods' for #<BasicObject:0x00000001372908>
+        from (irb):1
+        from /usr/local/rvm/rubies/ruby-2.3.1/bin/irb:11:in `<main>'
+```
+
+But `BasicObject` is a class and behaves like one. You can get information directly from it, using familiar class-level methods:
+
+```irb 
+>> BasicObject.instance_methods(false).sort
+=> [:!, :!=, :==, :__id__, :__send__, :equal?, :instance_eval, :instance_exec]
+```
+What's the point of `BasicObject`?
 
 ### *Using BasicObject* ###
+`BasicObject` enables you to create objects that do nothing, which means you can teach them to do everything-without worrying about clashing with existing methods. Typically, this entails heavy use of `method_missing`. By defining `method_missing` for `BasicObject` or a class that you write that inherits from it, you can engineer objects whose behavior you're completely in charge of and that have little or no preconceived sense of how they're supposed to behave. 
+
+The best-known example of the use of an object with almost no methods is the `Builder` library by Jim Weirich. Builder is an XML-writing tool that outputs XML tags corresponding to messages you send to an object that recognizes few messages. The magic happens courtesy of `method_missing`. 
+
+Here's a simple example of Builder usage (and all Builder usage is simple; that's the point of the library). This example presupposes that you've installed the `builder` gem. 
+
+```irb 
+>> require 'builder'
+=> true
+>> xml = Builder::XmlMarkup.new(:target => STDOUT, :indent => 2)   #<---1.
+<inspect/>
+=> #<IO:0x00000000fb9b40>
+>> xml.instruct!                                                #<---2.
+<?xml version="1.0" encoding="UTF-8"?>
+=> #<IO:<STDOUT>>
+>> xml.friends do
+>> xml.friend(:source => "college") do
+>>  xml.name("Joe Smith")
+>>  xml.address do
+>>    xml.street("123 Main Street")
+>>    xml.city("Anywhere, USA 00000")
+>>    end
+>>  end
+>> end
+```
+`xml` is a `Builder::XmlMarkup` object (#1). The object is programmed to send its output to `-STDOUT` and to indent by two spaces. The `instruct!` command (#2) tells the XML builder to start with an XML declaration. All instance methods of `Builder::XmlMarkup` end with a bang (`!`). They don't have non-bang counterparts-which bang methods should have in most cases-but in this case, the bang serves to distinguish these methods from methods with similar names that you may want to use to generate XML tages via `method_missing`. The assumption is that you may want an XML element called `instruct`, but you won't need one called `instruct!`. The bang is thus serving a domain-specific purpose, and it makes sense to depart from the usual Ruby convention for its use.
+
+The output from our `Builder` script is this:
+
+```irb 
+<?xml version="1.0" encoding="UTF-8"?>
+<friends>
+  <friend source="college">
+    <name>Joe Smith</name>
+    <address>
+      <street>123 Main Street</street>
+      <city>Anywhere, USA 00000</city>
+    </address>
+  </friend>
+</friends>
+=> #<IO:<STDOUT>>
+```
+The various XML tags take their names from the method calls. Every missing method results in a tag, and code blocks represent XML nesting. If you provide a string argument to a missing method, the string will be used as the text context of the element. Attributes are provided in hash arguments.
+
+Builder uses `BasicObject` to do its work. Interestingly, Builder existed *before* `BasicObject` did. The original versions of Builder used a custom-made class called `BlankSlate` which probably served as an inspiration for `BasicObject`. 
+
+How would you implement a simple `BasicObject`-based class? 
 
 ### *Implementing a subclass of BasicObject* ###
+*Simple*, in the question just asked, means simpler than `Builder::XmlMarkup` (which makes XML writing simple but is itself fairly complex). Let's write a small library that operates on a similar principle and outputs an indented list of items. We'll avoid having to provide closing tags, which makes things a lot easier.
+
+The `Lister` class, shown in the following listing, will inherit from `BasicObject`. It will define `method_missing` in such a way that every missing method is take as a heading for the list it's generating. Nested code blocks will govern indentation.
+
+```ruby 
+class Lister < BasicObject
+  attr_reader :list
+  def initialize                    #<----1.
+    @list = ""
+    @level = 0
+  end
+  def indent(string)                   #<----2.
+    " " + @level + string.to_s
+  end
+  def method_missing(m, &block)           #<----3.
+    @list << indent(m) + ":"                  #<----4.
+    @list << "\n"
+    @level += 2                                   #<----5.
+    @list << indent(yield(self)) if block             #<----6.
+    @level -= 2
+    @list << "\n"
+    return ""                                             #<----7.
+  end
+end
+```
+On initialization, two instance variables are set (#1): `@list` will serve as the string accumulator for the entire list, and `@level` will guide indentation. The `indent` method (#2) takes a string (or anything that can be converted to a string; it calls `to_s` on its argument) and returns that string indented to the right by `@level` spaces.
+
+Most of the action is in `method_missing` (#3). The symbol `m` represents the missing method name-presumably corresponding to a header or item for the list. Accordingly the first step is to add `m` (indented, and followed by a colon) to `@list`, along with a newline character (#4). NExt we increase the indentation level (#5) and yield (#6). (This step happens only if `block` isn't `nil`. Normally, you can test for the presence of a block with `block_given?`, but `BasicObject` instances don't have that method!) Yielding may trigger more missing method calls, in which case they're processed and their results added to `@list` at the new indentation level. After getting the results of the yield, we decrement the indentation level and add another newline to `@list`. 
+
+At the end, `method_missing` returns an empty string (#7). The goal here is to avoid concatenating `@list` to itself. If `method_missing` ended with an expression evaluation to `@list` (like `@list << "\n"`), then nested calls to `method_missing` inside yield instructions would return `@list` and append it to itself. The empty string breaks the cycle. 
+
+Here's an example of `Lister` in use:
+
+```ruby 
+lister = Lister.new
+lister.groceries do |item|
+  item.name { "Apples" }
+  item.quantity { 10 }
+  item.name { "Sugar" }
+  item.quantity { "1 lb" }
+end
+lister.freeze do |f|
+  f.name { "Ice cream" }
+end
+lister.inspect do |i|
+  i.item { "car" }
+end
+lister.sleep do |s|
+  s.hours { 8 }
+end
+lister.print do |document|
+  document.book { "Chapter 13" }
+  document.letter { "to editor" }
+end
+puts lister.list 
+```
+The output from this run is as follows:
+
+```irb 
+groceries:
+  name:
+    Apples 
+  quantity:
+    10 
+  name:
+    Sugar
+  quantity:
+    1 lb
+ freeze:
+    name: 
+      Ice Cream 
+ inspect:
+    item: 
+      car 
+ sleep:
+    hours:
+       8
+print:
+  book:
+    Chapter 13
+  letter:
+    to editor 
+```
+Admittedly not as gratifying as `Builder`-but you can follow the yields and missing method calls and see how you benefit from a `BasicObject` instance. And if you look at the method names used in the sample code, you'll see some that are build-in methods of (nonbasic) objects. If you don't inherit from `BasicObject`, you'll get an error when you try to call `freeze` or `inspect`. It's also interesting to note that `sleep` and `print` which are private methods of `Kernel` and therefore not normally callable with an explicit receiver, trigger `method_missing` even though strictly speaking they're private rather than missing.
+
+Our look at `BasicObject` brings us to the end of this survey of object individuation. We'll be moving next to a different topic that's also deeply involved in Ruby dynamics: callable and runnable objects.
