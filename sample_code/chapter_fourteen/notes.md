@@ -37,8 +37,46 @@ The `proc` method takes a block and returns a `Proc` object. Thus you can say `p
 Perhaps the most important aspect of procs to get a handle on is the relation between procs and code blocks. That relation is intimate and turns out to be an important key to further understanding.
 
 ### *Procs and blocks and how they differ* ### 
+When you create a `Proc` object, you always supply a code block. But not every code block serves as the basis of a proc. The snippet
+
+```ruby 
+[1,2,3].each {|x| puts x * 10 }
+```
+involves a code block but does not create a proc. Yet the plot is a little thicker than that. A method can capture a block, objectified into a proc, using the special parameter syntax that you saw briefly in chapter 9:
+
+```ruby 
+def call_a_proc(&block)
+  block.call
+end 
+call_a_proc { puts "I'm the block...or Proc...or something." }
+```
+The output isn't surprising:
+
+```irb 
+I'm the block...or Proc...or something.
+```
+But it's also possible for a proc to serve in place of the code block in a method call, using a similar special syntax:
+
+```ruby
+p = Proc.new { |x| puts x.upcase }
+%w{ David Black }.each(&p)
+```
+Here's the output from that call to each:
+
+```irb 
+DAVID
+BLACK
+```
+But the question remains: exactly what's going on with regard to procs and blocks? Why and how does the presence of (`&p`) convince `each` that it doesn't need an actual code block?
+
+To a large extent, the relation between blocks and procs comes down to a matter of syntax versus objects.
 
 #### SYNTAX (BLOCKS) AND OBJECTS (PROCS) ####
+An important and often misunderstood fact is that a Ruby code block is not an object. This familiar trivial example has a receiver, a dot operator, a method name, and a code block:
+
+```ruby
+[1,2,3].each {|x| puts x * 10 }
+```
 
 ### *Block-proc conversions* ### 
 
