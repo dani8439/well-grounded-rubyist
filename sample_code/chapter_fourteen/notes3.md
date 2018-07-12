@@ -309,23 +309,115 @@ The rationale for this behavior is clear: you can't have one thread's idea of `$
 In addition to having access to the usual suite of Ruby variables, threads also have their own variable stash-or, more accurately, a built-in hash that lets them associate symbols or strings with values. These thread keys can be useful.
 
 ### *Manipulating thread keys* ### 
+*Thread keys* are basically a storage hash for thread-specific values. The keys must be symbols or strings. You can get at the keys by indexing the thread object directly with values in square brackets. You can also get a list of all the keys (without their values) using the *keys* method.
+
+Here's a simple set-and-get-scenario using a thread key:
+
+```ruby 
+t = Thread.new do
+  Thread.current[:message] = "Hello"
+end
+t.join
+p t.keys
+puts t[:message]
+```
+The output is
+
+```irb 
+[:message]
+Hello
+```
+Threads seem to loom large in games, so let's use a game example to explore thread keys further: a threaded, networked rock/paper/scissors (RPS) game. We'll start with the (threadless) RPS logic in an `RPS` class and use the resulting RPS library as the basis for the game code.
 
 #### A BASIC ROCK/PAPER/SCISSORS LOGIC IMPLEMENTATION #### 
+The next listing show sthe `RPS` class, which is wrapped in a `Games` module (because RPS sounds like it might collide with another class name). Save this listing to a file called rps.rb. 
+
+```ruby 
+module Games
+  class RPS
+    include Comparable                      #<----1.
+    WINS = [%w{ rock scissors },            #<----2.
+            %w{ scissors paper },
+            %w{ paper rock}]
+    attr_accessor :move                     #<----3.
+    def initialize(move)                    #<----4.
+      @move = move.to_s
+    end
+    def <=>(other)                          #<----5.
+      if move == other.move
+        0
+      elsif WINS.include?([move, other.move])
+        1
+      elsif WINS.include?([other.move, move])
+        -1
+      else
+        raise ArgumentError, "Something's wrong"
+      end
+    end
+    def play(other)                         #<----6.
+      if self > other
+        self
+      elsif other > self
+        other
+      else
+        false
+      end
+    end
+  end
+end
+```
+The `RPS` class includes the `Comparable` module (#1); this serves as the basis for determining, ultimately, who wins a game. The `WINS` constant contains all possible winning combinations in three arrays; the first element in each array beats the second element (#2). There's also a `move` attribute, which stores the move for this instance of `RPS` (#3). The `initialize` method (#4) stores the move as a string (in case it comes in as a symbol).
+
+`RPS` has a spaceship operator (`<=>`) method definition (#5) that specifies what happens when this instance of `RPS` is compared to another instance. If the two have equal moves, the result is `0`-the signal that the two terms of a spaceship comparison are equal. The rest of the logic looks for winning combinations using the `WINS` array, returning `-1` or `1` depending on whether this instance or the other instance has won. If it doesn't find that either player has a win, and the result isn't a tie, it raises an exception.
+
+Now that `RPS` objects know how to compare themselves, it's easy to play them against each other, which is what the `play` method does (#6). It's ismple: whichever player is higher is the winner, and if it's a tie, the method returns false.
+
+We're now ready to incorporate the `RPS` class in a threaded, networked version of the game, thread keys and all.
 
 #### USING THE RPS CLASS IN A THREADED GAME #### 
+THe following listing shows the networked RPS program. It waits for two people to join, gets their moves, reports the result, and exits. Not glitzy-but a good way to see how thread keys might help you.
 
-## *Issuing commands from inside Ruby programs* ## 
+```ruby 
+require 'socket'
+require_relative 'rps'
+s = TCPServer.new(3939)               #<----1.
+threads = []                            #<----2.
+2.times do |n|                            #<----3.
+  conn = s.accept
+  threads << Thread.new(conn) do |c|        #<----4.
+    Thread.current[:number] = n + 1
+    Thread.current[:player] = c
+    c.puts "Welcome player #{n + 1}!"
+    c.print "Your move? (rock, paper, scissors) "
+    Thread.current[:move] = c.gets.chomp
+    c.puts "Thanks... hang on."
+  end
+end
+a,b = threads                                 #<----|
+a.join                                        #<----5. Use parallel assignment syntax to assign two variables from an array
+b.join                                        #<----|
+rps1, rps2 = Games::RPS.new(a[:move]), Games::RPS.new(b[:move])       #<----6.
+winner = rps1.play(rps2)                      #-----|
+if winner                                     #-----|
+  result = winner.move                        #-----|
+else                                          #<----7.
+  result = "TIE!"                             #-----|
+end                                           #-----|
+threads.each do |t|
+  t[:player].puts "The winner is #{result}!"              #-----8.
+end
+```
+This program loads and uses the `Games::RPS` class, so make sure you have the RPS code in the file rps.rb in the same directory as the program itself. 
 
-### *The system method and backticks* ### 
+As in the chat-server example, we start with a server (#1) along with an array in which threads are stored (#2). Rather than loop forever, though, we gather only two threads courtesy of the `2.times` loop and the server's `accept` method (#3). For each of the two connections, we create a thread (#4).
 
-#### EXECUTING SYSTEM PROGRAMS WITH THE SYSTEM METHOD #### 
+Now we store some values in the thread's keys: a number for this player (based off the `times` loop, adding 1 so that there's no player 0) and the connection. We then welcome the player and store the move in the `:move` key of the thread.
 
-#### CALLING SYSTEM PROGRAMS WITH BACKTICKS #### 
+After both players have played, we grab the two threads in the convenience variables `a` and `b` and join both threads (#5). Next, we parlay the two thread objects, which have memory of the player's moves, into two `RPS` objects (#6). The winner is determined by playing one against the other. The final result of the game is either the winner or, if the game returned false, a tie (#7).
 
-**Some system command bells and whistles** 
+Finally, we report the results to both players (#8). You could get fancier by inputting their names or repeating the game and keeping score. But the main point of this version of the game is to illustrate the usefulness of thread keys. Even after the threads have finsihed running, they remember information, and that enables us to play an entire game as well as send further messages through the players' sockets. 
 
-### *Communicating with programs via open and popen 3* ### 
+We're at the end of our look at Ruby threads. It's worth nothing that threads are an area that has undergone and continues to undergo a lot of change and development. But whatever happens, you can build on the grounding you've gotten here as you explore and use threads further.
 
-#### TALKING TO EXTERNAL PROGRAMS WITH OPEN #### 
+Next on the agenda, and last for this chapter, is the topic of issuing system commands from Ruby. 
 
-#### TWO-WAY COMMUNICATION WITH OPEN3.POPEN3 #### 
