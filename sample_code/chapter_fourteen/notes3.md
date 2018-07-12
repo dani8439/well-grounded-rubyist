@@ -258,6 +258,55 @@ If there's no `EOFError`, the chatter's message is broadcast to all chatters (#8
 When using threads, it's important to know how the rules of variable scoping and visibility play out inside thread-and in looking at this topic, which we'll do next, you'll also find out about a special category of thread-specific variables.
 
 ### *Threads and variables* ### 
+Threads run using code blocks, and code blocks can see the variables already created in their local scope. If you create a local variable and change it inside a thread's code block, the change will be permanent:
+
+```irb 
+>> a = 1
+=> 1
+>> Thread.new { a = 2 }
+=> #<Thread:0x00000002436f00@(irb):2 run>
+>> a
+=> 2
+```
+You can see an interesting and instructive effect if you stop a thread before it changes a variable, and then run the thread:
+
+```irb 
+>> t = Thread.new { Thread.stop; a = 3 }
+=> #<Thread:0x00000002422280@(irb):6 run>
+>> a
+=> 2
+>> t.run
+=> #<Thread:0x00000002422280@(irb):6 dead>
+>> a
+=> 3
+```
+Global variables remain global, for the most part, in the fact of threads. That goes for built-in globals, such as `$/` (the input record separator), as well as those you create yourself:
+
+```irb 
+>> $/
+=> "\n"
+>> $var = 1
+=> 1
+>> Thread.new { $var = 2; $/ = "\n\n" }
+=> #<Thread:0x000000023a5820@(irb):12 run>
+>> $/
+=> "\n\n"
+>> $var
+=> 2
+```
+But some globals are *thread-like globals*-specifically, the `$1`, `$2`, ..., *$n* that are assigned the parenthetical capture values from the most recent regular expression-matching operation. You get a different does of those variables in every thread. Here's a snippet that illustrates the fact that the *$n* variables in different threads don't collide:
+
+```ruby
+/(abc)/.match("abc")
+t = Thread.new do
+  /(def)/.match("def")
+  puts "$1 in thread: #{$1}"     #<---Output: $1 in thread: def
+end.join
+puts "$1 outside thread: #{$1}"     #<---Output: $1 outside thread: abc
+```
+The rationale for this behavior is clear: you can't have one thread's idea of `$1` overshadowing the `$1` from a different thread, or you'll get extremely odd results. The *$n* variables aren't really globals once you see them in the context of the language having threads.
+
+In addition to having access to the usual suite of Ruby variables, threads also have their own variable stash-or, more accurately, a built-in hash that lets them associate symbols or strings with values. These thread keys can be useful.
 
 ### *Manipulating thread keys* ### 
 
