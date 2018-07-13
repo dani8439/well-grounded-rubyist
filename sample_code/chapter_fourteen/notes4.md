@@ -44,11 +44,72 @@ And here's a call to a nonexistent program:
 The `$?` variable is thread-local: if you call a program in one thread, its return value affects only the `$?` in that thread:
 
 ```irb 
+>> system("date")
+Fri Jul 13 20:00:50 UTC 2018
+=> true
+>> $?
+=> #<Process::Status: pid 426 exit 0>             #<----1.
+>> Thread.new { system("datee"); p $? }.join      #<----2.
+#<Process::Status: pid 428 exit 127>              #<----3.
+=> #<Thread:0x000000016e4dc0@(irb):3 dead>
+>> $?
+=> #<Process::Status: pid 426 exit 0>             #<----4.
 ```
+The `Process::Status` object reporting on the call to `date` is stored in `$?` in the main thread (#1). The new thread makes a call to a nonexistent program (#2), and that thread's version of `$?` reflects the problem (#3). But the main thread's `$?` is unchanged (#4). The thread-local global variable behavior works much like it does in the case of the *$n* regular-expression capture variables-and for similar reasons. In both cases, you don't want one thread reacting to an error condition that it didn't cause and that doesn't reflect its actual program flow.
+
+The backtick technique is a close relative of `system`.
 
 #### CALLING SYSTEM PROGRAMS WITH BACKTICKS #### 
+To issue a system command with backticks, put the command between backticks. The main difference between `system` and backticks is that the return value of the backtick call is the output of the program you run:
+
+```irb 
+>> d = `date`
+=> "Fri Jul 13 20:06:56 UTC 2018\n"
+>> puts d
+Fri Jul 13 20:06:56 UTC 2018
+=> nil
+>> output = `cat`
+I'm typing into cat. Since I'm using backticks,
+I won't see each line echoed back as I type it.
+Instead, cat's output is going into the 
+variable output.
+=> "I'm typing into cat. Since I'm using backticks,\nI won't etc.
+>> puts output
+I'm typing into cat. Since I'm using backticks,
+I won't see each line echoed back as I type it.
+Instead, cat's output is going into the 
+variable output.
+```
+The backticks set `$?` just as `system` does. A call to a nonexistent method with backticks raises a fatal error:
+
+```irb 
+>> `dates`
+Errno::ENOENT: No such file or directory - dates
+        from (irb):1:in ``'
+        from (irb):1
+        from /usr/local/rvm/rubies/ruby-2.3.1/bin/irb:11:in `<main>'
+>> $?
+=> #<Process::Status: pid 441 exit 127>
+>> `date`
+=> "Fri Jul 13 20:09:28 UTC 2018\n"
+>> $?
+=> #<Process::Status: pid 442 exit 0>
+```
 
 **Some system command bells and whistles** 
+There's yet another way to execute system commands from within Ruby: the `%x` operator. `%x{date}`, for example, will execute the date command. Like the backticks, `%x` returns the string output of the command. Like its relatives `%w` and `%q` (among others), `%x` allows any delimiter, as long as bracket-style delimiters match: `%x{date}`, `%x-date-`, and `%x(date)` are all synonyms.
+
+Both the backticks and `%x` allow string interpolation:
+
+```irb 
+command = "date"
+%x(#{command})
+```
+This can be convenient, although the occasions on which it's a good idea to call dynamically evaluate strings as system commands are, arguably, few.
+
+--
+
+Backticks are extremely useful for capturing external programming output, but they aren't the only way to do it. This brings us to the third way of running programs from within a Ruby program: `open` and `Open.popen3`.
 
 ### *Communicating with programs via open and popen 3* ### 
 
