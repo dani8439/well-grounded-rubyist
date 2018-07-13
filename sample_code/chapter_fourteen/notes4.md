@@ -112,7 +112,32 @@ This can be convenient, although the occasions on which it's a good idea to call
 Backticks are extremely useful for capturing external programming output, but they aren't the only way to do it. This brings us to the third way of running programs from within a Ruby program: `open` and `Open.popen3`.
 
 ### *Communicating with programs via open and popen 3* ### 
+Using the `open` family of methods to call external programs is a lot more complex than using `system` and backticks. We'll look at a few simple examples, but we won't plumb the depths of the topic. These Ruby methods map directly to the underlying system-library calls that support them, and their exact behavior may vary from one system to another more than most Ruby behavior does. 
+
+Still-let's have a look. We'll discuss two methods: `open` and the class method `Open.popen3`. 
 
 #### TALKING TO EXTERNAL PROGRAMS WITH OPEN #### 
+You can use the top-level `open` method to do two-way communication with an external program. Here's the old standby example of `cat`:
+
+```irb 
+>> d = open("|cat", "w+")                #<----1.
+=> #<IO:fd 12>
+>> d.puts "Hello to cat"                 #<----2.
+=> nil
+>> d.gets                                #<----3.
+=> "Hello to cat\n"
+>> d.close                               #<----4.
+=> nil
+```
+The call to `open` is generic; it could be any I/O stream, but in this case it's a two-way connection to a system command (#1). The pipe in front of the word `cat` indicates that we're looking to talk to a program and not open a file. The handle on the external program works much like an I/O socket or file handle. It's open for reading and writing (the `w+` mode), so we can write to it (#2) and read from it (#3). Finally, we close it (#4).
+
+It's also possible to take advantage of the block form of `open` and save the last step:
+
+```irb
+>>  open("|cat", "w+") {|p| p.puts("hi"); p.gets }
+=> "hi\n"
+```
+
+A somewhat more elaborate and powerful way to perform two-way communcation between your Ruby program and an external program is the `Open3.popen3` method. 
 
 #### TWO-WAY COMMUNICATION WITH OPEN3.POPEN3 #### 
