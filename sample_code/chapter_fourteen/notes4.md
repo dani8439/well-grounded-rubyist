@@ -141,3 +141,68 @@ It's also possible to take advantage of the block form of `open` and save the la
 A somewhat more elaborate and powerful way to perform two-way communcation between your Ruby program and an external program is the `Open3.popen3` method. 
 
 #### TWO-WAY COMMUNICATION WITH OPEN3.POPEN3 #### 
+The `Open3.popen3` method opens communication with an external program and gives you handles on the external program's standard input, standard output, and standard error streams. You can thus write to and read from those handles separately from teh analogous streams in your pgoram.
+
+Here's a simple `cat`-based example of `Open.popen3`:
+
+```irb
+>> require 'open3'                                           #<----1.
+=> true
+>> stdin, stdout, stderr = Open3.popen3("cat")                   #<----2.
+=> [#<IO:fd 11>, #<IO:fd 12>, #<IO:fd 14>, #<Process::Waiter:0x00000000f14b68 run>]           #<----3.
+>> stdin.puts("Hi.\nBye")                                                        #<----4.
+=> nil
+>> stdout.gets                                                            #<----5.
+=> "Hi.\n"      
+>> stdout.gets
+=> "Bye\n"
+```
+After loading the `open3` library (#1), we make the call to `Open3.popen3`, passing it the name of the external program (#2). We get back three I/O handles and a thread (#3). (You can ignore the thread). These I/O handles go into and out of the external program. Thus we can write to the `STDIN` handle (#4) and read lines from the `STDOUT` handle (#5). These handles aren't the same as the `STDIN` and `STDOUT` streams of the irb session itself.
+
+The next example shows a slightly more elaborate use of `Open.popen3`. Be warned: in itself, it's trivial. It's purpose is to illustrate some of the basic mechanics of the technique-and it uses threads, so it reillustrates some thread techniques too. The following listing shows the code.
+
+```irb
+require 'open3'
+stdin, stdout, stderr = Open3.popen3("cat")
+t = Thread.new do                                       #<----1.
+  loop { stdin.puts gets }
+end
+u = Thread.new do                                       #<----2.
+  n = 0 
+  str = ""
+  loop do
+    str << stdout.gets
+    n += 1
+    if n % 3 == 0                                       #<----3.
+      puts "--------\n"
+      puts str
+      puts "--------\n"
+      str = ""
+    end
+  end
+end
+t.join
+u.join
+```
+The program opens a two-way pipe to `cat` and uses two threads to talk and listen to that pipe. The first thread, `t` (#1) loops forever, listening to `STDIN`-your `STDIN`, not `cat`'s=and writing each line to the `STDIN` handle on the `cat` process. The second thread, `u` (#2), maintains a counter (`n`) and a string accumulator (`str`). When the counter hits a multiple of 3, as indicated by the `modulo` test (#3), the `u` thread prints out a horizontal line, the three text lines it's accumulated so far, and another horizontal line. It then resets the strign accumulator to a blank string and goes back to listening.
+
+If you run this program, remember that it loops forever, so you'll have to interrupt it with Ctrl-c (or whatever your system uses for an interrupt signal). The output is, predictably, somewhat unexciting, but it gives you a good, direct sense of how the threads are interacting with the in and out I/O handles and with each other. In this output, the lines entered by the user are in italics:
+
+*One*
+*Two*
+*Three*
+--------
+One
+Two
+Three
+--------
+*Four*
+*Five*
+*Six*
+--------
+Four
+Five
+Six
+--------
+
+As state, we're not going to go into all the details of `Open.popen3`. But you can and should keep it in mind for situations where you need the most flexibility in reading from and wriitng to an external program.
