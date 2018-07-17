@@ -151,10 +151,120 @@ p person.method(:set_age)   #<----- #<Method: Person#set_age>
 Overall, `method_missing` is a highly useful event-trapping tool. But it's far from the only one. 
 
 ### *Trapping include and prepend operations* ### 
+You know how to include a module in a class or other module, and you know how to prepend a module to a class or module. If you want to trap these events-to trigger a callback when the events occur-you can define special methods called `included` and `prepended`. Each of these methods receives the name of the including or prepending class or module as its single argument.
+
+Let's look closely at `included`, knowing that `prepended` works in much the same way. You can do a quick test of `included` by having it trigger a message printout and then perform an `included` operation:
+
+```ruby 
+module M
+  def self.included(c)
+    puts "I have just been mixed into #{c}."
+  end
+end
+class C
+  include M
+end
+```
+You see the message `"I have just been mixed indo C."` as a result of the execution of `M.included` when `M` gets included by (mixed into) `C`. (Because you can also mix modules into modules, the example would also work if `C` were another module.)
+
+When would it be useful for a module to intercept its own inclusion like this? One commonly discussed case revolves around the difference between instance and class methods. When you mix a module into a class, you're ensuring that all the instance methods defined in the module become available to instances of the class. But the class object isn't affected. The following question often arises: What if you want to add class methods to the class by mixing in the module along with adding the instance methods?
+
+Courtesy of `included`, you can trap the `included` operation and use the occasion to add class methods to the class that's doing the including. The following listing shows an example.
+
+```ruby
+module M
+  def self.included(cl)
+    def cl.a_class_method
+      puts "Now the class has a new class method."
+    end
+  end
+  def an_inst_method
+    puts "This module supplies this instance method."
+  end
+end
+
+class C
+  include M
+end
+c = C.new
+c.an_inst_method
+C.a_class_method
+```
+The output from this listing is
+
+```irb 
+This module supplies this instance method.
+Now the class has a new class method.
+```
+When class `C` includes module `M`, two things happen. First, an instance method called `an_instance_method` appears in the lookup path of its instances (such as `c`). Second, thanks to `M`'s `included` callback, a class method called `a_class_method` is defined for the class object `C`.
+
+`Module#included` is a useful way to hook into the class/module engineering of your program. Meanwhile, let's look at another callback in the same general area of interest: `Module#extended`. 
 
 ### *Intercepting extend* ###
+As you know from chapter 13, extending individual objects with modules is one of the most powerful techniques available in Ruby for taking advantage of the flexibility of objects and their ability to be customized. It's also the beneficiary of a runtime hook: using the `Module#extended` method, you can set up a callback that will be triggered whenever an object performs an `extended` operation that involves the module in question.
+
+The next listing shows a modified verison of listing 15.1  that illustrates the workings of `Module#extended`.
+
+```ruby 
+module M
+  def self.extended(obj)
+    puts "Module #{self} is being used by #{obj}."
+  end
+  def an_inst_method
+    puts "This module supplies this instance method."
+  end
+end
+
+my_object = Object.new
+my_object.extend(M)
+my_object.an_inst_method
+```
+The output from this listing is:
+
+```irb 
+Module M is being used by #<Object:0x0000000210bc68>.
+This module supplies this instance method.
+```
+It's useful to look at how the `included` and `extended` callbacks work in conjunction with singleton classes. There's nothing too surprising here; what you learn is how consistent Ruby's object and class model is.
 
 #### SINGLETON-CLASS BEHAVIOR WITH EXTENDED AND INCLUDED ####
+In effect, extending an object with a module is the same as including that module in the object's singleton class. Whichever way you describe it, the upshot is that the module is added to the object's method-lookup path, entering the chain right after the object's singleton class.
+
+But the two operations trigger different callbacks: `extended` and `included`. The following listing demonstrates teh relevant behaviors.
+
+```ruby 
+module M
+  def self.included(c)
+    puts "#{self} included by #{c}."   #<----1.
+  end
+  def self.extended(obj)                     #<----2.
+    puts "#{self} extended by #{obj}"
+  end
+end
+obj = Object.new
+puts "Including M in object's singleton class."      #<----3.
+class << obj
+  include M
+end
+puts
+obj = Object.new
+puts "Extending object with M:"        #<----4.
+obj.extend(M)
+```
+Both callbacks are defined in the module `M`: `included` (#1) and `extended`(#2). Each callback prints out a report of what it's doing. Starting with a freshly minted, generic object, we include `M` in the object's singleton class (#3) and then repeat the process using another new object and extending the object with `M` directly (#4). 
+
+The output from the lisitng is
+
+```irb 
+Including M in object's singleton class.
+M included by #<Class:#<Object:0x00000001d6ef38>>.
+
+Extending object with M:
+M extended by #<Object:0x00000001d6ec40>
+```
+Sure enough, the include triggers the `included` callback, and the extended triggers `extended`, even though in this particular scenario the results of the two operations are the same: the object in question has `M` added to its method lookup path. It's a nice illustration of some of the subtlety and precision of Ruby's architecture and a useful reminder that manipulating an object's singleton class directly isn't *quite* identical to doing singleton-level operations directly on the object.
+
+Just as modules can intercept include and extend operations, classes can tell when they're being subclassed. 
 
 ### *Intercepting inheritance with Class#inherited* ###
 
