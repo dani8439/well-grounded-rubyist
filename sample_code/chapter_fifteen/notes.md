@@ -32,12 +32,123 @@ Back in chapter 4 (Section 4.3) you learned quite a lot about `method_missing`. 
 Of course, `method_missing` deserves a berth in this chapter too, because it's arguably the most commonly used runtime hook in Ruby. Rather than repeat chapter 4's coverage, though, let's look at a couple of specific `method_missing` nuances. We'll consider using `method_missing` as a delegation technique; and we'll look at how `method_missing` works, and what happens when you override it, at the top of the class hierarchy.
 
 #### DELEGATING WITH METHOD_MISSING ####
+You can use `method_missing` to bring about an automatic extension of thew ay your object behaves. For example, let's say you're modeling an object that in some respects is a container but that also has other characteristics-perhaps a cookbook. You want to be able to program your cookbook as a collection of recipes, but it also has certain characteristics (title, author, perhaps a list of people with whom you've shared it or who have contributed to it) that need to be stored and handled separately from the recipes. Thus the cookbook is both a collection and the repository of metadata about the collection.
+
+To do this in a `method_missing` based way, you would maintain an array of recipes and then forward any unrecognized messages to that array. A simple implementation might look like this:
+
+```ruby 
+class Cookbook
+  attr_accessor :title, :author
+  def initialize
+    @recipes = []
+  end
+  def method_missing(m, *args, &block)
+    @recipes.send(m, *args, &block)
+  end  
+end
+```
+Now we can perform manipulations on the collection of recipes, taking advantage of any array methods we wish. Let's assume there's a `Recipe` class, separate from the `Cookbook` class, and we've already created some `Recipe` objects:
+
+```ruby
+cb = Cookbook.new
+cb << recipe_for_cake
+cb << recipe_for_chicken
+beef_dishes = cb.select {|recipe| recipe.main_ingredient == "beef" }
+```
+The cookbook instance, `cb`, doesn't have methods called `<<` and `select`, so those messages are passed along to the `@recipes` arracy courtesy of `method_missing`. We can still define any methods we want directly in the `Cookbook` class-we can even override array methods, if we want a more cookbook-specific behavior for any of those methods-but `method_missing` saves us from having to define a parallel set of methods for handling pages as an ordered collection.
+
+This use of `method_missing` is very straightforward (though you can mix and match it with some of the bells and whistles from chapter 4) but very powerful; it adds a great deal of intelligence to a class in return for little efford. Let's look now at the other end of the spectrum: `method_missing` not in a specific class, but at the top of the class tree at the top level of your code.
 
 **Ruby's method-delegating techniques** 
+In this `method_missing` example, we've *delegated* the processing of messages (the unknown ones) to the array `@recipes`. Ruby has several mechanisms for delegating actions from one object to another. We won't go into them here, but you may come across both the `Delegator` class and the `SimpleDelegator` class in your further encounters with Ruby.
 
 #### THE ORIGINAL: BASICOBJECT#METHOD_MISSING ####
+`method_missing` is one of the few methods defined at the very top class tree, in the `BasicObject` class. Thanks to the fact that all classes ultimately derive from `BasicObject`, all objects have a `method_missing` method.
+
+The default `method_missing` is rather intelligent. Look at the difference between the error messages in these two exchanges in irb:
+
+```irb 
+>> a
+NameError: undefined local variable or method `a' for main:Object
+>> a?
+NoMethodError: undefined method `a?' for main:Object
+```
+That unknown identifier `a` could be either a method or a variable (if it weren't unknown, that is); and though it gets handled by `method_missing`, the error message reflects the fact that Ruby can't ultimately tell whether you meant it as a method call or a variable reference. The second unknown identifier, `a?`, can only be a method, because variable names can't end with a question mark. `method_missing` picks up on this and refines the error message (and even the choice of which exception to raise).
+
+It's possible to override the default `method_missing`, in either of two ways. First you can open the `BasicObject` class and redefine `method_missing`. The second, more common (though, admittedly, not all that common) technique is to define `method_missing` at the top level, thus installing it as a private instance method of `Object`.
+
+If you use this second technique, all objects except actual instances of `BasicObject` itself will find the new version of `method_missing`:
+
+```irb 
+>> def method_missing(m,*args,&block)
+>>    raise NameError, "What on earth do you mean by #{m}?"
+>> end
+=> :method_missing
+>> a
+NameError: What on earth do you mean by a?
+      from (irb):2:in `method_missing'
+>> BasicObject.new.a
+NoMethodError: undefined method `a' for #<BasicObject:0x000000022e77f8>
+```
+(You can put a `super` call inside your new version, if you want to bounce it up to the version in `BasicObject`, perhaps after logging the error, instead of raising an exception yourself.)
+
+Remember that if you define your own `method_missing`, you lose the intelligence that can discern variable naming from method naming:
+
+```irb
+>> a?
+NameError: What on earth do you mean by a??
+```
+It probbaly doesn't matter, especially if you're going to call `super` anyway-and if you really want to, you can examine the details of the symbol `m` yourself. But it's an interesting glimpse into the subleties of the class hierarchy and the semantics of overriding.
 
 #### METHOD_MISSING, RESPOND_TO?, AND RESPOND_TO_MISSING? #### 
+An oft-cited problem with `method_missing` is that it doesn't align with `respond_to?` Consider this example. In the `Person` class, we intercept messages that start with `set_`, and transform them into setter methods: `set_age(n)` becomes `age=n` and so forth. For example:
+
+```ruby
+class Person 
+  attr_accessor :name, :age 
+  def initialize(name, age)
+    @name, @age = name, age 
+  end 
+  
+  def method_missing(m, *args, &block)
+    if /set_(.*)/.match(m)
+      self.send("#{$1}=", *args)
+    else 
+      super 
+    end 
+  end 
+end
+```
+So does a person object have a `set_age` method, or not? Well, you can call that method, but the person object claims it doesn't respond to it:
+
+```ruby
+person = Person.new("David", 54)
+person.set_age(55)      #<----55
+p person.age
+p person.respond_to?(:set_age)      #<----- false
+```
+The way to get `method_missing` and `respond_to?` to line up with each other is by defining the special method `respond_to_missing?`. Here's a definition you can add to the preceding `Person` class:
+
+```
+  def respond_to_missing?(m, include_private = false)
+    /set_/.match(m) || super
+  end
+```
+Now the new person object will respond differently given the same queries:
+
+```irb 
+55
+true
+```
+You can control whether private methods are included by using a second argument to `respond_to?`. That second argument will be passed along to `respond_to_missing?`. In the example, it defaults to false.
+
+As a bonus, methods that become visible through `respond_to_missing?` can also be objectified into method objects using `method`:
+
+```ruby 
+person = Person.new("David", 55)
+p person.method(:set_age)   #<----- #<Method: Person#set_age>
+```
+Overall, `method_missing` is a highly useful event-trapping tool. But it's far from the only one. 
 
 ### *Trapping include and prepend operations* ### 
 
