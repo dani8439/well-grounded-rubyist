@@ -267,6 +267,8 @@ Sure enough, the include triggers the `included` callback, and the extended trig
 Just as modules can intercept include and extend operations, classes can tell when they're being subclassed. 
 
 ### *Intercepting inheritance with Class#inherited* ###
+At this point in your work with Ruby, you can set your sights on doing more with lists of objects' methods than examining and discarding them. In this section we'll look at a few examples (and there'll be plenty of room left for you to create more, as your needs and interests demand) of ways in whcih you might use and interpret the information in method lists. 
+
 
 **The limits of the `inherited` callback**
 
