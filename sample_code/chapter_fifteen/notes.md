@@ -267,53 +267,57 @@ Sure enough, the include triggers the `included` callback, and the extended trig
 Just as modules can intercept include and extend operations, classes can tell when they're being subclassed. 
 
 ### *Intercepting inheritance with Class#inherited* ###
-At this point in your work with Ruby, you can set your sights on doing more with lists of objects' methods than examining and discarding them. In this section we'll look at a few examples (and there'll be plenty of room left for you to create more, as your needs and interests demand) of ways in whcih you might use and interpret the information in method lists. 
+You can hook into the subclassing of a class by defining a special class method called `inherited` for that class. If `inherited` has been defined for a given class, then when you subclass the class, `inherited` is called with the name of the new class as its single argument.
 
+Here's a simple example, where the class `C` reports on teh fact that it has been subclassed:
+
+```ruby 
+class C
+  def self.inherited(subclass)
+    puts "#{self} just got subclassed by #{subclass}."
+  end
+end
+class D < C
+end
+```
+The subclassing of `C` by `D` automatically triggers a call to `inherited` and produces the following output:
+
+```irb 
+C just got subclassed by D
+```
+`inherited` is a class method, so descendants of the class that defines it are also able to call it. The actions you define in `inherited` cascade: if you inherit from a subclass, that subclass triggers the `inherited` method, and so on down the chain of inheritance. If you do this:
+
+```ruby 
+class E < D 
+end
+```
+you're informed that `D just got subclassed by E`. You get similiar results if you subclass `E` and so forth.
 
 **The limits of the `inherited` callback**
+Everything has its limits, including the `inherited` callback. When `D` inherits from `C`, `C` is `D`'s superclass: but in addition, `C`'s singletong class is the superclass of `D`'s singleton class. That's how `D` manages to be able to call `C`'s class methods. But no callback is triggered. Even if you define `inherited` in `C`'s singleton class, it's never called.
 
-### *The Module#const_missing method* ###
+Here's a testbed. Note how `inherited` is defined inside the singletong class of `C`. But even when `D` inherits from `C`-and even after the explicit creation of `D`'s singleton class-the callback isn't triggered:
 
-### *The method_added and singleton_method_added methods* ###
+```ruby 
+class C
+  class << self
+    def self.inherited
+      puts "Singleton class of C just got inherited:"
+      puts "But you'll never see this message."
+    end
+  end
+end
+class D < C
+  class << self
+    puts "D's singleton class now exists, but no callback!"
+  end
+end
+```
+The output from this program is
 
-## *Intercepting object capability queries* ##
+```irb 
+D's singleton class now exists, but no callback!
+```
+You're extremely unlikely to ever come across a situation where this behavior matters, but it gives you a nice X-ray of how Ruby's class model interoperates with its callback layer.
 
-### *Listing an object's non-private methods* ### 
-
-### *Listing private and protected methods* ###
-
-### *Getting class and module instance methods* ###
-
-#### GETTING ALL THE ENUMERABLE OVERRIDES ####
-
-### *Listing objects' singleton methods* ###
-
-## *Introspection of variables and constants* ## 
-
-### *Listing local and global variables* ###
-
-### *Listing instance variables* ###
-
-**The irb underscore variable** 
-
-## *Tracing execution* ##
-
-### *Examining the stack trace with caller* ###
-
-### *Writing a tool for parsing stack traces* ###
-
-#### THE CALLERTOOLS::CALL CLASS ####
-
-#### THE CALLERTOOLS::STACK CLASS ####
-
-#### USING THE CALLERTOOLS MODULE ####
-
-## *Callbacks and method inspection in practice* ##
-
-### *MicroTest background: MiniTest* ###
-
-### *Specifying and implementing MicroTest* ### 
-
-**Note** 
-
-## *Summary* ##
+Let's look now at how to intercept a reference to a nonexistant constant.
