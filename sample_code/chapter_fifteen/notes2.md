@@ -130,6 +130,81 @@ At this point in your work with Ruby, you can set your sights on doing more with
 Let's start at the most familiar point of departure: listing non-private methods with the `methods` method.
 
 ### *Listing an object's non-private methods* ### 
+To list the non-private (i.e., public or protected) methods that an object knows about, you use the method `methods`, which returns an array of symbols. Arrays being arrays, you can perform some useful queries on the results of the initial query. Typically, you'll filter the array in some way so as to get a subset of methods.
+
+Here, for example, is how you might ask a string what methods it knows about that involve modification of cases:
+
+```irb 
+>> string = "Test string"
+=> "Test string"
+>> string.methods.grep(/case/).sort
+=> [:casecmp, :downcase, :downcase!, :swapcase, :swapcase!, :upcase, :upcase!]
+```
+The `grep` filters out any symbol that doesn't have `case` in it. (Remember that although they're not strings, symbols exhibit a number of stringlike behaviors, such as being greppable.) The `sort` command at the end is useful for most method-listing operations. It doesn't make much of a difference in this example, because there are only seven methods; but when you get back arrays of 100 or more symbols, sorting them can help a lot.
+
+Grepping for `case` depends on the assumption, of course, that case-related methods will have `case` in their names. There's definitely an element of judgment, often along the lines of making educated guesses about what you think you'll find, in many method-capability queries. Things tend to work out, though, as Ruby is more than reasonably consistent and conventional in its choice of method names.
+
+Some of the `case` methods are also bang(`!`) methods. Following that thread, let's find out all the bang methods a string has, agian using a `grep` operation:
+
+```irb 
+>> string.methods.grep(/.!/).sort
+=> [:capitalize!, :chomp!, :chop!, :delete!, :downcase!, :encode!, :gsub!, :lstrip!, :next!, :reverse!, :rstrip!, :scrub!, :slice!, 
+:squeeze!, :strip!, :sub!, :succ!, :swapcase!, :tr!, :tr_s!, :unicode_normalize!, :upcase!]
+```
+Why the dot before the `!` in the regular expression? Its purpose is to ensure that there's at least one character before the `!` in the method name, and thus to exclude the `!`, `!=`, and `!~` methods, which contain `!` but aren't bang methods in the usual sense. We want methods that end with a bang, but not those that begin with one.
+
+Let's use `methods` a little further. Here's a question we can answer by interpreting method query results: do strings have any bang methods that don't have corresponding non-bang methods?
+
+```ruby
+string = "Test string"
+methods = string.methods
+bangs = string.methods.grep(/.!/)           #<-----1.
+unmatched = bangs.reject do |b|
+  methods.include?(b[0..-2].to_sym)                          #<-----2.
+end
+if unmatched.empty?
+  puts "All bang methods are matched by non-bang methods."                 #<-----3.
+else
+  puts "Some bang methods have no non-bang partner:"
+  puts unmatched
+end
+
+# Output: All bang methods are matched by non-bang methods.
+```
+The code works by collecting all of a string's public methods and, separately, all of its bang methods (#1). Then, a reject operation filgers out all bang method names for which a corresponding non-bang name can be found in the larger method-name list (#2). The `[0..-2]` index grabs everything but the last character of the symbol-the method name minus the `!`, in other words-and the call to `to_sym` converts the resulting string back to a symbol so that the `include?` test can look for it in the array of methods. If the filtered list is empty, that means that no unmatched bang method names were found. If it isn't empty, then at least one such name was found and can be printed out (#3).
+
+If you run the script as it is, it will always take the first (true) branch of the `if` statement. If you want to see a list of unmatched bang methods, you can add the following line to the program, just after the first line:
+
+```ruby 
+def string.surprise!; end
+```
+When you run the modified version of the script, you'll see this:
+
+```irb 
+Some bang methods have no non-bang partner:
+surprise!
+```
+As you've already seen, writing bang methods without non-bang partners is usually bad practice-but it's a good way to see the `methods` method at work.
+
+You can, of course, ask class and module objects what their methods are. After all, they're just objects. But remember that the `methods` method always lists the nonprivate methods of the object itself. In the case of classes and modules, that means you're not getting a list of the methods that instance of the class-or instances of classes that mix in the module-can call. You're getting the methods that the class or module itself knows about. Here's a (partial) result from calling `methods` on a newly created class object:
+
+```irb 
+>> class C; end
+=> nil
+>> C.methods.sort
+=> [:!, :!=, :!~, :<, :<=, :<=>, :==, :===, :=~, :>, :>=, :__id__, :__send__, :allocate, :ancestors, :autoload, :autoload?, :class, :class
+_eval, :class_exec, :class_variable_defined?, :class_variable_get, :class_variable_set, :class_variables, :clone, :const_defined?, :const_
+get, :const_missing, :const_set, :constants, :define_singleton_method, :deprecate_constant, :display, :dup, :enum_for, :eql?, :equal?, :ex
+tend, :freeze, :frozen?, :hash, :include, :include?, :included_modules, :inspect, :instance_eval, :instance_exec, :instance_method, :insta
+nce_methods, :instance_of?, :instance_variable_defined?, :instance_variable_get, :instance_variable_set, :instance_variables, :is_a?, :its
+elf, :kind_of?, :method, :method_defined?, :methods, :module_eval, :module_exec, :name, :new, :nil?, :object_id, :prepend, :private_class_
+method, :private_constant, :private_instance_methods, :private_method_defined?, :private_methods, :protected_instance_methods, :protected_
+method_defined?, :protected_methods, :public_class_method, :public_constant, :public_instance_method, :public_instance_methods, :public_me
+thod, :public_method_defined?, :public_methods, :public_send, :remove_class_variable, :remove_instance_variable, :respond_to?, :send, :sin
+gleton_class, :singleton_class?, :singleton_method, :singleton_methods, :superclass, :taint, :tainted?, :tap, :to_enum, :to_s, :trust, :un
+taint, :untrust, :untrusted?]
+```
+Class and module objects share some methods with their own instances, because they're all objects and objects in general share certain methods. But the methods you see are those that the class or module itself can call. You can also ask classes and modules about the instance methods they define. We'll return to that technique shortly. First, let's look briefly at the process of listing an object's private and protected methods.
 
 ### *Listing private and protected methods* ###
 
