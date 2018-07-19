@@ -207,6 +207,53 @@ taint, :untrust, :untrusted?]
 Class and module objects share some methods with their own instances, because they're all objects and objects in general share certain methods. But the methods you see are those that the class or module itself can call. You can also ask classes and modules about the instance methods they define. We'll return to that technique shortly. First, let's look briefly at the process of listing an object's private and protected methods.
 
 ### *Listing private and protected methods* ###
+Every object (except instances of `BasicObject`) has a `private_methods` method and a `protected_methods` method. They work as you'd expect; they provide arrays of symbols, but containing private and protected method names, respectively.
+
+Freshly minted Ruby objects have a lot of private methos and no protected methods:
+
+```
+// ♥ ruby -e 'o = Object.new; p o.private_methods.size'
+74
+// ♥ ruby -e 'o = Object.new; p o.protected_methods.size'
+0
+```
+What are those private methods? They're private instance methods defined mostly in the `Kernel` module and secondarily in the `BasicObject` class. Here's how you can track this down:
+
+```
+// ♥ ruby -e 'o = Object.new; p o.private_methods.size - 
+    BasicObject.private_instance_methods(false) - 
+    Kernel.private_instance_methods(false)'
+[] #<---what supposed to get, vs what got--->   [:DelegateClass]
+```
+Note that after you subtract the private methods defined in `Kernel` and `BasicObjeect`, the original object has no private methods to list. The private methods defined in `Kernel` are the methods we think of as "top-level," like `puts`, `binding`, and `raise`. Play around a little with the method-listing techniques you're learning here and you'll see some familiar methods listed.
+
+Naturally, if you define a private method yourself, it will also appear in the list of private methods. Here's an example: a simple `Person` class in which assigning a name to the person via the `name=` method triggers a name-normalization method that removes everything other than the letters and selected punctuation characters from the name. The `normalize_name` method is private:
+
+```ruby
+class Person
+  attr_accessor :name
+  def name=(name)         #<---Defines nondefault writing accessor
+    @name = name
+    normalize_name            #<---Normalizes name when assigned
+  end
+  private
+  def normalize_name
+    name.gsub!(/[^-a-z'.\s]/i, "")      #<----Removes undersired characters from name
+  end
+end
+david = Person.new
+david.name = "123David!! Bl%a9ck"
+raise "Problem" unless david.name == "David Black"    #<----Makes sure normalization works
+puts "Name has been normalized."                            #<----Prints success message
+p david.private_methods.sort.grep(/normal/)                        #<----Result of private method inspection: [:normalize_name]
+
+# Name has been normalized.
+# [:normalize_name]
+```
+
+Protected methods can be examined in much the same way, using the `protected_methods` method.
+
+In addition to asking objects what methods they know about, it's frequently useful to ask classes and modules what methods they provide.
 
 ### *Getting class and module instance methods* ###
 
