@@ -256,37 +256,62 @@ Protected methods can be examined in much the same way, using the `protected_met
 In addition to asking objects what methods they know about, it's frequently useful to ask classes and modules what methods they provide.
 
 ### *Getting class and module instance methods* ###
+Classes and modules come with a somewhat souped-up set of method-querying methods. Examining those available in `String` illustrates the complete list. The methods that are specific to classes and modules are in **bold**:
+
+
+>> String.methods.grep(/methods/).sort
+ => (**:instance_methods**, :methods, **:private_instance_methods**, :private_methods, **:protected_instance_methods**, :protected_methods, **:public_instance_methods**, :public_methods, :singleton_methods)
+
+The methods shown in bold give you lists of instance methods of various kinds defined in the class or module. The four methods work as follows:
+
+• `instance_methods` returns all public and protected instance methods.
+
+• `public_instance_methods` returns all public instance methods.
+
+• `protected_instance_methods` and `private_instance_methods` return all protected and private instance methods, respectively.
+
+When calling any of these methods, you have the option of passing in an argument. If you pass in the argument `false`, then the list of methods you get back will include only those defined in the class or module you're querying. If you pass in any argument with Boolean truth (anything other than `false` or `nil`), or if you pass in no argument, the list of methods will include those defined in the class or module you're querying and all of its ancestor classes and modules.
+
+For example, you can find out which instance methods the `Range` class defines, like this:
+
+```irb 
+>> Range.instance_methods(false) & Enumerable.instance_methods(false)
+=> [:include?, :first, :min, :max, :member?]
+```
+As you can see, `Range` redefines five methods that `Enumerable` already defines.
+
+We'll look shortly at the last of the `methods`-style methods, `singleton_methods`. But first, let's create a program that produces a list of all the overrides of all classes that mix in `Enumerable`. 
 
 #### GETTING ALL THE ENUMERABLE OVERRIDES ####
+The strategy here will be to find out which classes mix in `Enumerable` and then perform on each such class an and (`&`) operation like the one in the last example, storing the results and, finally, printing them out. The following listing shows the code. 
 
-### *Listing objects' singleton methods* ###
+```ruby 
+overrides = {}                                                  #<-----1.
+enum_classes = ObjectSpace.each_object(Class).select do |c|      #<-----2.
+  c.ancestors.include?(Enumerable)
+end
+enum_classes.sort_by {|c| c.name}.each do |c|                        #|
+  overrides[c] = c.instance_methods(false) &                         #|<-----3.
+                 Enumerable.instance_methods(false)                  #|
+end
+overrides.delete_if {|c, methods| methods.empty? }                 #<-----4.
+overrides.each do |c,methods|                                     #<-----5.
+  puts "Class #{c} overrides: #{methods.join(", ")}"
+end
+```
+First, we create an empty hash in the variable `overrides` (#1). We then get a list of all classes that mix in `Enumerable`. The technique for getting this list involves the `ObjectSpace` module and it's `each_object` method (#2). This method takes a single argument representing the class of the objects you want it to find. In this case, we're interested in objects of class `Class`, and we're only interested in those that have `Enumerable` among their ancestors. The `each_object` method returns an enumerator, and the call to `select` on that enumerator has the desired effect of filtering the list of all classes down to a list of only those that have mixed in `Enumerable`.
 
-## *Introspection of variables and constants* ## 
+Now it's time to populate the `overrides` hash. For each class in `enum_classes` (nicely sorted by the class name), we put an entry in `overrides`. The key is the class, and the value is an array of method names-the names of the `Enumerable` methods that this class overrides (#3). After removing any entries representing classes that haven't overriden any `Enumerable` methods (#4), we proceed to print the results using the `sort` and `join` operations to make the output look consistent and clear (#5) as shown here:
 
-### *Listing local and global variables* ###
+```irb 
+Class ARGF.class overrides: to_a 
+Class Array overrides: to_a, to_h, first, reverse_each, find_index, sort, collect, map, select, reject, zip, include?, count, cycle, take,       take_while, drop, drop_while
+Class Enumerator overrides: each_with_index, each_with_object 
+Class Enumerator::Lazy overrides: map, collect, flat_map, collect_concat, select, find_all, reject, grep, zip, take, take_while, drop,           drop_while, lazy, chunk, slice_before
+Class Hash overrides: to_h, to_a, select, reject, include?, member?
+Class ObjectSpace::WeakMap overrides: include?, member?
+Class Struct overrides: to_a, to_h, select
+```
+The first line pertains tot he somewhat anomalous object designated as `ARGF.class`, which is a unique, specially engineered object involved in the processing of program input. The other lines pertain to several familiar classes that mix in `Enumerable`. In each case, you see which `Enumerable` methods the class in question has overridden.
 
-### *Listing instance variables* ###
-
-**The irb underscore variable** 
-
-## *Tracing execution* ##
-
-### *Examining the stack trace with caller* ###
-
-### *Writing a tool for parsing stack traces* ###
-
-#### THE CALLERTOOLS::CALL CLASS ####
-
-#### THE CALLERTOOLS::STACK CLASS ####
-
-#### USING THE CALLERTOOLS MODULE ####
-
-## *Callbacks and method inspection in practice* ##
-
-### *MicroTest background: MiniTest* ###
-
-### *Specifying and implementing MicroTest* ### 
-
-**Note** 
-
-## *Summary* ##
+Let's look next at how to query an object with regard to its singleton methods.
