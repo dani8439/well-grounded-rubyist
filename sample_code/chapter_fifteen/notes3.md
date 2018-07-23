@@ -52,8 +52,10 @@ You can ask a class for its singleton methods, and you'll get the singleton meth
 ```
 
 ## *Introspection of variables and constants* ## 
+Ruby can tell you several things about which variables and constants you have access to at a given point in runtime. You can get a listing of local or global variables, an object's instance variables, the class variables of a class or module, and the constants of a class or module.
 
 ### *Listing local and global variables* ###
+The local and global variable inspections are straightforward, you use the top-level methods `local_variables` and `global_variables`. In each case, you get back an array of symbols corresponding to the local or global variables currently defined:
 
 ### *Listing instance variables* ###
 
