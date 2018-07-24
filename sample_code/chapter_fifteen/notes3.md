@@ -173,16 +173,293 @@ Now, let's write the classes.
 #### THE CALLERTOOLS::CALL CLASS ####
 The following listing shows the `Call` class along with the first line of the entire program, which wraps everything else in the `CallerTools` module.
 
+```ruby 
+module CallerTools
+  class Call
+    CALL_RE = /(.*):(\d+):in `(.*)'/     #<----1.
+    attr_reader :program, :line, :meth      #<-----2.
+    def initialize(string)
+      @program, @line, @meth = CALL_RE.match(string).captures #<-----3.
+    end
+    def to_s
+      "%30s%5s%15s" % [program, line, meth]    #<-----4
+    end
+  end
+```
+We need a regular expression with which to parse the stack trace strings; that regular expression is stored in the `CALL_RE` constant (#1). `CALL_RE` has three parenthetical capture groupings, separated by uncaptured literal substrings. Here's how the regular expression matches up against a typical stack trace string. Bold type shows the substrings that are captured by the corresponding regular expression subpatterns. The nonbold characters aren't included in the captures, but are matched literally (but can't figure out how to bold in irb):
+
+```
+myrubyfile.rb:234:in `a_method'
+   .*        :\d+:in `  .*    '
+```
+The class has, as specified, three reader attributes for the three components of the call (#2). Initialization requires a string argument, the string is matched against `CALL_RE`, and the results, available via the `captures` method of the `MatchData` object, are placed in the three instance variables corresponding to the attributes, using parallel assignment (#3). (We get a fatal error for trying to call `captures` on `nil` if there's no match. You can alter the code to handle this condition directly if you wish.)
+
+We also define a `to_s` method for `Call` objects (#4). This method comes into play in situations where it's useful to print out a report of a particular `backtrace` element. It involves Ruby's handy `%` technique. On the left of the `%` is a `sprintf`-style formatting string, and on the right is an array of replacement values. You might want to tinker with the lengths of the fields in the replacement string-or, for that matter, write your own `to_s` method, if you prefer a different style of output.
+
+Now it's time for the `Stack` class. 
+
 #### THE CALLERTOOLS::STACK CLASS ####
+The `Stack` class, along with the closing `end` instruction for the entire `CallerTools` module, is shown in the following listing.
+
+```ruby
+class Stack
+    def initialize
+      stack = caller                    #<-----1.
+      stack.shift
+      @backtrace = stack.map do |call|    #<-----2.
+        Call.new(call)
+      end
+    end
+    def report
+      @backtrace.map do |call|              #<-----3.
+        call.to_s
+      end
+    end   
+    def find(&block)                          #<-----4.
+      @backtrace.find(&block)
+    end
+  end
+end
+```
+Upon initialization, a new `Stack` object calls `caller` and saves the resulting array (#1). It then shifts that array, removing the first string; that string reports on the call to `Stack.new` itself and is therefore just noise.
+
+The stored `@backtrace` should consist of one `Call` object for each string in the `my_caller` array. That's a job for `map` (#2). Note that there's no `backtrace` reader attribute. In this case, all we need is the instance variable for internal use by the object.
+
+Next comes the `report` method, which uses `map` on the `@backtrace` array to generate an array of strings for all the `Call` objects in the stack (#3). This report array is suitable for printing or, if need be, for searching and filtering.
+
+The `Stack` class includes one final method: `find` (#4). It works by forwarding its code block to the `fine` method of the `@backtrace` array. It works a lot like some of the deck-of-cards methods you've seen, which forward a method to an array containing the cards that make up the deck. Techniques like this allow you to fine-tune the interface of your objects, using underlying objects to provide them with exactly the functionality they ened. (You'll see the specific usefulness of `find` shortly.
+
+Now, let's try out `CallerTools`. 
 
 #### USING THE CALLERTOOLS MODULE ####
+You can use a modified version of the "x,y,z" demo from the earlier section to try out `CallerTools`. Put this code in a file called callertest.rb:
+
+```ruby 
+require_relative 'callertools'
+def x
+  y
+end
+def y
+  z
+end
+def z
+  stack = CallerTools::Stack.new
+  puts stack.report
+end
+x
+```
+When you run the program, you'll see this output:
+
+```irb
+// ♥ ruby callertest.rb
+                 callertest.rb    9              z
+                 callertest.rb    6              y
+                 callertest.rb    3              x
+                 callertest.rb   12         <main>
+
+```
+Nothing too fancy, but it's a nice programmatic way to address a stack trace rather than having to munge the strings directly every time. (There's a lot of blank space at the beginnings of the lines, but there would be less if the file paths were longer-and of course you can adjust the formatting to taste.)
+
+Next on the agenda, and the last stop for this chapter, is a project that ties together a number of the techniques we've been looking at: stack tracing, method querying, and callbacks, as well as some techniques you know from elsewhere in the book. We'll write a test framework.
 
 ## *Callbacks and method inspection in practice* ##
+In this section, we'll implement MicroTest, a tiny test framework. It doesn't have many features, but the ones it has will demonstrate some of the power and expressiveness of the callbacks and inspection techniques you've just learned.
+
+First, a bit of backstory.
 
 ### *MicroTest background: MiniTest* ###
+Ruby ships with a testing framework called MiniTest. You use MiniTest by writing a class that inherits from the class `MiniTest::Unit::TestCase` and that contains methods whose names begin with the string `test`. You can then either specify which test methods you want to execute, or arrange (as we will below) for every `test`-named method to be executed automatically when you run the file. Inside those methods, you write *assertions*. The truth or falsehood of your assertions determines whether your test passes.
+
+The exercise we'll do here is to write a simple testing utility based on some of the same principles as MiniTest. To help you get your bearings, we'll look first at a full example of MiniTest in action and then do the implementation exercise.
+
+We'll test dealing cards. The following listing shows a version of a class for a deck of cards. The deck consists of an array of 52 strings held in the `@cards` instance variable. Dealing one or more cards means popping that many cards off the top of the deck.
+
+```ruby 
+module PlayingCards
+  RANKS = %w{ 2 3 4 5 6 7 8 9 10 J Q K A }
+  SUITS = %w{ clubs diamonds hearts spades }
+  class Deck
+    def initialize                            #<-----1.
+      @cards = []
+      RANKS.each do |r|
+        SUITS.each do |s|
+          @cards << "#{r} of #{s}"
+        end
+      end
+      @cards.shuffle!
+    end
+    def deal(n=1)                             #<------2.
+      @cards.pop(n)
+    end
+    def size
+      @cards.size
+    end
+  end
+end
+```
+Creating a new deck (#1) involves initializing `@cards`, inserting 52 strings into it, and shuffling the array. Each string takes the form *"rank of suit,"* where *rank* is one of the ranks in the constant array `RANKS` and *suit* is one of `SUITS`. In dealing from the deck (#2), we return an array of cards, where `n` is the number of cards being dealt and defaults to `1`. 
+
+So far, so good. Now, let's test it. Enter MiniTest. The next listing shows the test code for the cards class. The test code assumes that you've saved the cards code to a separate file called cards.rb in the same directory as the test code file (which you can call cardtest.rb).
+
+```ruby 
+require 'minitest/unit'                       #<-----1.
+require 'minitest/autorun'
+require_relative 'cards'
+class CardTest < MiniTest::Unit::TestCase     #<-----2.
+  def setup                                   #<-----3.
+    @deck = PlayingCards::Deck.new
+  end
+  def test_deal_one                           #<-----4.
+    @deck.deal
+    assert_equal(51, @deck.size)              #<-----5.
+  end
+  def test_deal_many                          #<-----6.
+    @deck.deal(5)
+    assert_equal(47, @deck.size)
+  end
+end 
+```
+The first order of business is to require both the `minitest/unit` library and the cards.rb file (#1). We also require `minitest/autorun`; this feature causes MiniTest to run the test methods it encounters without our having to make explicit method calls. Next, we create a `CardTest` class that inherits from `MiniTest::Unit::TestCase` (#2). In this class, we define three methods. The first is `setup` (#3). The method name `setup` is magic to MiniTest; if defined, it's executed before every test method in the test class. Running the `setup` method before each test method contributes to keeping the test methods independent of each other, and that independence is an important part of the architecture of test suits.
+
+Now come the two test methods, `test_deal_one` (#4) and `test_deal_many` (#6). These methods define the actual tests. In each case, we're dealing from the deck and then making an assertion abou the size of the deck subsequent to the dealing. Remember that `setup` is executed before each test method, which means `@deck` contains a full 52-card deck for each method.
+
+The assertions are performed using the `assert_equal` method (#5). This method takes two arguments. If the two are equal (using `==` to do the comparison behind the scenes), the assertion succeeds. If not, it fails.
+
+Execute cardtest.rb from the command line. Here's what you'll see (probably with a different seed and different time measurements):
+
+```irb 
+$ ruby cardtest.rb
+Run options: --seed 59230
+
+# Running:
+..
+
+Finished in 0.002925s, 683.8767 runs/s, 683.8767 assertions/s.
+2 tests, 2 assertions, 0 failures, 0 errors, 0 skips 
+```
+
+The last line tells you that there were two methods whose names began with `test` (`2 tests`) and a total of two assertions (the two calls to `assert_equal`). It tells you further that both assertions passed (no failures) and that nothing went drastically wrong (no errors; an error is something unrecoverable like a reference to an unknown variable, whereas a failure is an incorrect assertion). It also reports that no tests were skipped (skipping a test is something you can do explicitly with a call to the `skip` method).
+
+The most striking thing about running this test file is that at no point do you have to *instantiate* the `CardTest` or explicitly call the test methods or the `setup` method. Thanks to the loading of the `autorun` feature, MiniTest figures out that it's supposed to run all the methods whose names begin with `test`, running the setup method before each of them. This automatic execution-or at least a subset of it-is what we'll implement in our exercise.
 
 ### *Specifying and implementing MicroTest* ### 
+Here's what we'll want from our `MicroTest` utility:
 
-**Note** 
+• Automatic execution of the `setup` method and test methods, based on class inheritance.
+
+• A simple assertion method that either succeeds or fails.
+
+The first specification will entail most of the work.
+
+We need a class that, upon being inherited, observes the new subclass and executes the methods in that subclass as they're defined. For the sake of (relative!) simplicity, we'll execute them in definition order, which means `setup` should be defined first.
+
+Here's a more detailed description of the steps needed to implement MicroTest:
+
+  1. Define the class `MicroTest`.
+  2. Define `MicroTest.inherited`.
+  3. Inside `inherited`, the inheriting class should...
+  4. Define its own `method_added` callback, which should...
+  5. Instantiate the class and execute the new method if it starts with test, but first...
+  6. Execute the `setup` method, if there is one. 
+ 
+Here's a nonworking, commented mockup of `MicroTest` in Ruby:
+
+```ruby 
+class MicroTest
+  def self.inherited(c)
+    c.class_eval do
+      def self.method_added(m)
+        # If m starts with "test"
+        #   Create an instance of c
+        #   If there's a setup method
+        #     Execute setup
+        #   Execute the method m
+      end
+    end
+  end
+end
+```
+There's a kind of logic cascade here. Inside `MicroTest`, we define `self.inherited`, which receives the inheriting class (the new subclass) as its argument. We then enter into that class's definition scope using `class_eval`. Inside that scope, we implement `method_added`, which will be called every time a new method is defined in the class.
+
+Writing the full code follows directly from the comments inside the code mockup. The following listing shows the full version of micro_test.rb. Put it in the same directory as callertools.rb
+
+```ruby
+require_relative 'callertools'
+class MicroTest 
+  def self.inherited(c)
+    c.class_eval do 
+      def self.method_added(m)
+        if m =~ /^test/                               #<-----1.
+          obj = self.new                              #<-----2.
+          if self.instance_methods.include?(:setup)   #<-----3.
+            obj.setup 
+          end 
+          obj.send(m)
+        end 
+      end 
+    end 
+  end 
+  def assert(assertion)                                   #<------4.
+    if assertion
+      puts "Assertion passed"
+      true
+    else
+      puts "Assertion failed:"
+      stack = CallerTools::Stack.new
+      failure = stack.find {|call| call.meth !~ /assert/ }     #<------5.
+      puts failure
+      false
+    end
+  end 
+  def assert_equal(expected, actual)                          #<------6.
+    result = assert(expected == actual)
+    puts "(#{actual} is not #{expected})" unless result     #<------7.
+  end
+end
+```
+Inside the class definition (`class_eval`) scope of the new subclass, we define `method_added`, and that's where most of the action is. If the method being defined starts with `test` (#1), we create a new instance of the class (#2). If a `setup` method is defined (#3), we call it on that instance. Then (whether or not there was a `setup` method; that's optional), we call the newly added method using `send` because we don't know the methods name.
+
+**Note** As odd as it may seem (in light of the traditional notion of pattern matching, which involves strings), the `m` in the pattern-matching operation `m =~ /^test/` is a symbol, not a string. The ability of symbol objects to match themselves against regular expressions is part of the general move we've already noted towards making symbols more easily interchangeable with strings. Keep in mind though, the important differences between the two, as explained in chapter 8.
+
+---
+
+The `assert` method tests the truth of its single argument (#4). If the argument is true (in the Boolean sense; it doesn't have to be the actual object `true`), a message is printed out, indicating success. If the assertion fails, the message printing gets a little more intricate. We create a `CallerTools::Stack` object and pinpoint the first `Call` object in that stack whose method name doesn't contain the string `assert` (#5). The purpose is to make sure we don't report the failure as having occurred in the `assert` method nor in the `assert_equal` method (described shortly). It's not robust; you might have a method with `assert` in it that you did want an error reported from. But it illustrates the kind of manipulation that the `find` method of `CallerTools::Stack` allows.
+
+The second assertion method, `assert_equal`, tests for equality between its two arguments (#6). It does this by calling `assert` on a comparison. If the result isn't true, an error message showing the two compared objects is displayed (#7). Either way-success or failure-the result of the `assert` call is returned from `assert_equal`. 
+
+To try out `MicroTest`, put the following code in a file called microcardtest.rb, and run it from the command line:
+
+```ruby 
+require_relative 'micro_test'
+require_relative 'cards'
+class CardTest < MicroTest 
+  def setup 
+    @deck = PlayingCards::Deck.new 
+  end 
+  def test_deal_one 
+    @deck.deal 
+    assert_equal(51, @deck.size)
+  end 
+  def test_deal_many 
+    @deck.deal(5)
+    assert_equal(47, @deck.size)
+  end 
+end 
+```
+As you can see, this code is almost identical to the MiniTest file we wrote before. The only differences are the names of the test library and parent test class. And when you run the code, you get these somewhat obscure by encouraging results:
+
+```irb 
+Assertion passed 
+Assertion passed
+```
+If you want to see a failure, change `51` to `50` in `test_deal_one`:
+
+```irb 
+Assertion failed:
+              microcardtest.rb    9  test_deal_one
+(51 is not 50)
+Assertion passed
+```
+MicroTest won't supplant MiniTest any time soon, but it does do a couple of the most magical things that MiniTest does. It's all made possibly by Ruby's introspection and callback facilities, techniques that put extraordinary power and flexibility in your hands.
 
 ## *Summary* ##
