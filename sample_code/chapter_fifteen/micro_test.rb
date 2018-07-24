@@ -20,7 +20,7 @@ class MicroTest
     else
       puts "Assertion failed:"
       stack = CallerTools::Stack.new
-      failures = stack.find {|call| call.meth !~ /assert/ }
+      failure = stack.find {|call| call.meth !~ /assert/ }
       puts failure
       false
     end
