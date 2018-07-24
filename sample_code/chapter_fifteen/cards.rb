@@ -1,5 +1,5 @@
 module PlayingCards
-  RANKS = %w{ 2 3 4 5 6 7 8 9 J Q K A }
+  RANKS = %w{ 2 3 4 5 6 7 8 9 10 J Q K A }
   SUITS = %w{ clubs diamonds hearts spades }
   class Deck
     def initialize
