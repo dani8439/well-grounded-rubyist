@@ -267,6 +267,7 @@ A protected method is thus like a private method, but with an exemption for case
 
 ### **Inheritance and method access** ###
 Subclasses inherit the method-access rules of their superclasses. Given a class `C` with a set of access rules, and a class `D` that's a subclass of `C`, instances of `D` exhibit the same access behavior as instances of `C`. But you can set up new rules inside the class definition of `D`, in which case the new rules take precedence for instances of `D` over the rules inherited from `C`.
+
 ---
 
 The last topic we'll cover in this chapter is top-level methods. As you'll see, top-level methods enjoy a special case status. But even this status meshes logically with the aspects of Ruby's design you've encountered in this chapter.
@@ -339,3 +340,26 @@ If you want to see all of the private instance methods that `Kernel` provides, t
 `$ ruby -e 'p Kernel.private_instance_methods.sort'`
 
 The `private_instance_methods` method gives you an array of all the relevant methods, and `sort` sorts the array of method names for easier reading. As you can see, these methods, although often useful in imperative, script-style programming, aren't restricted in their usefulness to that style; they include commands like `require`, `load`, `raise` (raise an exception), and others, that are among the most common tecnhiques in all Ruby programs, whatever style of program design they exhibit.
+
+## *Summary* ## 
+This chapter covered
+
+• The rotating role of self (the current or default object)
+
+• Self as the receiver for method calls with no explicit receiver 
+
+• Self as the owner of instance variables
+
+• Implications of the "classes are objects too" rule
+
+• Variable scope and visibility for local, global, and class variables
+
+• The rules for looking up and referencing constants
+
+• Ruby's method-access levels (public, private, protected)
+
+• Writing and working with top-level method definitions
+
+The techniques in this chapter are of great importance to Ruby. Concepts like the difference between instance variables in a class definition and instance variables in an instance-method definition are crucial. It's easy to look at a Ruby program and get a general sense of what's going on. But to understand a program in depth-and to write well-organized, robust programs-you need to know how to detect where the various local scopes begin and end; how constances, instance variables, and other identifiers are resolved; and how to evaluate the impact of the ever-shifting role of self.
+
+This chapter has shown you how to get your bearings in a Ruby program. It's also shown you some techniques you can use more accurately and effectively in your code by virtue of having your bearings. But there's more to explore, relating to what you can do in the landscape of a program, beyond understanding it. The next chapter, on the subject of control flow, will address some of these techniques.
