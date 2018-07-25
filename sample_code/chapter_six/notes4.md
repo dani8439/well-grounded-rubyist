@@ -277,3 +277,22 @@ def line_from_file(filename, substring)
 Namespacing exceptions this way is polite, in the sense that it lets other people name exceptions as they like without fearing name clashes. It also becomes a necessity once you start creating more than a very small number of exception classes.
 
 With our exploration of exceptions and how they're handled, we've reached the end of this examination of control flow. As you've seen, control can jump around a fair amount-but if you keep in mind the different kinds of jumping (conditionals, loops, iterators, and exceptions), you'll be able to follow any Ruby code and write code that makes productive use of the many flow-related techniques available.
+
+## *Summary* ##
+In this chapter you've seen
+
+• Conditionals (`if/unless` and `case/when`)
+
+• Loops (`loop`, `for`, `while`, and `until`)
+
+• Iterators and code blocks, including block parameters and variables
+
+• Examples of implementing Ruby methods in Ruby
+
+•Exceptions and exception handling
+
+This chapter has covered several wide-ranging topics, bundled together because they have in common the fact that they involve control flow. Conditionals move control around based on the truth or falsehood of expressions. Loops repeata segment of code unconditionally, conditionally, or once for each item in a list. Iterators-methods that yield to a code block you provide alongside the call to the method-are among Ruby's most distinctive features. You've learned how to write and call an iterator, techniques you'll encounter frequently later in this book (and beyond).
+
+Exceptions are Ruby's mechanism for handling unrecoverable error conditions. *Unrecoverable* is relative: you can rescue an error condition and continue execution, but you have to stage a deliberate intervention via a `rescue` block and thus divert and gain control of the program where otherwise it would terminate. You can also create your own exception classes through inheritance from the built-in Ruby exception classes.
+
+At this point, we'll delve into Ruby's built-in functionality, starting with some general, pervasive features and techniques, and proceeding to specific classes and modules. Not that you haven't seen and used many built-in features already; but it's time to get more systematic and to go more deeply into how the built-ins work. 
