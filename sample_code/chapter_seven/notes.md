@@ -1,3 +1,5 @@
+# *Built-in essentials* #
+
 • *Literal Constructors*-ways to create certain objects with syntax, rather than with a call to `new`.
 
 • *Syntactic Sugar*-things Ruby lets you do to make your code look nicer.
