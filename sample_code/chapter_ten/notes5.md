@@ -216,4 +216,25 @@ The output will be:
 
 Without creating a lazy enumerator on the range, the map operation would go on forever. Instead, the lazy enumeration ensures that the whole process will stop once we've got what we want.
 
+## *Summary* ##
+In this chapter you've seen 
 
+• The `Enumerable` module and its instance methods 
+
+• Using `Enumerable` in your own classes
+
+• Enumerator basics 
+
+• Creating enumerators 
+
+• Iterating over strings
+
+• Lazy enumerators 
+
+This chapter focused on the `Enumerable` module and the `Enumerator` class, two entities with close ties. First, we explored the instance methods of `Enumerable`, which are defined in terms of an `each` method and which are available to your objects as long as those objects respond to `each` and your class mixes in `Enumerable`. Second, we looked at enumerators, objects that encapsulate the iteration process of another object, binding themselves-specifically, their `each` methods-to a designated method on another object and using that parasitic `each`-binding to deliver the full range of enumerable functionality.
+
+Enumerators can be tricky. They build entirely on `Enumerable`; and in cases where an enumerator gets hooked up to an object that has overriden some of `Enumerable`'s methods, it's important to remember that the enumerator will have its own ideas of what those methods are. It's not a general-purpose proxy to another object; it siphons off values from one method on the other object.
+
+One way or another-be it through the use of the more classic Ruby style of iteration and collection management-you'll almost certainly use the enumeration-related facilities of the language virtually every time you write a Ruby program. It's worth getting to know `Enumerable` intimately; it's as powerful a unit of functionality as there is anywhere in Ruby.
+
+We'll turn next to the subject of regular expressions and pattern matching. As you'll see, there's osme payoff to looking at both strings and collection objects prior to studying regular expressions: a number of pattern-matching methods performed on strings return their results to you in collection form and therefore lend themselves to iteration. Looking at regular expressions will help you develop a full-featured toolkit for processing strings and bodies of text. 
