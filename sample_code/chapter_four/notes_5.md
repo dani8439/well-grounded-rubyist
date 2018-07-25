@@ -94,3 +94,20 @@ Nested module/class chains like `Tools::Hammer` are sometimes used to create sep
 
 ## **Class or module?** ##
 When you see a construct like `Tools::Hammer`, you can't tell solely from that construct what's a class and what's a module-nor, for that matter, whether `Hammer` is a plain, old constant. (`Tools` has to be a class or module, because it's got `Hammer` nested inside it.) In many cases, the fact that you can't tell classes from modules in this kind of context doesn't matter; what matters is the nesting or chaining of names in a way that makes sense. That's just as well, because you can't tell what's what without looking at the source code or the documentation. This is a consequence of the fact that classes are modules-the class `Class` is as subclass of the class `Module`-and in many respects (with the most notable exception that classes can be instantiated), their behavior is similar. Of course, normally you'd know what `Tools::Hammer` represents, either because you wrote the code or because you've seen documentation. Still, it pays to realize that the notation itself doesn't tell you everything.
+
+## *Summary* ## 
+Chapter 4 has been both a companion to and a continuation of the previous chapter on classes. In this chapter you've seen:
+
+• Modules, up close and in detail.
+
+• Similarities and differences between modules and classes (both can bundle methods and constants together, but modules can't be instantiated)
+
+• Examples of how you might use modules to express the design of a program
+
+• An object's-eye view of the process of finding and executing a method in response to a message, or handling failure with `method_missing` in cases where the message doesn't match a method.
+
+• How to nest classes and modules inside each other, with the benefit of keeping namespaces separate and clear.
+
+It's particularly important to take on board the way that objects resolve messages into methods: they go on a search through a succession of classes and modules. Objects don't themselves have methods, even though phrasing it that way is sometimes a handy shortcut. Classes and modules have methods; objects have the ability to traverse classes and modules in search of methods.
+
+Now that we're nesting elements inside each other, the next topic we should and will examine in detail is scope: what happens to data and variables when your program moves from one code context to another. We'll look at scope in conjunction with the related, often interwoven topic of self, the default object. 
