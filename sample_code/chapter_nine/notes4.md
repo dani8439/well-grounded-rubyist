@@ -311,3 +311,20 @@ You can test for subset/superset relationships between sets (and arguments have 
 => true
 ```
 The `proper_subset` and `proper_superset` methods are also available to you. A *proper subset* is a small subset that's smaller than the parent set by at least one element. If the two sets are equal, they're subsets of each other but not proper subsets. Similarly, a *proper superset* or a set is a second set that contains all the elements of the first set plus at least one element not present in the first set. The "proper" concept is a way of filtering out the case where a set is a superset or subset of itself-because all sets are both.
+
+# *Summary* #
+In this chapter you've seen
+
+• How to create, manipulate, and transform collection objects including 
+  - Arrays
+  - Hashes 
+  - Ranges 
+  - Sets 
+  
+• Named arguments
+
+We've looked closely at Ruby's major core container classes, `Array` and `Hash`. We've also looked at ranges, which principally operate as inclusion test criteria but know how to behave as collections when their makeup permits them to (a point that will make more sense after you've seen more about the `Enumerable` module). After ranges, we looked at sets, which are defined in the standard library and add another important tool in Ruby's collection toolset. The source code for the `Set` class is written in Ruby; that gave us an opportunity to look at some real production Ruby code.
+
+We also took a detour into named arguments, which prevent you from having to use hash keys as pseudo-keywords and "unpacking" argument hashes in your methods.
+
+The concept of the *collection* in Ruby is closely associated wtih the `Enumerable` module and its principle of dependence on an `each` method. In the next chapter, we'll go more deeply into `Enumerable`-which means looking at the many searching, filtering, sorting, and transforming operations available on objects whose classes mix in that module.
