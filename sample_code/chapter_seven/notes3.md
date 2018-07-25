@@ -208,3 +208,35 @@ The last of these, `public_instance_methods`, is a synonym for `instance_methods
 The mechanisms for examining objects' methods are extensive. As always, be clear in your own mind what the object is (in particular, class/module or "regular" object) that you're querying and what you're asking it to tell you.
 
 We've reached the end of our midbook bootstrap session, survival kit, literacy guide... Whatever you call it, it puts us in a good position to look closely at a number of important core classes, which we'll do over the next several chapters.
+
+## *Summary* ##
+In this chapter you've seen
+
+• Ruby's literal constructors 
+
+• Syntactic sugar converting methods into operators 
+
+• "Destructive" methods and bang methods
+
+• Conversion methods (`to_s` and friends)
+
+• The `inspect` and `display` methods 
+
+• Boolean values and Boolean objects 
+
+• The special object `nil`
+
+• Comparing objects and the `Comparable` module 
+
+• Examining an object's methods 
+
+This chapter covered several topics that pertain to multiple built-in classes and modules. You've seen Ruby's literal constructors, which provide a concise alternative to calling `new` on certain built-in classes. You've also seen how Ruby provides syntactic sugar for particular method names, including a large number of methods with names that correspond to arithmetic operations. 
+
+We looked at the significance of methods that change their own receivers, which many built-in methods do (many of them bang methods, which end with `!`). We also examined the `to_*` methods: built-in methods for performing conversions from one core class to another.
+
+You've also learned a number of important points and techniques concerning Boolean (true/false) values and comparison between objects. You've seen that every object in Ruby has a Boolean value and that Ruby also has special Boolean objects (`true` and `false`) that represent those values in their simplest form. A third special object, `nil` represents a state of undefinedness or absence. We also discussed techniques for comparing objects using the standard comparison operator (`<=>`) and the `Comparable` module.
+
+Finally, we looked at ways to get Ruby objects to tell you what methods they respond to-a kind of reflection technique that can help you see and understand what's going on at a given point in your program. We'll look more deeply at introspection and reflection in chapter 15.
+
+The material in this chapter will put you in a strong position to absorb what you encounter later, in the rest of this book and beyond. When you read statements like "This method has a bang alternative," you'll know what they mean. When you see documentation that tells you a particular method argument defaults to `nil`, you'll know what that means. And the fact that you've learned about these recurrent topics will help us economize on repetition in the upcoming chapters about built-in Ruby classes and modules and concentrate instead on moving ahead.
+
