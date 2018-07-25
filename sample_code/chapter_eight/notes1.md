@@ -462,3 +462,19 @@ Asking a number that doesn't correspond to any character for its `chr` equivalen
 
 In addition to providing information about themselves, strings can compare themselves with other strings, to test for equality and order. 
 
+# *Summary* # 
+In this chapter you've seen
+
+• String creation and manipulation
+
+• The workings of symbols
+
+• Numerical objects, including floats and integers 
+
+• Date, time, and date/time objects and how to query and manipulate them 
+
+In short, we've covered the basics of the most common and important scalar objects in Ruby. Some of these topics involved consolidating points made earlier in the book; others were new in this chapter. At each point, we've examined a selection of important, common methods. We've also looked at how some of the scalar-object classes relate to each other. Strings and symbols both represent text, and although they're different kinds of objects, conversions from one to the other are easy and common. Numbers and strings interact, too. Conversions aren't automatic, as they are (for example) in Perl; but Ruby supplies conversion methods to go from string to numerical object and back, as well as ways to convert strings to integers in as many bases as 10 digits and 26 letters of the English alphabet can accommodate.
+
+Time and date objects have a foot in both the string and numerical camps. You can perform calculations on them, such as adding *n* months to a given date, and you can also put them through their paces as strings, using techniques like the `Time#strftime` method in conjunction with output format specifiers.
+
+The world of scalar objects in Ruby is rich and dynamic. Most of what you do with both Ruby and Rails will spring from what you've learned here about scalar objects: direct manipulation of these objects, manipulation of objects that share some of their traits (for example, CGI parameters whose contents are strings), or collections of multiple objects in these categories. Scalar objects aren't everything, but they lie at the root of virtually everything else. The tour we've taken of important scalar classes and methods in this chapter will stand you in good stead as we proceed next to look at collections and containers-the two- (and sometimes more) dimensional citizens of Ruby's object world. 
