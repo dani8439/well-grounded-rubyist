@@ -463,3 +463,25 @@ Assertion passed
 MicroTest won't supplant MiniTest any time soon, but it does do a couple of the most magical things that MiniTest does. It's all made possibly by Ruby's introspection and callback facilities, techniques that put extraordinary power and flexibility in your hands.
 
 ## *Summary* ##
+
+In this chapter, you've seen
+
+• Intercepting methods with `method_missing` 
+
+• Runtime hooks and callbacks for objects, classes, and modules 
+
+• Querying objects about their methods, on various criteria 
+
+• Trapping references to unknown constants
+
+• Stack traces
+
+• Writing the MicroTest framework
+
+We've covered a lot of ground in this chapter, and practicing the techniques covered here will contribute greatly to your grounding as a Rubyist. We looked at intercepting unknown messages with `method_missing`, along with other runtime hooks and callbacks like `Module.included`, `Module.extended`, and `Class.inherited`. The chapter also took us into method querying in its various nuances: public, protected, private; class, instance, singleton. You've seen some examples of how this kind of querying can help you derive information about how Ruby does its own class, module, and method organization.
+
+The last overall topic was the handling of stack traces, which we put to use in the `CallerTools` module. The chapter ended with the extended exercise consisting of implementing the `MicroTest` class, which pulled togethr a number of topics and threads from this chapter and elsewhere.
+
+We've been going through the material methodically, and deliberately, as befits a grounding or preparation. But if you look at the results, particularly `MicroTest`, you can see how much power Ruby gives you in exchange for relatively little effort. That's why it pays to know about even what may seem to be the magic or "meta" parts of Ruby. They really aren't-it's all Ruby, and once you internalize the principles of class and object structure and relationships, everything else follows.
+
+And that's that! Enjoy your groundedness as a Rubyist and the many structures you'll build on top of the foundation you've acquired through this book.
