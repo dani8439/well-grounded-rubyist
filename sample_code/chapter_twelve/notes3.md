@@ -235,3 +235,30 @@ rubypage = open("http://rubycentral.org")
 puts rubypage.gets
 ```
 You get the `doctype` declaration from Ruby Central homepage-not the most scintillating reading, but it demonstrates the ease with which `open-uri` lets you import networked materials. 
+
+## *Summary* ## 
+In this chapter you've seen 
+
+• I/O (keyboa0rd and screen) and file operations in Ruby 
+
+• File objects as enumerables
+
+• The `STDIN`, `STDOUT`, and `STDERR` objects 
+
+• The `FileUtils` module 
+
+• The `Pathname` module 
+
+• The `StringIO` class 
+
+• The `open-uri` module 
+
+I/O operations are based on the `IO` class, of which `File` is a subclass. Much of what `IO` and `File` objects do consists of wrapped library calls; they're basically API libraries that sit on top of system I/O facilities.
+
+You can iterate through Ruby file handles as if they were arrays, using `each` `map`, `select`, and other methods from the `Enumerable` module, and Ruby will take care of the details of the file handling. If and when you need to, you can also address `IO` and `File` objects with lower-level commands.
+
+Some of the standard-library facilities for file manipulation are indispensable, and we looked at several: the `FileUtils` module, which provides an enriched toolkit for file and disk operations; the `StringIO` class, which lets you address a string as if it were an I/O stream; the `Pathname` extension, which allows for easy, extended operations on strings representing file-system paths; and `open-uri`, which makes it easy to "open" documents on the network.
+
+We also looked at keyboard input and screen output, which are handled via `IO` objects-in particular, the standard input, output, and error I/O handles. Ruby lets you reassign these so you can redirect input and output as needed.
+
+Witht his chapter, we've come to the end of part 2 of the book and thus the end of our survey of Ruby built-in features and classes. We'll turn in part 3 to the broad and deep matter of Ruby dynamics, starting with a look at one of the simplest yet most profound premises of Ruby: the premise that objects, even objects of the same class, can act and react individually.
