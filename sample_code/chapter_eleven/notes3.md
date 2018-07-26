@@ -370,3 +370,30 @@ Keep in mind that `grep` selects based on the case equality operator (`===`), so
 You get back an empty array the array has no string element that matches the regexp `/1/`, no element for which it's true that `/1/ === element`.
 
 This brings us to the end of our survey of regular expressions and some of the methods that use them. There's more to learn; pattern matching is a sprawling subject. But this chapter has introduced you to much of what you're likely to need and see as you proceed with your study and use of Ruby.
+
+## *Summary* ## 
+In this chapter you've seen
+
+• The underlying principles behind regular expression pattern matching
+
+• The `match` and `=~` techniques
+
+• Character classes 
+
+• Parenthetical captures
+
+• Quantifiers 
+
+• Anchors
+
+• `MatchData` objects 
+
+• String/regexp interpolation and conversion
+
+• Ruby methods that use regexps: `scan`, `split`, `grep`, `sub`, `gsub`
+
+This chapter has introduced you to the fundamentals of regular expressions in Ruby, including character classes, parenthetical captures, and anchors. You've seen that regular expressions are objects-specifically, objects of the `Regexp` class-and that they respond to messages (such as "match"). We looked at the `MatchData` class, instances of which hold information abou tthe results of a `match` operation. You've also learned how to interpolate strings into regular expressions (escaped or unescaped, depending on whether you want the special characters in the string to be treated as special in the regexp), how to instantiate a regexxp from a string, and how to generate a string representation of a regexp.
+
+Methods like `String#scan`, `String#split`, `Enumerable#grep`, and the "sub" family of `String` methods use regular expressions and pattern matching as a way of determining how their actions should be applied. Gaining knowledge about regular expressions gives you access not only to relatively simple matching methods but also to a suite of string-handling tools that otherwise wouldn't be usable. 
+
+As we continue our investigation of Ruby's built-in facilities, we'll move in chapter 12 to the subject of I/O operations in general and file handling in particular. 
