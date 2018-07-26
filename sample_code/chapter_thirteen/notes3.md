@@ -314,3 +314,24 @@ print:
 Admittedly not as gratifying as `Builder`-but you can follow the yields and missing method calls and see how you benefit from a `BasicObject` instance. And if you look at the method names used in the sample code, you'll see some that are build-in methods of (nonbasic) objects. If you don't inherit from `BasicObject`, you'll get an error when you try to call `freeze` or `inspect`. It's also interesting to note that `sleep` and `print` which are private methods of `Kernel` and therefore not normally callable with an explicit receiver, trigger `method_missing` even though strictly speaking they're private rather than missing.
 
 Our look at `BasicObject` brings us to the end of this survey of object individuation. We'll be moving next to a different topic that's also deeply involved in Ruby dynamics: callable and runnable objects.
+
+## *Summary* ## 
+In this chapter you've seen
+
+• Singleton classes and how to add methods and constants to them
+
+• Class methods 
+
+• The `extend` method 
+
+• Several approaches to changing Ruby's core behavior
+
+• `BasicObject` and how to leverage it 
+
+We've looked at the ways that Ruby objects live up to the philosophy of Ruby, which is that what happens at runtime is all about individual objects and what they can do at any given point. Ruby objects are born into a particular class, but their ability to store individual methods in a dedicated singleton class means that any object can do almost anything.
+
+You've seen how to open singleton class definitions and manipulate the innards of individual objects, including class objects that make heavy use of singleton-method techniques in connection with class methods (which are, essentially, singleton methods on class objects). You've also seen some of the power, as well as the risks, of the ability Ruby gives you to pry open not only your own classes but also Ruby's core classes. This is something you should do sparingly, if at all-and it's also something you should be aware of other people doing, so that you can evaluate the risks of any third-party code you're using that changes core behaviors.
+
+We ended with an examination of `BasicObject`, the ultimate ancestor of all classes and a class you can use in cases where even a vanilla Ruby object isn't vanilla enough.
+
+The next chapter will take us into the area of callable and runnable objects: functions (`Proc` objects), threads, `eval` blocks, and more. The fact that you can create objects that embody runnable code and manipulate those objects as you would any object adds yet another major layer to the overall topic of Ruby dynamics.
