@@ -191,18 +191,60 @@ If you run this program, remember that it loops forever, so you'll have to inter
 *One*
 *Two*
 *Three*
+
 --------
+
 One
 Two
 Three
+
 --------
+
 *Four*
 *Five*
 *Six*
+
 --------
+
 Four
 Five
 Six
+
 --------
 
 As state, we're not going to go into all the details of `Open.popen3`. But you can and should keep it in mind for situations where you need the most flexibility in reading from and wriitng to an external program.
+
+## *Summary* ## 
+In this chapter you've seen
+
+• `Proc` objects
+
+• the `lambda` "flavor" of process
+
+• Code block-to-proc (and reverse) conversion
+
+• `Symbols#to_proc` 
+
+• Method objects
+
+• Bindings 
+
+• `eval`, `instance_eval`, and `class_eval`
+
+• Thread usage and manipulation
+
+• Thread-local "global" variables
+
+• The `system` method
+
+• Calling system commands with backticks 
+
+• The basics of the `open`and `Open.popen3` facilities
+
+Objects in Ruby are products of runtime code execution but can, themselves, have the power to execute code. In this chapter, we've looked at a number of ways inw hich the general notion of callable and runnable objects plays out. We looked at `Proc` objects and `lambda`s, the anonymous functions that lie at the heart of Ruby's block syntax. We also discussed methods as objects and ways of unbinding and binding methods and treating them separately from the objects that call them. The `eval` family of methods took us into the realm of executing arbitrary strings and also showed some powerful and elegant techniques for runtime manipulation of the program's object and class landscape, using not only `eval` but even more, `class_eval`, and `instance_eval` with their block-wise operations.
+
+Threads figure prominently among Ruby's executable objects; every program runs in a main thread even if it spawns no others. We explored the syntax and semantics of threads and saw how they facilitate projects like multiuser networked communcation. Finally, we looked at a variety of ways in which Ruby lets you execute external programs, including the relatively simple `system` method and backtick technique, and the somewhat more granular and complex `open` and `Open.popen3` facilities.
+
+There's no concrete definition of a callable or runnable object, and this chapter has deliberately taken a fairly fluid approach to understanding the terms. On the one hand, that fluidity results in the juxtaposition of topics that could, imaginably, be handled in separate chapters. (It's hard to argue any direct, close kinship between, say, `instance_eval` and `Open.popen3`.) On the other hand, the specifics of Ruby are, to a large extent, manifestations of underlying and supervening principles, and the idea of objects that participate directly in the dynamism of the Ruby landscape is important. Disparate though they may be in some respects, the topics in this chapter all align themselves with that principle; and a good grounding in them will add significantly to your Ruby abilities.
+
+At this point we'll turn to our next-and last-major topic: runtime reflection, introspection, and callbacks. 
