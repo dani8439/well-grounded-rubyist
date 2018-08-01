@@ -67,3 +67,34 @@ x = "100".to_i
 ```
 
 The dot means that the message `to_i` is being sent to the string `"100"`. The string `"100"` is called the *receiver* of the message. We can also say that the method `to_i` is being *called* o the string `"100"`. The result of the method call-the integer 100-serves as the right-handed side of the assignment to the variable `x`. 
+
+**Why the double terminology?** 
+Why bother saying both "sending the message `to_i`" and "calling the method `to_i`"? Why have two ways of describing the same operation? Because they aren't quite the same. Most of the time, you send a message to a receiving object, and the object executes the corresponding method. But sometimes there's no corresponding method. You can put anything to the right of the dot, and there's no guarantee that the receiver will have a method that matches the message you send.
+
+If that sounds like chaos, it isn't, because objects can intercept unknown messages and try to make sense of them. The Ruby on rails web development framework, for example, makes heavy use of the technique of sending unknown messages to objects, intercepting those messages, and making sense of them on the fly based on dynamic conditions like the names of the columns in the tables of the current database.
+
+--
+
+Methods can take *arguments,* which are also objects. (Almost everything in RUby is an object, although some syntactic structures that help you create and manipulate objects aren't themselves objects.) Here's a method call with an argument:
+
+```ruby 
+x = "100".to_i(9)
+```
+
+Calling `to_i` on 100 with an argument of 9 generates a decimal integer equivalent to the base-nine number 100: `x` is now equal to 81 decimal.
+
+This example also shows the use of parentheses around method arguments. These parentheses are usually optional, but in more ocmplex cases they may be required to clear up what may otherwise be ambiguities in the syntax. Many programmers use parentheses in most or all method calls, just to be safe.
+
+The whole universe of a Ruby program consists of objects and hte messages that are sent to them. As a Ruby programmer, you spend most of your time either specifying the things you want objects to be able to do (by defining methods) or asking the objects to do those things (by sending them messages). 
+
+When you see a dot in what would otherwise be an inexplicable position, you should interpret it as a message (on the right) being sent to an object (on the left). Keep in mind, too, that some method calls take the form of *bareword*-style invocations, like the call to `puts` in this example:
+
+```ruby 
+puts "Hello."
+```
+
+Here, in spite of the lack of a message-sending dot and an explicit receier for the message, we're sending the message `puts` with the argument `"Hello."` to an object, the default object `self`. There's always a `self` defined when your program is running although which object is `self` changes, according to specific rules.
+
+The most important concept in Ruby is the concept of the object. CLosely related and playing an important supporting role, is the concept of the *class*. 
+
+#### THE ORIGIN OF OBJECTS IN CLASSES ####
