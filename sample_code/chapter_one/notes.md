@@ -49,4 +49,21 @@ This table summarizes Ruby's variable naming rules:
 | Global    |  `$FIRST_NAME`      | `$first_name`, `$firstName`, `$name1`                                                   |
 
 ### CONSTANTS ### 
+Constants begin with an uppercase letter. `A`, `String`, `FirstName`, and `STDIN` are all valid constant names. The Ruby convention is to use either camel case (`FirstName`) or underscore-separated all-uppercase words (`FIRST_NAME`) in composing constant names from multiple words.
 
+### KEYWORDS ### 
+Ruby has numerous keywords: predefined, reserved terms associated with specific programming tasks and contexts. Keywords include `def` (for method definitions), `class` (for class definitions), `if` (conditional execution), and `__FILE__` (the name of the file currently being executed). THere are about 40 of them, and they're generally short, single-word (as opposed to underscore-composed) identifiers.
+
+### METHOD NAMES ### 
+Names of methods in Ruby follow the same rules and conventions as local variables (except that they can end with `?`, `!`, or `=`, with significance you'll see later). This is by design: methods don't call attention to themselves as methods but rather blend into the texture of a program as, simply, expressions that provide a value. In some contexts you can't tell just by looking at an expression whether you're seeing a local variable or a method name-and that's intentional.
+
+## *Method calls, messages, and Ruby objects* ###
+Ruby sees all data structures and values-from simple scalar (atomic) values like integers and strings, to complex data structures like arrays- as *objects*. Every object is capable of understanding a certain set of *messages.* Each message that an object understands corresponds directly to a *method*-a named, executable routine whose execution the object has the ability to trigger.
+
+Objects are represented either by literal constructors-like quotation marks for strings-or by variables to which they've been bound. Message sending is achieved via the special dot operator: the message to the right of the dot is sent to the object to the left of the dot. (There are other, more specialized ways to send messages to objects, but the dot is the most common and fundamental way.) Consider this example:
+
+```ruby
+x = "100".to_i
+```
+
+The dot means that the message `to_i` is being sent to the string `"100"`. The string `"100"` is called the *receiver* of the message. We can also say that the method `to_i` is being *called* o the string `"100"`. The result of the method call-the integer 100-serves as the right-handed side of the assignment to the variable `x`. 
