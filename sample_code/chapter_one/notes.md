@@ -98,3 +98,4 @@ Here, in spite of the lack of a message-sending dot and an explicit receier for 
 The most important concept in Ruby is the concept of the object. CLosely related and playing an important supporting role, is the concept of the *class*. 
 
 #### THE ORIGIN OF OBJECTS IN CLASSES ####
+*Classes* define clusters of behavior or functionality, and every object is an instance of exactly one class. Ruby provides a large number of built-in classes, representing important foundational data types (classes like `String`, `Array`, and `Fixnum`). Every 
