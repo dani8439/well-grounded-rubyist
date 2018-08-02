@@ -98,4 +98,12 @@ Here, in spite of the lack of a message-sending dot and an explicit receier for 
 The most important concept in Ruby is the concept of the object. CLosely related and playing an important supporting role, is the concept of the *class*. 
 
 #### THE ORIGIN OF OBJECTS IN CLASSES ####
-*Classes* define clusters of behavior or functionality, and every object is an instance of exactly one class. Ruby provides a large number of built-in classes, representing important foundational data types (classes like `String`, `Array`, and `Fixnum`). Every 
+*Classes* define clusters of behavior or functionality, and every object is an instance of exactly one class. Ruby provides a large number of built-in classes, representing important foundational data types (classes like `String`, `Array`, and `Fixnum`). Every time you create a string object, you've created an instance of the class `String`.
+
+You can also write your own classes. You can even modify existing RUby classes; if you don't like the behavior of strings or arrays, you can change it. It's almost always a bad idea to do so, but Ruby allows it. (We'll look at the pros and cons of making changes to built in classes in chapter 13).
+
+Although every Ruby object is an instance of a class, the concept of class is less important than the concept of object. That's because objects can change, acquiring methods and behaviors that weren't defined in their class. The class is responsible for launching the object into existence, a process known as *instantiation*; but the object, thereafter, as a life of its own. 
+
+The ability of objects to adopt behaviors that their class didn't give them is one of the most central defining principles of the design of Ruby as a language. As you can surmise, we'll come back to it frequently in a variety of contexts. For now, just be aware that although every object has a class, the class of an object isn't the sole determinant of what the object can do.
+
+Armed with some Ruby literacy (and some material to refer back to when in doubt), let's walk through the steps involved in running a program. 
