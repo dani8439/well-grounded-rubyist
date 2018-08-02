@@ -12,23 +12,42 @@ Will make irb output easier to read.
 ### *A Ruby syntax survival kit* ### 
 
 #### Basic operations in Ruby ####
-|   Operation         |           Example(s)          |                                 Comments                                        |
-|---------------------|-------------------------------|---------------------------------------------------------------------------------|
-| Arithmetic          | `2 + 3` (addition)            | All of these operations work on integers or floating point numbers (*floats*). Mixing integers and floats together, as some of the examples do, produces a floating-point result.              
-|                     | `2 - 3` (subtraction)         |         
-|                     | `2 * 3` (multiplication)      |                                           
-|                     | `2/3` (division)              |                                                                                 |
-|                     | `10.3 + 20.25`                |                                                                                 |
-|                     | `103 - 202.5`                 |                                                                                 |
-|                     | `32.9 * 10`                   |                                                                                 |
-|                     | `100.0/0.23`                  | Note that you need to write `0.23` rather than `.23`                            |
-| Assignment          | `x = 1`                       | This operation binds a local variable (on the left) to an object (on the right). For now you can think of an object as a value represented by the variable.                   
-|                     | `string = "Hello"`            | 
-|                     |                               |                                                                 
-| Compare two values  | `x == y`                      | Note the two equal signs (not just one, as in assignment).                      |
+|   Operation         |           Example(s)          |                                 Comments                          |
+|---------------------|-------------------------------|-------------------------------------------------------------------|
+| Arithmetic          | `2 + 3` (addition)            | All of these operations work on integers or floating point        |             
+|                     | `2 - 3` (subtraction)         | numbers (*floats*). Mixing integers and floats together, as       |
+|                     | `2 * 3` (multiplication)      |some of the examples do, produces a floating-point result.         
+|                     | `2/3` (division)              |                                                                   |
+|                     | `10.3 + 20.25`                |                                                                   |
+|                     | `103 - 202.5`                 |                                                                   |
+|                     | `32.9 * 10`                   |                                                                   |
+|                     | `100.0/0.23`                  | Note that you need to write `0.23` rather than `.23`              |
+| Assignment          | `x = 1`                       | This operation binds a local variable (on the left) to an         |
+|                     | `string = "Hello"`            | object (on the right). For now you can think of an object         |
+|                     |                               | as a value represented by the variable.            
+| Compare two values  | `x == y`                      | Note the two equal signs (not just one, as in assignment).        |
 | Convert a numeric   | `x = "100".to_i`              | To perform arithmetic, you have to make sure you
 | string to a number  | `s = "100"`                   | have numbers rather than strings of characters.
-|                     | `x = s.to_i`                  | `to_i` performs string-to-integer conversion.                                   |
+|                     | `x = s.to_i`                  | `to_i` performs string-to-integer conversion.                     |
+
+#### Basic input/output methods and flow control in Ruby #### 
+|        Operation          |     Example(s)             |                         Comments                                |
+|---------------------------|----------------------------|-----------------------------------------------------------------|
+| Print something to the screen    |`print "Hello"`  | `puts` adds a newline to the string it outputs if there             |
+|                           |`puts "Hello"`               | isn't one at the end already; `print` doesn't.                 |
+|                           |`x = "Hello"`                | `print` prints exactly what it's told to and leaves            |
+|                           |`puts x`                     | the cursor at the end. (Note: on some platforms, an            |
+|                           |`x = "Hello"`                | extra line is automatically output at the end of a             |
+|                           |`print x`                    | program.)                                                      |
+|                           |`x = "Hello"`                | `p` outputs an inspect string, which may contain extra         |
+|                           |`p x`                        | information about what it's printing.                          |
+|Gets a line of keyboard input | `gets`                   | You can assign the input line directly to a variable           |
+|                           | `string = gets`             | (the variable `string` in the second example.                  |
+|Conditional execution      |`if x == y`                  | Conditional statements always end with the word `end`          |
+|                           | `puts "Yes!"`               | More on these in chapter 6.                                    |
+|                           | `else`                      |                                                                |
+|                           | `puts "No!"`                |                                                                |
+|                           | `end`                       |                                                                |
 
 ### *The variety of Ruby identifiers* ###
 
