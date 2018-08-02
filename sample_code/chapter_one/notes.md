@@ -14,20 +14,21 @@ Will make irb output easier to read.
 #### Basic operations in Ruby ####
 |   Operation         |           Example(s)          |                                 Comments                                        |
 |---------------------|-------------------------------|---------------------------------------------------------------------------------|
-| Arithmetic          | `2 + 3` (addition)            | All of these operations work on integers or floating point numbers              |
-|                     | `2 - 3` (subtraction)         | (*floats*). Mixing integers and floats together, as some of the examples        |
-|                     | `2 * 3` (multiplication)      | do, produces a floating-point result.                                           |
+| Arithmetic          | `2 + 3` (addition)            | All of these operations work on integers or floating point numbers (*floats*). Mixing integers and floats together, as some of the examples do, produces a floating-point result.              
+|                     | `2 - 3` (subtraction)         |         
+|                     | `2 * 3` (multiplication)      |                                           
 |                     | `2/3` (division)              |                                                                                 |
 |                     | `10.3 + 20.25`                |                                                                                 |
 |                     | `103 - 202.5`                 |                                                                                 |
 |                     | `32.9 * 10`                   |                                                                                 |
 |                     | `100.0/0.23`                  | Note that you need to write `0.23` rather than `.23`                            |
-| Assignment          | `x = 1`                       | This operation binds a local variable (on the left) to an object                | 
-|                     | `string = "Hello"`            | (on the right). For now you can think of an object as a value represented       |
-|                     |                               | by the variable.                                                                |
+| Assignment          | `x = 1`                       | This operation binds a local variable (on the left) to an object (on the right). For now you can think of an object as a value represented by the variable.                   
+|                     | `string = "Hello"`            | 
+|                     |                               |                                                                 
 | Compare two values  | `x == y`                      | Note the two equal signs (not just one, as in assignment).                      |
-| Convert a numeric   | `x = "100".to_i`              | To perform arithmetic, yo uhave to make sure you have two numbers rather than   | | string to a number  | `s = "100"`                   | strings of characters. `to_i` performs string-to-integer conversion.            |
-|                     | `x = s.to_i`                  |                                                                                 |
+| Convert a numeric   | `x = "100".to_i`              | To perform arithmetic, you have to make sure you
+| string to a number  | `s = "100"`                   | have numbers rather than strings of characters.
+|                     | `x = s.to_i`                  | `to_i` performs string-to-integer conversion.                                   |
 
 ### *The variety of Ruby identifiers* ###
 
