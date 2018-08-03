@@ -49,6 +49,11 @@ Will make irb output easier to read.
 |                           | `puts "No!"`                |                                                                |
 |                           | `end`                       |                                                                |
 
+
+#### Ruby's special objects and comment###
+|       Operation           |     Example(s)              |                          Comments                              |
+|---------------------------|-----------------------------|----------------------------------------------------------------|
+
 ### *The variety of Ruby identifiers* ###
 
 • Variables:
