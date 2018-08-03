@@ -172,3 +172,17 @@ We'll work through this example several times, adding to it and modifying as we 
 • Write the result of the program to a file 
 
 The first version is simple; the focus is on the file-creation and program-running processes, rather than any elaborate program logic.
+
+#### CREATING A FIRST PROGRAM FILE #### 
+Using a plain-text editor, type the code from the following listing into a text file and save it under the filename c2f.rb in your sample code directory.
+
+```ruby
+celsius = 100
+fahrenheit = (celsius * 9 / 5) + 32
+puts "The result is: "
+puts fahrenheit 
+puts "."
+```
+**NOTE** Depending on your operating system, you may be able to run Ruby program files standalone-that is, with just the filename, or with a shorter name (like c2f) and no file extension. Keep in mind, though, that the .rb filename extension is mandatory in some cases, mainly involving programs that occupy more than one file (which you'll learn about in detail later) and that need a mechanism for the files to find each other. In this book, all Ruby program filenames end in .rb to ensure that hte examples work on as many platforms and with as few administrative digressions, as possible.
+
+You now have a complete (albeit tiny) Ruby program on your disk, and you can run it. 
