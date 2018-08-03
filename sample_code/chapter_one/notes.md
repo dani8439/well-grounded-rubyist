@@ -155,3 +155,20 @@ Although every Ruby object is an instance of a class, the concept of class is le
 The ability of objects to adopt behaviors that their class didn't give them is one of the most central defining principles of the design of Ruby as a language. As you can surmise, we'll come back to it frequently in a variety of contexts. For now, just be aware that although every object has a class, the class of an object isn't the sole determinant of what the object can do.
 
 Armed with some Ruby literacy (and some material to refer back to when in doubt), let's walk through the steps involved in running a program. 
+
+## *Writing and saving a simple program* ## 
+At this point, you can start creating program files in the Ruby sample code directory you created a little while back. Your first program will be a Celsius-to_Fahrenheit temperature converter.
+
+**Note** A real-world temperature converter would, of course, use floating-point numbers. We're sticking to integers in the input and ouput to keep the focus on matters of program structure and execution.
+
+We'll work through this example several times, adding to it and modifying as we go. Subsequent iterations will
+
+• Tidy the program's output 
+
+• Accept input via the keyboard from the user 
+
+• Read a value in from a file 
+
+• Write the result of the program to a file 
+
+The first version is simple; the focus is on the file-creation and program-running processes, rather than any elaborate program logic.
