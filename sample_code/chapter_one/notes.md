@@ -50,9 +50,15 @@ Will make irb output easier to read.
 |                           | `end`                       |                                                                |
 
 
-#### Ruby's special objects and comment###
+#### Ruby's special objects and comment ###
 |       Operation           |     Example(s)              |                          Comments                              |
 |---------------------------|-----------------------------|----------------------------------------------------------------|
+| Special value objects     | `true`                      | The objects `true` and `false` often serve as return values for conditional expressions. The object `nil` is a kind of "nonobject" indicating the absence of a value or result. `false` and `nil` cause a conditional expression to fail; all other objects (including `true`, of course, but also including `0` and empty strings) cause it to succeed. More on this in chapter 7.  
+|                           | `false`                     | 
+|                           | `nil`                       | 
+| Default object            | `self`                      | The keyword `self` refers to the default object. Self is a role that different objects play, depending on the execution context. Method calls that don't specify a calling object are called on `self`. More on this in chapter 5. 
+| Put commends in code files | `# A comment`              | Comments are ignored by the interpreter.                       |
+|                            | `x = 1 # A comment`        |                                                                |
 
 ### *The variety of Ruby identifiers* ###
 
