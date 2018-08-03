@@ -186,3 +186,29 @@ puts "."
 **NOTE** Depending on your operating system, you may be able to run Ruby program files standalone-that is, with just the filename, or with a shorter name (like c2f) and no file extension. Keep in mind, though, that the .rb filename extension is mandatory in some cases, mainly involving programs that occupy more than one file (which you'll learn about in detail later) and that need a mechanism for the files to find each other. In this book, all Ruby program filenames end in .rb to ensure that hte examples work on as many platforms and with as few administrative digressions, as possible.
 
 You now have a complete (albeit tiny) Ruby program on your disk, and you can run it. 
+
+### *Feeding the program to Ruby* ### 
+Running a Ruby program involves passing the program's source file (or files) to the Ruby interpreter, which is called `ruby`. You'll do that now... sort of. You'll feed the program to `ruby`, but instead of asking RUby to run the program, you'll ask it to check the program code for syntax errors.
+
+#### CHECKING FOR SYNTAX ERRORS #### 
+If you add 31 instead of 32 in your conversion formula, that's a programming error. Ruby will still happily run your program and give you the flawed result. But if you accidentally leave out the closing parenthesis in the second line of the program, that's a syntax error, and Ruby won't run the program:
+
+```irb
+$ ruby broken_c2f.rb 
+broken_c2f.rb:5: syntax error. unexpected end-of-input, expecting ')'
+```
+(The error is reported on line 5-the last line of the program-because Ruby waits paitiently to see whether you're ever going to close the parenthesis before concluding that you're not.)
+
+Conveniently, the Ruby interpreter can check programs for syntax errors without running the programs. It reads through the file and tells you whether the syntax is okay. To run a syntax check on your file, do this:
+
+```irb 
+$ ruby -cw c2f.rb
+```
+The `-cw` command-line flag is shorthand for two flats: `-c` and `-w`. The `-c` flag means *check for syntax errors*. The `-w` flag activates a higher level of warning: Ruby will fuss at you if you've done things that are legal RUby but are questionable on grounds other than syntax.
+
+Assuming you've typed the file correctly, you should see the message:
+
+```irb 
+Syntax OK 
+```
+printed on your screen.
