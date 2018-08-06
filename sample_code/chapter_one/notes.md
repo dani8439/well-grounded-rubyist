@@ -258,3 +258,18 @@ Having looked at a little screen output, let's widen the I/O field a bit to incl
 ### *Keyboard and file I/O* ### 
 Ruby offers lots of techniques for reading data during the course of program execution, both from the keyboard and from disk files. You'll find uses for them-if not in the course of writing every application, then almost certainly while writing Ruby code to maintain, convert, housekeep, or otherwise manipulate the environment in which you work. We'll look at some of these input techniques here; an expanded look at I/O operations can be found in chapter 12. 
 
+#### KEYBOARD INPUT #### 
+A program that tells you over and over again that 100º Celsius equals 212º Fahrenheit has limited value. A more valuable program lets you specify a Celsius temperature and tells you the Fahrenheit equivalent.
+
+Modifying the program to allow for this functionality involves adding a couple of steps and using one method each from first code example, and second code example: `gets` (get a line of keyboard input), and `to_i` (convert to an integer), one of which you're familiar with already. Because this is a new program, not just a correction, put the version from the following listing in a new file: c2f1.rb (the *i* stands for interactive). 
+
+```ruby 
+print "Hello. Please enter a Celsius value: "
+celsius = gets
+fahrenheit = (celsius.to_i * 9 / 5) + 32
+print "The Fahrenheit equivalent is "
+print fahrenheit
+puts "."
+````
+A couple of sample runs demonstrate the new program in action:
+
