@@ -246,3 +246,15 @@ puts "."
 
 If you're used to print facilities in languages that don't automatically add a newline, such as Perl's `print` function, you may find yourself writing code like this in Ruby when you want to print a value followed by a newline:
 
+```ruby
+print fahrenheit, "\n"
+```
+You almost never have to do this, though, because `puts` adds a newline for you. You'll pick up the `puts` habit, along with other Ruby idioms and conventions, as you go along.
+
+**WARNING** On some platforms (Windows in particular), an extra newline character is printed out at the end of the run of a program. This means a `print` that should really be a `puts` will be hard to detect, because it will act like a `puts`. Being aware of the difference between the two and using the one you want based ont he usual behavior should be sufficient to ensure you get the desired results.
+
+Having looked at a little screen output, let's widen the I/O field a bit to include keyboard input and file operations. 
+
+### *Keyboard and file I/O* ### 
+Ruby offers lots of techniques for reading data during the course of program execution, both from the keyboard and from disk files. You'll find uses for them-if not in the course of writing every application, then almost certainly while writing Ruby code to maintain, convert, housekeep, or otherwise manipulate the environment in which you work. We'll look at some of these input techniques here; an expanded look at I/O operations can be found in chapter 12. 
+
