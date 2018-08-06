@@ -212,3 +212,37 @@ Assuming you've typed the file correctly, you should see the message:
 Syntax OK 
 ```
 printed on your screen.
+
+#### RUNNING THE PROGRAM #### 
+To run the program, pass the file once more to the interpreter, but this time without the combined `-c` snd `-w` flags:
+
+```irb
+$ ruby c2f.rb
+```
+If all goes well, you'll see the output for the calculation:
+
+```irb
+The result is 
+212
+.
+```
+The result of the calculation is correct, but the output spread over three lines looks bad.
+
+#### SECOND CONVERTER ITERATION #### 
+The problem can be traced to the difference between the `puts` command and the `print` command. `puts` adds a newline to the end of the string it prints out, if the string doesn't end with one already. `print`, on the other hand, prints out the string you ask it to and then stops; it doesn't automatically jump tot he next line.
+
+To fix the problem, change the first two `puts` commands to `print`:
+
+```ruby
+print "The result is "
+print fahrenheit 
+puts "."
+```
+(Note the black space after `is`, which ensures that a space appears between `is` and th enumber.) Now the output is 
+
+`The result is 212`.
+
+`puts` is short for *put* (that is, print) *string.* Although *put* may not intuitively invoke the notion of skipping down to the next line, that's what `puts` does: like `print`, it prints what you tell it to, but then it also automatically goes to the next line. If you ask `puts` to print a line that already ends iwth a newline, it doesn't bother adding one.
+
+If you're used to print facilities in languages that don't automatically add a newline, such as Perl's `print` function, you may find yourself writing code like this in Ruby when you want to print a value followed by a newline:
+
