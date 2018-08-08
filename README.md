@@ -2,7 +2,7 @@
  This is a repository of information culled from David A. Black's "The Well-grounded Rubyist".
  It includes both notes, and practical examples used in the text.
  
- • There are not notes on everything, but overall more than 80% of material covered in book has been represented here as a way of acquainting myself with MD style. 
+ • There are not notes on everything, but overall more than 85% of material covered in book has been represented here as a way of acquainting myself with MD style. 
  
  • Examples - code blocks used in text to explain concepts. Sometimes these examples include further notes from text. All examples should work in your local environment.
 
