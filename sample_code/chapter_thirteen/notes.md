@@ -191,7 +191,7 @@ THe fact that `class << self` shows up frequently in connection with the creatio
 
 In chapter 4, we looked at hte steps an object takes as it looks for a method among those defined in its class, its class's class, and so forth. Now we have a new item on the radar: the singleton class. What's the effect of this extra class on the method lookup process?
 
-### *Singletone classes on the method-lookup path* ### 
+### *Singleton classes on the method-lookup path* ### 
 Recall that method searching goes up the class-inheritance chain, with detours for any modules that have been mixed in or prepended. When we first discussed this process, we hadn't talked about singleton classes and methods, and they weren't present in the diagram. Now we can revise the diagram to encompass them, as shown in the figure. (see book p 395). 
 
 The box containing `class << object` represents the singleton class of `object`. In its search for the method `x`, `object` looks first for any modules prepended to its singleton class; then it looks in the singleton class itself. It then looks in any modules that the singleton class has included. (In the diagram, there's one: the module `N`.) Next the search proceeds up to the object's original class (class `D`), and so forth. 
