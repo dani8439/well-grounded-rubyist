@@ -273,3 +273,21 @@ puts "."
 ````
 A couple of sample runs demonstrate the new program in action:
 
+```irb
+$ ruby c2fi.rb
+Hello. Please Enter a Celsius value: 100
+The Fahrenheit equivalent is 212.
+$ ruby c2fi.rb
+Hello. Please enter a Celsius value: 23
+The Fahrenheit equivalent is 73.
+```
+**Shortening the code**
+You can shorten the code in the listing 1.2 considerably by consolidating the operations of input, calculation, and output. A compressed rewrite looks like this:
+
+```ruby
+print "Hello. Please enter a Celsius value: "
+print "The Fahrenheit equivalent is ", gets.to_i * 9/5 + 32. ".\n"
+```
+This version economizes on variables-there aren't any-but requires anyone reading it to follow a somewhat denser (but shorter) set of expressions. Any given program usually has several or many spots where you have to decide between longer (but maybe clearer?) and shorter (but perhaps a bit cryptic). And sometimes, shorter cna be clearer. It's all part of developing a Ruby code style.
+
+We now have a generalized, if not terribly nuanced, solution to the problem of converting from Celsius to Fahrenheit. Let's widen the circle to include file input.
