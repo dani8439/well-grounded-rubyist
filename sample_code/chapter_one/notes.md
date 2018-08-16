@@ -294,3 +294,13 @@ We now have a generalized, if not terribly nuanced, solution to the problem of c
 
 #### READING FROM A FILE ####
 Reading a file from a Ruby program isn't much more difficult, at least in many cases, than reading a line of keyboard input. The next version of our temperature converter will read one number from a file and convert it from Celsius to Fahrenheit.
+
+First, create a new file called temp.dat (temperature data), containing one line with one number on it:
+
+```dat
+100
+```
+Now create a third program file, called c2fin.rb (*in* for [file] input), as shown in the next listing:
+
+```ruby
+```
