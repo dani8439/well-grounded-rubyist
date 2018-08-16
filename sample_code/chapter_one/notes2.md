@@ -1,3 +1,9 @@
+# *Anatomy of the Ruby Installation* # 
+Having Ruby installed on your system means havingseveral disk directories' worth of Ruby-language libraries and support files. Most of the time, Ruby knows how to find what it needs without being prompted. But knowing your way around teh RUby installation is part of a good Ruby grounding. 
+
+**Looking at the Ruby source code**
+In addition to the Ruby installation directory tree, you may also have the Ruby source code tree on your machine; if not, you can download it from the Ruby homepage. 
+
 # **_Interpreter Command Line-Switches_** #
 
 #### Table 1.6 Summary of Commonly used Ruby command-line switches
