@@ -291,3 +291,6 @@ print "The Fahrenheit equivalent is ", gets.to_i * 9/5 + 32. ".\n"
 This version economizes on variables-there aren't any-but requires anyone reading it to follow a somewhat denser (but shorter) set of expressions. Any given program usually has several or many spots where you have to decide between longer (but maybe clearer?) and shorter (but perhaps a bit cryptic). And sometimes, shorter cna be clearer. It's all part of developing a Ruby code style.
 
 We now have a generalized, if not terribly nuanced, solution to the problem of converting from Celsius to Fahrenheit. Let's widen the circle to include file input.
+
+#### READING FROM A FILE ####
+Reading a file from a Ruby program isn't much more difficult, at least in many cases, than reading a line of keyboard input. The next version of our temperature converter will read one number from a file and convert it from Celsius to Fahrenheit.
