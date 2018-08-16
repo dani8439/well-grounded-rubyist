@@ -303,4 +303,39 @@ First, create a new file called temp.dat (temperature data), containing one line
 Now create a third program file, called c2fin.rb (*in* for [file] input), as shown in the next listing:
 
 ```ruby
+
+puts "Reading Celsius temperature value from data file..."
+num = File.read("temp.dat")
+celsius = num.to_i
+fahrenheit = (celsius * 9 / 5) + 32
+puts "The number is " + num 
+print "Result: "
+puts fahrenheit
 ```
+This time, the sample run and its output look like this:
+
+```
+$ ruby c2fin.rb
+Reading Celsius temperature value from data file...
+The number is 100
+Result: 212
+```
+Naturally, if you change the number in the file, the result will be different.
+
+What about writing the result of the calculation to a file?
+
+#### WRITING TO A FILE ####
+The simplest file-writing operation is just a little more elaborate than the simplest file-reading operation. As you can see from the following listing, the main extra step when you write to a file is the specification of a file *mode*-in this case, `w` (for *write*). Save the version of the program from this listing to c2fout.rb and run it.
+
+```ruby
+print "Hello. Please enter a Celsius value: "
+celsius = gets.to_i
+fahrenheit = (celsius * 9 / 5) + 32
+puts "Saving result to output file 'temp.out'"
+fh = File.new("temp.out", "w")
+fh.puts fahrenheit 
+fh.close
+```
+The method call `fh.puts fahrenheit` has the effect of printing the value of `fahrenheit` to the file for which `fh` is a write handle. If you inspect the file temp.out, you should see that it contains the Fahrenheit equivalent of whatever number you typed in.
+
+As an exercise, you might try to combine the previous examples into a Ruby program that reads a number from a file and writes the Fahrenheit conversion to a different file. Meanwhile, with some basic Ruby syntax in place, our next stop will be an examination of the Ruby installation. This, in turn, will equip you for a look at how Ruby manages extensions and libraries.
